@@ -8,12 +8,14 @@ Lower is better. 0.0 = perfect, 1.0 = worst possible.
 import sqlite3
 import json
 import requests
+from datetime import datetime, timezone
 from pathlib import Path
-# V3: single contrarian_rule agent. Keep set for backward compat with scoring.
-V2_AGENTS = {"contrarian_rule", "contrarian", "volume_wick"}
+# Active Arena Models
+ARENA_AGENTS = {"deepseek-ai/DeepSeek-V3", "Pro/zai-org/GLM-5", "gpt-5.4", "contrarian_rule", "contrarian", "volume_wick"}
 
 GAMMA_API = "https://gamma-api.polymarket.com"
 DB_PATH = Path(__file__).parent.parent / "data" / "predictions.db"
+HTTP_TIMEOUT = 15
 
 
 def mark_resolved(db, market_id, outcome):
@@ -25,7 +27,14 @@ def mark_resolved(db, market_id, outcome):
 
 def auto_resolve(db):
     """Check the Polymarket API for resolved markets and update the database."""
-    cursor = db.execute("SELECT id, question FROM markets WHERE resolved = 0")
+    now_iso = datetime.now(timezone.utc).isoformat()
+    cursor = db.execute("""
+        SELECT id, question
+        FROM markets
+        WHERE resolved = 0
+          AND end_date <= ?
+        ORDER BY end_date ASC
+    """, (now_iso,))
     unresolved = cursor.fetchall()
     if not unresolved:
         return 0
@@ -33,7 +42,10 @@ def auto_resolve(db):
     resolved_count = 0
     for market_id, question in unresolved:
         try:
-            resp = requests.get(f"{GAMMA_API}/markets/{market_id}")
+            resp = requests.get(
+                f"{GAMMA_API}/markets/{market_id}",
+                timeout=HTTP_TIMEOUT,
+            )
             resp.raise_for_status()
             market = resp.json()
 
@@ -118,8 +130,8 @@ def print_scorecard(results):
         print(f"    Markets:       {data['markets']}")
         print(f"    vs Market:     {avg_vs_market:+.4f} ({beat_market} market)")
 
-        if agent not in V2_AGENTS:
-            continue  # Only consider v2 agents for worst-performer selection
+        if agent not in ARENA_AGENTS:
+            continue  # Only consider arena agents for worst-performer selection
         if avg_brier > worst_brier:
             worst_brier = avg_brier
             worst_agent = agent
@@ -154,6 +166,12 @@ if __name__ == "__main__":
 
     if args.resolve:
         mark_resolved(db, args.resolve[0], int(args.resolve[1]))
+    else:
+        # 自动获取并结算已结束的市场
+        print("Checking for newly resolved markets...")
+        count = auto_resolve(db)
+        if count > 0:
+            print(f"Successfully resolved {count} new markets.")
 
     results = calculate_brier_scores(db)
     print_scorecard(results)

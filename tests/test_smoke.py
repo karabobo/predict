@@ -48,6 +48,14 @@ def test_score_imports():
     assert callable(auto_resolve)
 
 
+def test_live_trading_imports():
+    """Can we import live_trading.py without errors?"""
+    from live_trading import execute_live_orders, build_trade_plan, load_live_trading_config
+    assert callable(execute_live_orders)
+    assert callable(build_trade_plan)
+    assert callable(load_live_trading_config)
+
+
 def test_contrarian_signal_returns_valid_structure():
     """contrarian_signal returns expected keys."""
     from predict import contrarian_signal

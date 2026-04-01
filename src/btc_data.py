@@ -12,15 +12,18 @@ import statistics
 import time
 from datetime import datetime, timezone
 
+import pandas as pd
+import numpy as np
+import indicators
+
 KRAKEN_OHLC = "https://api.kraken.com/0/public/OHLC"
 COINBASE_CANDLES = "https://api.exchange.coinbase.com/products/BTC-USD/candles"
 
 
-def fetch_btc_candles(interval="5m", limit=12):
+def fetch_btc_candles(interval="5m", limit=30):
     """
     Fetch recent BTC 5-minute candles.
-    Primary: Kraken. Fallback: Coinbase.
-    Returns a dict with candles, summary stats, and derived signals.
+    Increased limit to 30 to allow for indicator calculation (e.g. RSI 14).
     """
     try:
         return _fetch_kraken(limit)
@@ -163,11 +166,19 @@ def _fetch_coinbase(limit):
 
 def _compute_summary(candles):
     """Compute derived stats from a list of candles."""
-    closes = [c["close"] for c in candles]
+    df = pd.DataFrame(candles)
+    # Ensure float columns for indicators
+    for col in ["open", "high", "low", "close", "volume"]:
+        df[col] = df[col].astype(float)
+    
+    # Calculate indicators using our new module
+    df = indicators.add_all_indicators(df)
+    
+    closes = df["close"].tolist()
     current_price = closes[-1]
     first_open = candles[0]["open"]
 
-    # 1-hour change
+    # 1-hour change (from first of our window)
     hour_change_pct = round((current_price - first_open) / first_open * 100, 3)
 
     # 5-min returns for volatility
@@ -177,111 +188,17 @@ def _compute_summary(candles):
         returns.append(ret)
     volatility = round(statistics.stdev(returns), 4) if len(returns) >= 2 else 0.0
 
-    # Consecutive direction count
-    consecutive = 1
-    last_dir = candles[-1]["direction"]
-    for i in range(len(candles) - 2, -1, -1):
-        if candles[i]["direction"] == last_dir:
-            consecutive += 1
-        else:
-            break
-
-    # Trend: simple — more ups than downs in window
-    ups = sum(1 for c in candles if c["direction"] == "UP")
-    downs = len(candles) - ups
-    if ups > downs + 2:
-        trend = "up"
-    elif downs > ups + 2:
-        trend = "down"
-    else:
-        trend = "neutral"
-
-    # Last candle details
-    last = candles[-1]
-
-    # --- Micro-TA fields (v2) ---
-
-    # Range position: where current close sits in the 12-candle range (0=bottom, 1=top)
-    range_high = max(c["high"] for c in candles)
-    range_low = min(c["low"] for c in candles)
-    range_span = range_high - range_low
-    range_position = round((current_price - range_low) / range_span, 3) if range_span > 0 else 0.5
-
-    # Volume analysis
-    volumes = [c["volume"] for c in candles]
-    avg_volume = sum(volumes) / len(volumes) if volumes else 1.0
-    last_volume_ratio = round(last["volume"] / avg_volume, 2) if avg_volume > 0 else 1.0
-
-    # Compression: are last 3 candle ranges shrinking?
-    last_3_range_shrinking = False
-    if len(candles) >= 3:
-        ranges = [c["high"] - c["low"] for c in candles[-3:]]
-        last_3_range_shrinking = ranges[0] > ranges[1] > ranges[2] and ranges[2] > 0
-
-    # Average candle range for expansion detection
-    avg_range = sum(c["high"] - c["low"] for c in candles) / len(candles) if candles else 0
-    last_range = last["high"] - last["low"]
-    last_range_ratio = round(last_range / avg_range, 2) if avg_range > 0 else 1.0
-
-    # Candle pattern detection (last candle)
-    last_body = abs(last["close"] - last["open"])
-    last_full_range = last["high"] - last["low"]
-    last_upper_wick = last["high"] - max(last["open"], last["close"])
-    last_lower_wick = min(last["open"], last["close"]) - last["low"]
-
-    # Wick ratios relative to body
-    last_wick_upper_ratio = round(last_upper_wick / last_body, 2) if last_body > 0 else 0.0
-    last_wick_lower_ratio = round(last_lower_wick / last_body, 2) if last_body > 0 else 0.0
-
-    # Pattern classification
-    last_candle_pattern = "none"
-    if last_full_range > 0:
-        body_frac = last_body / last_full_range
-        if body_frac < 0.15 and last["wick_ratio"] > 0.7:
-            last_candle_pattern = "doji"
-        elif last["direction"] == "DOWN" and last_lower_wick > 2 * last_body and last_body > 0:
-            last_candle_pattern = "hammer"
-        elif last["direction"] == "UP" and last_upper_wick > 2 * last_body and last_body > 0:
-            last_candle_pattern = "inv_hammer"
-
-    # Engulfing detection (last 2 candles)
-    if len(candles) >= 2:
-        prev = candles[-2]
-        prev_body = abs(prev["close"] - prev["open"])
-        if last_body > prev_body * 1.1 and last["direction"] != prev["direction"]:
-            if last["direction"] == "UP":
-                last_candle_pattern = "engulfing_bull"
-            else:
-                last_candle_pattern = "engulfing_bear"
-        elif (last["high"] < prev["high"] and last["low"] > prev["low"]):
-            last_candle_pattern = "inside_bar"
-
+    # Trend and patterns
+    last_row = df.iloc[-1]
+    
     return {
-        "candles": candles,
+        "candles": candles[-12:], # Only return last 12 for the prompt table
         "current_price": current_price,
         "1h_change_pct": hour_change_pct,
-        "trend": trend,
         "volatility": volatility,
-        "consecutive_direction": consecutive,
-        "consecutive_dir_label": last_dir,
-        "up_count": ups,
-        "down_count": downs,
-        "last_candle": {
-            "direction": last["direction"],
-            "body_pct": last["body_pct"],
-            "wick_ratio": last["wick_ratio"],
-        },
-        # v2 micro-TA fields
-        "range_high": range_high,
-        "range_low": range_low,
-        "range_position": range_position,
-        "avg_volume": round(avg_volume, 2),
-        "last_volume_ratio": last_volume_ratio,
-        "last_3_range_shrinking": last_3_range_shrinking,
-        "last_range_ratio": last_range_ratio,
-        "last_candle_pattern": last_candle_pattern,
-        "last_wick_upper_ratio": last_wick_upper_ratio,
-        "last_wick_lower_ratio": last_wick_lower_ratio,
+        "last_row": last_row, # Contains all technical indicators
+        "range_high": df["high"].max(),
+        "range_low": df["low"].min(),
     }
 
 
@@ -290,26 +207,26 @@ def format_for_prompt(data):
     if data is None:
         return "## Recent BTC Price Action\n(Data unavailable — use market_price as your estimate)\n"
 
+    last = data['last_row']
+    
     lines = [
-        "## Recent BTC Price Action (last 1 hour, 5-min candles)",
-        f"- **Current BTC price:** ${data['current_price']:,.0f}",
-        f"- **1h change:** {data['1h_change_pct']:+.3f}%",
-        f"- **Consecutive:** {data['consecutive_direction']} {data['consecutive_dir_label']} candles in a row",
-        f"- **Volatility:** {data['volatility']:.4f}% per 5-min candle",
-        f"- **Last candle:** {data['last_candle']['direction']} ({data['last_candle']['body_pct']:+.4f}%), wick ratio {data['last_candle']['wick_ratio']:.2f}",
+        "## BTC Market Technical Analysis (5m Timeframe)",
+        f"- **Current Price:** ${data['current_price']:,.2f}",
+        f"- **RSI (14):** {last['rsi_14']:.1f} ({'Overbought' if last['rsi_14'] > 70 else 'Oversold' if last['rsi_14'] < 30 else 'Neutral'})",
+        f"- **Bollinger Bands:** Upper: {last['bb_upper']:.0f} | Mid: {last['bb_middle']:.0f} | Lower: {last['bb_lower']:.0f}",
+        f"- **MACD:** Hist: {last['macd_hist']:.2f} | Line: {last['macd']:.2f} | Signal: {last['macd_signal']:.2f}",
+        f"- **KDJ:** K: {last['kdj_k']:.1f} | D: {last['kdj_d']:.1f} | J: {last['kdj_j']:.1f}",
+    ]
+    
+    if 'mfi_14' in last:
+        lines.append(f"- **MFI (14):** {last['mfi_14']:.1f} (Money Flow Index)")
+    
+    lines.extend([
         "",
-        "## Micro-TA Signals (pre-computed)",
-        f"- **Range position:** {data.get('range_position', 0.5):.2f} (0=bottom, 1=top of 12-candle range)",
-        f"- **Last volume ratio:** {data.get('last_volume_ratio', 1.0):.2f}x average",
-        f"- **Last range ratio:** {data.get('last_range_ratio', 1.0):.2f}x average (>2 = expansion)",
-        f"- **Compression:** {'YES — last 3 ranges shrinking' if data.get('last_3_range_shrinking') else 'No'}",
-        f"- **Candle pattern:** {data.get('last_candle_pattern', 'none')}",
-        f"- **Upper wick/body ratio:** {data.get('last_wick_upper_ratio', 0):.1f}x",
-        f"- **Lower wick/body ratio:** {data.get('last_wick_lower_ratio', 0):.1f}x",
-        "",
+        "## Recent Price Action (Last 12 Candles)",
         "| Time  | Open     | Close    | Dir  | Body%   | Wick  | Vol    |",
         "|-------|----------|----------|------|---------|-------|--------|",
-    ]
+    ])
 
     for c in data["candles"]:
         lines.append(

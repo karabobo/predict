@@ -18,6 +18,7 @@ from fetch_markets import init_db, fetch_active_markets, store_markets, DB_PATH
 from predict import run_predictions
 from score import auto_resolve, calculate_brier_scores, print_scorecard
 from btc_data import fetch_btc_candles
+from live_trading import execute_live_orders
 
 
 def get_next_cycle(db):
@@ -43,7 +44,7 @@ def main():
     db = init_db()
 
     # 1. Fetch markets
-    print("[1/5] Fetching markets...")
+    print("[1/6] Fetching markets...")
     try:
         markets = fetch_active_markets()
         store_markets(db, markets)
@@ -53,7 +54,7 @@ def main():
         markets = []
 
     # 2. Auto-resolve closed markets
-    print("[2/5] Auto-resolving...")
+    print("[2/6] Auto-resolving...")
     resolved = auto_resolve(db)
     if resolved:
         print(f"  Resolved {resolved} market(s)")
@@ -66,7 +67,7 @@ def main():
 
     # 3. Predict using contrarian rule (no API calls)
     cycle = get_next_cycle(db)
-    print(f"[3/5] Predictions — contrarian rule (cycle {cycle})...")
+    print(f"[3/6] Predictions — contrarian rule (cycle {cycle})...")
     btc_data = fetch_btc_candles(limit=20)
     if btc_data:
         print(f"  BTC: ${btc_data['current_price']:,.0f} | 1h: {btc_data['1h_change_pct']:+.3f}% | Trend: {btc_data['trend']}")
@@ -79,12 +80,19 @@ def main():
             run_predictions(cycle=cycle, market_limit=1, btc_data=btc_data)
         except Exception as e:
             print(f"  Prediction error: {e}")
-        db = sqlite3.connect(DB_PATH)
+        db = init_db()
     else:
         print("  No unpredicted markets")
 
-    # 4. Score
-    print("[4/5] Scoring...")
+    # 4. Live trading
+    print("[4/6] Live trading...")
+    try:
+        execute_live_orders(db)
+    except Exception as e:
+        print(f"  Live trading error: {e}")
+
+    # 5. Score
+    print("[5/6] Scoring...")
     results = calculate_brier_scores(db)
     if results:
         print_scorecard(results)
@@ -93,8 +101,8 @@ def main():
 
     db.close()
 
-    # 5. Generate dashboard
-    print("[5/5] Generating dashboard...")
+    # 6. Generate dashboard
+    print("[6/6] Generating dashboard...")
     _generate_dashboard()
 
     print("\nCI run complete.")

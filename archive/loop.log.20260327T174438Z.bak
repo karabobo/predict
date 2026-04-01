@@ -1,0 +1,3696 @@
+[2026-03-25T19:24:57Z] === Polymarket bot loop starting ===
+[2026-03-25T19:24:57Z] Repo: /root/polymarket-bot
+[2026-03-25T19:24:57Z] Python: /root/polymarket-bot/.venv/bin/python
+[2026-03-25T19:24:57Z] Sleep between cycles: 300s
+[2026-03-25T19:24:57Z] --- Cycle 1 ---
+[2026-03-25T19:59:05Z] === Polymarket bot loop starting ===
+[2026-03-25T19:59:05Z] Repo: /root/polymarket-bot
+[2026-03-25T19:59:05Z] Python: /root/polymarket-bot/.venv/bin/python
+[2026-03-25T19:59:05Z] Sleep between cycles: 300s
+[2026-03-25T19:59:05Z] --- Cycle 1 ---
+[2026-03-26T05:43:02Z] === Polymarket bot loop starting ===
+[2026-03-26T05:43:02Z] Repo: /root/polymarket-bot
+[2026-03-26T05:43:02Z] Python: /root/polymarket-bot/.venv/bin/python
+[2026-03-26T05:43:02Z] Sleep between cycles: 300s
+[2026-03-26T05:43:02Z] --- Cycle 1 ---
+[2026-03-26T05:44:19Z] === Polymarket bot loop starting ===
+[2026-03-26T05:44:19Z] Repo: /root/polymarket-bot
+[2026-03-26T05:44:19Z] Python: /root/polymarket-bot/.venv/bin/python
+[2026-03-26T05:44:19Z] Sleep between cycles: 300s
+[2026-03-26T05:44:19Z] --- Cycle 1 ---
++ cd /root/polymarket-bot/src
++ timeout 120 /root/polymarket-bot/.venv/bin/python -u ci_run.py
+[1/6] Fetching markets...
+  19 active markets
+[2/6] Auto-resolving...
+Marked market 1707930 as resolved: DOWN
+Marked market 1707937 as resolved: DOWN
+Marked market 1707990 as resolved: DOWN
+Marked market 1708039 as resolved: DOWN
+[2026-03-26T06:06:10Z] === Polymarket bot loop starting ===
+[2026-03-26T06:06:10Z] Repo: /root/polymarket-bot
+[2026-03-26T06:06:10Z] Python: /root/polymarket-bot/.venv/bin/python
+[2026-03-26T06:06:10Z] Sleep between cycles: 300s
+[2026-03-26T06:06:10Z] --- Cycle 1 ---
+[1/6] Fetching markets...
+  20 active markets
+[2/6] Auto-resolving...
+Marked market 1708135 as resolved: UP
+Marked market 1708334 as resolved: UP
+Marked market 1708380 as resolved: DOWN
+Marked market 1708475 as resolved: UP
+Marked market 1708489 as resolved: UP
+Marked market 1708522 as resolved: UP
+Marked market 1708554 as resolved: UP
+Marked market 1708563 as resolved: UP
+Marked market 1708578 as resolved: UP
+Marked market 1708725 as resolved: DOWN
+Marked market 1713116 as resolved: DOWN
+[2026-03-26T06:08:10Z] Cycle 1 failed with exit code 124
+[2026-03-26T06:08:10Z] Sleeping 300s until next cycle...
+[2026-03-26T06:11:08Z] === Polymarket bot loop starting ===
+[2026-03-26T06:11:08Z] Repo: /root/polymarket-bot
+[2026-03-26T06:11:08Z] Python: /root/polymarket-bot/.venv/bin/python
+[2026-03-26T06:11:08Z] Sleep between cycles: 300s
+[2026-03-26T06:11:08Z] Cycle timeout: 300s
+[2026-03-26T06:11:08Z] --- Cycle 1 ---
+[1/6] Fetching markets...
+  21 active markets
+[2/6] Auto-resolving...
+Marked market 1713125 as resolved: UP
+Marked market 1713142 as resolved: DOWN
+Marked market 1713185 as resolved: DOWN
+Marked market 1713315 as resolved: DOWN
+[2026-03-26T06:15:47Z] Cycle 1 failed with exit code 130
+[2026-03-26T06:15:47Z] Sleeping 300s until next cycle...
+[2026-03-26T06:20:47Z] --- Cycle 2 ---
+[1/6] Fetching markets...
+  19 active markets
+[2/6] Auto-resolving...
+Marked market 1713416 as resolved: UP
+Marked market 1713429 as resolved: DOWN
+  Resolved 2 market(s)
+[3/6] Predictions — contrarian rule (cycle 745)...
+  BTC: $70,053 | 1h: -1.083% | Trend: down
+  BTC: $70,053 | 1h: -1.083%
+  Regime: HIGH_VOL / MEAN_REVERTING (autocorr: -0.1752)
+  SKIP: Mean-reverting regime detected — no trades
+  Signal: NONE (streak_too_short (-1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 2:20AM-2:25AM ET...
+  Mkt price: 55%
+    → SKIP (mean-reverting regime)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2217
+    Markets:       744
+    vs Market:     +0.0017 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2217)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T06:21:21Z] Cycle 2 completed successfully
+[2026-03-26T06:21:21Z] Sleeping 300s until next cycle...
+[2026-03-26T06:26:21Z] --- Cycle 3 ---
+[1/6] Fetching markets...
+  18 active markets
+[2/6] Auto-resolving...
+Marked market 1713467 as resolved: UP
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 746)...
+  BTC: $69,903 | 1h: -1.319% | Trend: down
+  BTC: $69,903 | 1h: -1.319%
+  Regime: HIGH_VOL / MEAN_REVERTING (autocorr: -0.2600)
+  SKIP: Mean-reverting regime detected — no trades
+  Signal: NONE (streak_too_short (-2))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 2:25AM-2:30AM ET...
+  Mkt price: 52%
+    → SKIP (mean-reverting regime)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2217
+    Markets:       744
+    vs Market:     +0.0017 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2217)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T06:26:54Z] Cycle 3 completed successfully
+[2026-03-26T06:26:54Z] Sleeping 300s until next cycle...
+[2026-03-26T06:31:54Z] --- Cycle 4 ---
+[1/6] Fetching markets...
+  19 active markets
+[2/6] Auto-resolving...
+Marked market 1713468 as resolved: DOWN
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 747)...
+  BTC: $70,055 | 1h: -1.056% | Trend: down
+  BTC: $70,055 | 1h: -1.056%
+  Regime: HIGH_VOL / MEAN_REVERTING (autocorr: -0.2351)
+  SKIP: Mean-reverting regime detected — no trades
+  Signal: NONE (streak_too_short (2))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 2:30AM-2:35AM ET...
+  Mkt price: 50%
+    → SKIP (mean-reverting regime)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2218
+    Markets:       745
+    vs Market:     +0.0017 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2218)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T06:32:41Z] Cycle 4 completed successfully
+[2026-03-26T06:32:41Z] Sleeping 300s until next cycle...
+[2026-03-26T06:37:41Z] --- Cycle 5 ---
+[1/6] Fetching markets...
+  19 active markets
+[2/6] Auto-resolving...
+Marked market 1713679 as resolved: UP
+Marked market 1713691 as resolved: DOWN
+  Resolved 2 market(s)
+[3/6] Predictions — contrarian rule (cycle 748)...
+  BTC: $69,992 | 1h: -1.067% | Trend: down
+  BTC: $69,992 | 1h: -1.067%
+  Regime: HIGH_VOL / MEAN_REVERTING (autocorr: -0.2532)
+  SKIP: Mean-reverting regime detected — no trades
+  Signal: NONE (streak_too_short (-2))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 2:35AM-2:40AM ET...
+  Mkt price: 50%
+    → SKIP (mean-reverting regime)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2219
+    Markets:       747
+    vs Market:     +0.0016 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2219)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T06:38:14Z] Cycle 5 completed successfully
+[2026-03-26T06:38:14Z] Sleeping 300s until next cycle...
+[2026-03-26T06:42:43Z] === Polymarket bot loop starting ===
+[2026-03-26T06:42:43Z] Repo: /root/polymarket-bot
+[2026-03-26T06:42:43Z] Python: /root/polymarket-bot/.venv/bin/python
+[2026-03-26T06:42:43Z] Sleep between cycles: 300s
+[2026-03-26T06:42:43Z] Cycle timeout: 300s
+[2026-03-26T06:42:43Z] --- Cycle 1 ---
+[1/6] Fetching markets...
+  18 active markets
+[2/6] Auto-resolving...
+[3/6] Predictions — contrarian rule (cycle 749)...
+  BTC: $69,963 | 1h: -1.082% | Trend: down
+  BTC: $69,963 | 1h: -1.082%
+  Regime: HIGH_VOL / MEAN_REVERTING (autocorr: -0.2367)
+  SKIP: Mean-reverting regime detected — no trades
+  Signal: FADE DOWN (streak=-3, conf=medium)
+    Exhaustion: compression=False, vol_spike=False (0.5x), shrink=True (0.43x)
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 2:40AM-2:45AM ET...
+  Mkt price: 56%
+    → SKIP (mean-reverting regime)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2219
+    Markets:       747
+    vs Market:     +0.0016 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2219)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T06:43:16Z] Cycle 1 completed successfully
+[2026-03-26T06:43:16Z] Sleeping 300s until next cycle...
+[2026-03-26T06:48:16Z] --- Cycle 2 ---
+[1/6] Fetching markets...
+  18 active markets
+[2/6] Auto-resolving...
+Marked market 1713718 as resolved: DOWN
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 750)...
+  BTC: $70,036 | 1h: -0.700% | Trend: down
+  BTC: $70,036 | 1h: -0.700%
+  Regime: HIGH_VOL / MEAN_REVERTING (autocorr: -0.2338)
+  SKIP: Mean-reverting regime detected — no trades
+  Signal: NONE (streak_too_short (1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 2:45AM-2:50AM ET...
+  Mkt price: 62%
+    → SKIP (mean-reverting regime)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2220
+    Markets:       748
+    vs Market:     +0.0016 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2220)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T06:48:49Z] Cycle 2 completed successfully
+[2026-03-26T06:48:49Z] Sleeping 300s until next cycle...
+[2026-03-26T06:53:49Z] --- Cycle 3 ---
+[1/6] Fetching markets...
+  18 active markets
+[2/6] Auto-resolving...
+Marked market 1713723 as resolved: DOWN
+Marked market 1713742 as resolved: UP
+  Resolved 2 market(s)
+[3/6] Predictions — contrarian rule (cycle 751)...
+  BTC: $70,067 | 1h: -0.667% | Trend: down
+  BTC: $70,067 | 1h: -0.667%
+  Regime: HIGH_VOL / MEAN_REVERTING (autocorr: -0.2194)
+  SKIP: Mean-reverting regime detected — no trades
+  Signal: NONE (streak_too_short (2))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 2:50AM-2:55AM ET...
+  Mkt price: 68%
+    → SKIP (mean-reverting regime)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2220
+    Markets:       750
+    vs Market:     +0.0016 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2220)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T06:53:53Z] Cycle 3 completed successfully
+[2026-03-26T06:53:53Z] Sleeping 300s until next cycle...
+[2026-03-26T06:58:53Z] --- Cycle 4 ---
+[1/6] Fetching markets...
+  18 active markets
+[2/6] Auto-resolving...
+[3/6] Predictions — contrarian rule (cycle 752)...
+  BTC: $70,069 | 1h: -0.681% | Trend: down
+  BTC: $70,069 | 1h: -0.681%
+  Regime: HIGH_VOL / MEAN_REVERTING (autocorr: -0.2177)
+  SKIP: Mean-reverting regime detected — no trades
+  Signal: FADE UP (streak=3, conf=medium)
+    Exhaustion: compression=False, vol_spike=False (0.8x), shrink=True (0.46x)
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 2:55AM-3:00AM ET...
+  Mkt price: 46%
+    → SKIP (mean-reverting regime)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2220
+    Markets:       750
+    vs Market:     +0.0016 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2220)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T06:59:11Z] Cycle 4 completed successfully
+[2026-03-26T06:59:11Z] Sleeping 300s until next cycle...
+[2026-03-26T07:04:11Z] --- Cycle 5 ---
+[1/6] Fetching markets...
+  19 active markets
+[2/6] Auto-resolving...
+Marked market 1713750 as resolved: UP
+Marked market 1713761 as resolved: DOWN
+  Resolved 2 market(s)
+[3/6] Predictions — contrarian rule (cycle 753)...
+  BTC: $70,122 | 1h: -0.654% | Trend: down
+  BTC: $70,122 | 1h: -0.654%
+  Regime: HIGH_VOL / MEAN_REVERTING (autocorr: -0.2016)
+  SKIP: Mean-reverting regime detected — no trades
+  Signal: NONE (streak_too_short (1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 3:00AM-3:05AM ET...
+  Mkt price: 10%
+    → SKIP (mean-reverting regime)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2218
+    Markets:       752
+    vs Market:     +0.0016 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2218)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T07:04:29Z] Cycle 5 completed successfully
+[2026-03-26T07:04:29Z] Sleeping 300s until next cycle...
+[2026-03-26T07:09:29Z] --- Cycle 6 ---
+[1/6] Fetching markets...
+  19 active markets
+[2/6] Auto-resolving...
+Marked market 1713889 as resolved: UP
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 754)...
+  BTC: $70,021 | 1h: -0.756% | Trend: down
+  BTC: $70,021 | 1h: -0.756%
+  Regime: HIGH_VOL / MEAN_REVERTING (autocorr: -0.2369)
+  SKIP: Mean-reverting regime detected — no trades
+  Signal: NONE (streak_too_short (-1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 3:05AM-3:10AM ET...
+  Mkt price: 2%
+    → SKIP (mean-reverting regime)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2226
+    Markets:       753
+    vs Market:     +0.0016 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2226)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T07:09:46Z] Cycle 6 completed successfully
+[2026-03-26T07:09:46Z] Sleeping 300s until next cycle...
+[2026-03-26T07:14:46Z] --- Cycle 7 ---
+[1/6] Fetching markets...
+  19 active markets
+[2/6] Auto-resolving...
+Marked market 1713928 as resolved: DOWN
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 755)...
+  BTC: $70,012 | 1h: -0.730% | Trend: down
+  BTC: $70,012 | 1h: -0.730%
+  Regime: HIGH_VOL / MEAN_REVERTING (autocorr: -0.2208)
+  SKIP: Mean-reverting regime detected — no trades
+  Signal: NONE (streak_too_short (1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 3:15AM-3:20AM ET...
+  Mkt price: 56%
+    → SKIP (mean-reverting regime)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2223
+    Markets:       754
+    vs Market:     +0.0016 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2223)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T07:15:19Z] Cycle 7 completed successfully
+[2026-03-26T07:15:19Z] Sleeping 300s until next cycle...
+[2026-03-26T07:20:19Z] --- Cycle 8 ---
+[1/6] Fetching markets...
+  19 active markets
+[2/6] Auto-resolving...
+Marked market 1713936 as resolved: DOWN
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 756)...
+  BTC: $69,953 | 1h: -0.455% | Trend: down
+  BTC: $69,953 | 1h: -0.455%
+  Regime: HIGH_VOL / NEUTRAL (autocorr: -0.1344)
+  Signal: NONE (no_exhaustion (streak=-4))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 3:20AM-3:25AM ET...
+  Mkt price: 50%
+    → SKIP (no_exhaustion (streak=-4))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2223
+    Markets:       754
+    vs Market:     +0.0016 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2223)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T07:20:52Z] Cycle 8 completed successfully
+[2026-03-26T07:20:52Z] Sleeping 300s until next cycle...
+[2026-03-26T07:25:52Z] --- Cycle 9 ---
+[1/6] Fetching markets...
+  19 active markets
+[2/6] Auto-resolving...
+Marked market 1713974 as resolved: DOWN
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 757)...
+  BTC: $69,977 | 1h: -0.477% | Trend: down
+  BTC: $69,977 | 1h: -0.477%
+  Regime: MEDIUM_VOL / MEAN_REVERTING (autocorr: -0.4883)
+  SKIP: Mean-reverting regime detected — no trades
+  Signal: NONE (streak_too_short (-1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 3:25AM-3:30AM ET...
+  Mkt price: 50%
+    → SKIP (mean-reverting regime)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2224
+    Markets:       755
+    vs Market:     +0.0016 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2224)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T07:26:40Z] Cycle 9 completed successfully
+[2026-03-26T07:26:40Z] Sleeping 300s until next cycle...
+[2026-03-26T07:31:40Z] --- Cycle 10 ---
+[1/6] Fetching markets...
+  18 active markets
+[2/6] Auto-resolving...
+Marked market 1713984 as resolved: UP
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 758)...
+  BTC: $69,818 | 1h: -0.391% | Trend: down
+  BTC: $69,818 | 1h: -0.391%
+  Regime: MEDIUM_VOL / MEAN_REVERTING (autocorr: -0.3834)
+  SKIP: Mean-reverting regime detected — no trades
+  Signal: NONE (streak_too_short (-2))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 3:30AM-3:35AM ET...
+  Mkt price: 52%
+    → SKIP (mean-reverting regime)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2224
+    Markets:       756
+    vs Market:     +0.0016 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2224)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T07:32:28Z] Cycle 10 completed successfully
+[2026-03-26T07:32:28Z] Sleeping 300s until next cycle...
+[2026-03-26T07:37:28Z] --- Cycle 11 ---
+[1/6] Fetching markets...
+  17 active markets
+[2/6] Auto-resolving...
+Marked market 1714003 as resolved: DOWN
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 759)...
+  BTC: $69,961 | 1h: -0.021% | Trend: down
+  BTC: $69,961 | 1h: -0.021%
+  Regime: MEDIUM_VOL / MEAN_REVERTING (autocorr: -0.5117)
+  SKIP: Mean-reverting regime detected — no trades
+  Signal: NONE (streak_too_short (1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 3:35AM-3:40AM ET...
+  Mkt price: 54%
+    → SKIP (mean-reverting regime)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2225
+    Markets:       757
+    vs Market:     +0.0016 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2225)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T07:37:31Z] Cycle 11 completed successfully
+[2026-03-26T07:37:31Z] Sleeping 300s until next cycle...
+[2026-03-26T07:42:31Z] --- Cycle 12 ---
+[1/6] Fetching markets...
+  18 active markets
+[2/6] Auto-resolving...
+Marked market 1714014 as resolved: DOWN
+Marked market 1714046 as resolved: UP
+  Resolved 2 market(s)
+[3/6] Predictions — contrarian rule (cycle 760)...
+  BTC: $70,035 | 1h: +0.129% | Trend: neutral
+  BTC: $70,035 | 1h: +0.129%
+  Regime: MEDIUM_VOL / MEAN_REVERTING (autocorr: -0.4448)
+  SKIP: Mean-reverting regime detected — no trades
+  Signal: NONE (streak_too_short (2))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 3:40AM-3:45AM ET...
+  Mkt price: 50%
+    → SKIP (mean-reverting regime)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2225
+    Markets:       759
+    vs Market:     +0.0016 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2225)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T07:43:04Z] Cycle 12 completed successfully
+[2026-03-26T07:43:04Z] Sleeping 300s until next cycle...
+[2026-03-26T07:48:04Z] --- Cycle 13 ---
+[1/6] Fetching markets...
+  18 active markets
+[2/6] Auto-resolving...
+Marked market 1714052 as resolved: UP
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 761)...
+  BTC: $70,035 | 1h: -0.027% | Trend: down
+  BTC: $70,035 | 1h: -0.027%
+  Regime: MEDIUM_VOL / MEAN_REVERTING (autocorr: -0.3954)
+  SKIP: Mean-reverting regime detected — no trades
+  Signal: NONE (streak_too_short (-1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 3:45AM-3:50AM ET...
+  Mkt price: 50%
+    → SKIP (mean-reverting regime)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2225
+    Markets:       760
+    vs Market:     +0.0016 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2225)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T07:48:21Z] Cycle 13 completed successfully
+[2026-03-26T07:48:21Z] Sleeping 300s until next cycle...
+[2026-03-26T07:53:21Z] --- Cycle 14 ---
+[1/6] Fetching markets...
+  17 active markets
+[2/6] Auto-resolving...
+Marked market 1714068 as resolved: UP
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 762)...
+  BTC: $70,096 | 1h: +0.115% | Trend: neutral
+  BTC: $70,096 | 1h: +0.115%
+  Regime: MEDIUM_VOL / MEAN_REVERTING (autocorr: -0.2528)
+  SKIP: Mean-reverting regime detected — no trades
+  Signal: NONE (streak_too_short (1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 3:50AM-3:55AM ET...
+  Mkt price: 86%
+    → SKIP (mean-reverting regime)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2226
+    Markets:       761
+    vs Market:     +0.0016 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2226)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T07:53:53Z] Cycle 14 completed successfully
+[2026-03-26T07:53:53Z] Sleeping 300s until next cycle...
+[2026-03-26T07:58:53Z] --- Cycle 15 ---
+[1/6] Fetching markets...
+  17 active markets
+[2/6] Auto-resolving...
+[3/6] Predictions — contrarian rule (cycle 763)...
+  BTC: $70,060 | 1h: -0.034% | Trend: down
+  BTC: $70,060 | 1h: -0.034%
+  Regime: MEDIUM_VOL / MEAN_REVERTING (autocorr: -0.2173)
+  SKIP: Mean-reverting regime detected — no trades
+  Signal: NONE (streak_too_short (-1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 3:55AM-4:00AM ET...
+  Mkt price: 16%
+    → SKIP (mean-reverting regime)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2226
+    Markets:       761
+    vs Market:     +0.0016 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2226)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T07:58:55Z] Cycle 15 completed successfully
+[2026-03-26T07:58:55Z] Sleeping 300s until next cycle...
+[2026-03-26T08:03:55Z] --- Cycle 16 ---
+[1/6] Fetching markets...
+  20 active markets
+[2/6] Auto-resolving...
+Marked market 1714076 as resolved: UP
+Marked market 1714117 as resolved: DOWN
+  Resolved 2 market(s)
+[3/6] Predictions — contrarian rule (cycle 764)...
+  BTC: $70,043 | 1h: +0.159% | Trend: down
+  BTC: $70,043 | 1h: +0.159%
+  Regime: MEDIUM_VOL / MEAN_REVERTING (autocorr: -0.2015)
+  SKIP: Mean-reverting regime detected — no trades
+  Signal: NONE (streak_too_short (-2))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 4:00AM-4:05AM ET...
+  Mkt price: 50%
+    → SKIP (mean-reverting regime)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2221
+    Markets:       763
+    vs Market:     +0.0016 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2221)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T08:03:58Z] Cycle 16 completed successfully
+[2026-03-26T08:03:58Z] Sleeping 300s until next cycle...
+[2026-03-26T08:08:58Z] --- Cycle 17 ---
+[1/6] Fetching markets...
+  20 active markets
+[2/6] Auto-resolving...
+[3/6] Predictions — contrarian rule (cycle 765)...
+  BTC: $70,063 | 1h: +0.078% | Trend: down
+  BTC: $70,063 | 1h: +0.078%
+  Regime: MEDIUM_VOL / MEAN_REVERTING (autocorr: -0.2076)
+  SKIP: Mean-reverting regime detected — no trades
+  Signal: NONE (streak_too_short (1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 4:05AM-4:10AM ET...
+  Mkt price: 76%
+    → SKIP (mean-reverting regime)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2221
+    Markets:       763
+    vs Market:     +0.0016 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2221)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T08:09:30Z] Cycle 17 completed successfully
+[2026-03-26T08:09:30Z] Sleeping 300s until next cycle...
+[2026-03-26T08:14:30Z] --- Cycle 18 ---
+[1/6] Fetching markets...
+  19 active markets
+[2/6] Auto-resolving...
+Marked market 1714248 as resolved: DOWN
+Marked market 1714267 as resolved: DOWN
+  Resolved 2 market(s)
+[3/6] Predictions — contrarian rule (cycle 766)...
+  BTC: $69,876 | 1h: -0.176% | Trend: down
+  BTC: $69,876 | 1h: -0.176%
+  Regime: MEDIUM_VOL / NEUTRAL (autocorr: -0.1006)
+  Signal: NONE (no_exhaustion (streak=-4))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 4:10AM-4:15AM ET...
+  Mkt price: 14%
+    → SKIP (no_exhaustion (streak=-4))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2226
+    Markets:       765
+    vs Market:     +0.0016 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2226)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T08:14:49Z] Cycle 18 completed successfully
+[2026-03-26T08:14:49Z] Sleeping 300s until next cycle...
+[2026-03-26T08:19:49Z] --- Cycle 19 ---
+[1/6] Fetching markets...
+  20 active markets
+[2/6] Auto-resolving...
+Marked market 1714278 as resolved: DOWN
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 767)...
+  BTC: $69,874 | 1h: -0.144% | Trend: down
+  BTC: $69,874 | 1h: -0.144%
+  Regime: MEDIUM_VOL / NEUTRAL (autocorr: -0.0795)
+  Signal: NONE (streak_too_short (1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 4:20AM-4:25AM ET...
+  Mkt price: 52%
+    → SKIP (streak_too_short (1))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2223
+    Markets:       766
+    vs Market:     +0.0016 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2223)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T08:20:22Z] Cycle 19 completed successfully
+[2026-03-26T08:20:22Z] Sleeping 300s until next cycle...
+[2026-03-26T08:25:22Z] --- Cycle 20 ---
+[1/6] Fetching markets...
+  19 active markets
+[2/6] Auto-resolving...
+Marked market 1714311 as resolved: DOWN
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 768)...
+  BTC: $69,841 | 1h: -0.322% | Trend: down
+  BTC: $69,841 | 1h: -0.322%
+  Regime: MEDIUM_VOL / NEUTRAL (autocorr: -0.0698)
+  Signal: NONE (streak_too_short (1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 4:25AM-4:30AM ET...
+  Mkt price: 54%
+    → SKIP (streak_too_short (1))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2223
+    Markets:       766
+    vs Market:     +0.0016 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2223)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T08:25:40Z] Cycle 20 completed successfully
+[2026-03-26T08:25:40Z] Sleeping 300s until next cycle...
+[2026-03-26T08:30:40Z] --- Cycle 21 ---
+[1/6] Fetching markets...
+  20 active markets
+[2/6] Auto-resolving...
+Marked market 1714321 as resolved: DOWN
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 769)...
+  BTC: $69,792 | 1h: -0.392% | Trend: down
+  BTC: $69,792 | 1h: -0.392%
+  Regime: MEDIUM_VOL / NEUTRAL (autocorr: -0.0681)
+  Signal: FADE DOWN (streak=-8, conf=high)
+    Exhaustion: compression=True, vol_spike=False (0.1x), shrink=True (0.40x)
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 4:30AM-4:35AM ET...
+  Mkt price: 54%
+    → DOWN @ 38% (high)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2224
+    Markets:       767
+    vs Market:     +0.0016 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2224)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T08:31:12Z] Cycle 21 completed successfully
+[2026-03-26T08:31:12Z] Sleeping 300s until next cycle...
+[2026-03-26T08:36:12Z] --- Cycle 22 ---
+[1/6] Fetching markets...
+  19 active markets
+[2/6] Auto-resolving...
+Marked market 1714328 as resolved: DOWN
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 770)...
+  BTC: $69,870 | 1h: -0.265% | Trend: down
+  BTC: $69,870 | 1h: -0.265%
+  Regime: MEDIUM_VOL / NEUTRAL (autocorr: +0.0484)
+  Signal: NONE (streak_too_short (2))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 4:35AM-4:40AM ET...
+  Mkt price: 50%
+    → SKIP (streak_too_short (2))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2225
+    Markets:       768
+    vs Market:     +0.0016 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2225)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T08:36:44Z] Cycle 22 completed successfully
+[2026-03-26T08:36:44Z] Sleeping 300s until next cycle...
+[2026-03-26T08:41:44Z] --- Cycle 23 ---
+[1/6] Fetching markets...
+  19 active markets
+[2/6] Auto-resolving...
+Marked market 1714332 as resolved: UP
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 771)...
+  BTC: $69,813 | 1h: -0.441% | Trend: down
+  BTC: $69,813 | 1h: -0.441%
+  Regime: MEDIUM_VOL / NEUTRAL (autocorr: +0.0180)
+  Signal: NONE (streak_too_short (-1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 4:40AM-4:45AM ET...
+  Mkt price: 52%
+    → SKIP (streak_too_short (-1))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2227
+    Markets:       769
+    vs Market:     +0.0018 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2227)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T08:42:17Z] Cycle 23 completed successfully
+[2026-03-26T08:42:17Z] Sleeping 300s until next cycle...
+[2026-03-26T08:47:17Z] --- Cycle 24 ---
+[1/6] Fetching markets...
+  18 active markets
+[2/6] Auto-resolving...
+Marked market 1714368 as resolved: DOWN
+Marked market 1714374 as resolved: UP
+  Resolved 2 market(s)
+[3/6] Predictions — contrarian rule (cycle 772)...
+  BTC: $69,969 | 1h: -0.110% | Trend: down
+  BTC: $69,969 | 1h: -0.110%
+  Regime: MEDIUM_VOL / NEUTRAL (autocorr: +0.1145)
+  Signal: FADE UP (streak=4, conf=medium)
+    Exhaustion: compression=False, vol_spike=True (3.0x), shrink=False (1.34x)
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 4:45AM-4:50AM ET...
+  Mkt price: 84%
+    → UP @ 62% (medium)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2227
+    Markets:       771
+    vs Market:     +0.0018 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2227)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T08:47:50Z] Cycle 24 completed successfully
+[2026-03-26T08:47:50Z] Sleeping 300s until next cycle...
+[2026-03-26T08:52:50Z] --- Cycle 25 ---
+[1/6] Fetching markets...
+  18 active markets
+[2/6] Auto-resolving...
+[3/6] Predictions — contrarian rule (cycle 773)...
+  BTC: $69,933 | 1h: -0.113% | Trend: down
+  BTC: $69,933 | 1h: -0.113%
+  Regime: MEDIUM_VOL / NEUTRAL (autocorr: +0.0852)
+  Signal: NONE (streak_too_short (-1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 4:50AM-4:55AM ET...
+  Mkt price: 52%
+    → SKIP (streak_too_short (-1))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2227
+    Markets:       771
+    vs Market:     +0.0018 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2227)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T08:53:07Z] Cycle 25 completed successfully
+[2026-03-26T08:53:07Z] Sleeping 300s until next cycle...
+[2026-03-26T08:58:07Z] --- Cycle 26 ---
+[1/6] Fetching markets...
+  18 active markets
+[2/6] Auto-resolving...
+Marked market 1714390 as resolved: UP
+Marked market 1714400 as resolved: UP
+  Resolved 2 market(s)
+[3/6] Predictions — contrarian rule (cycle 774)...
+  BTC: $69,996 | 1h: -0.006% | Trend: neutral
+  BTC: $69,996 | 1h: -0.006%
+  Regime: MEDIUM_VOL / TRENDING (autocorr: +0.1664)
+  Signal: NONE (streak_too_short (1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 4:55AM-5:00AM ET...
+  Mkt price: 78%
+    → SKIP (streak_too_short (1))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2226
+    Markets:       773
+    vs Market:     +0.0020 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2226)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T08:58:41Z] Cycle 26 completed successfully
+[2026-03-26T08:58:41Z] Sleeping 300s until next cycle...
+[2026-03-26T09:03:41Z] --- Cycle 27 ---
+[1/6] Fetching markets...
+  21 active markets
+[2/6] Auto-resolving...
+Marked market 1714421 as resolved: UP
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 775)...
+  BTC: $69,921 | 1h: -0.178% | Trend: down
+  BTC: $69,921 | 1h: -0.178%
+  Regime: MEDIUM_VOL / TRENDING (autocorr: +0.1573)
+  Signal: NONE (streak_too_short (-1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 5:00AM-5:05AM ET...
+  Mkt price: 16%
+    → SKIP (streak_too_short (-1))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2224
+    Markets:       774
+    vs Market:     +0.0020 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2224)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T09:03:57Z] Cycle 27 completed successfully
+[2026-03-26T09:03:57Z] Sleeping 300s until next cycle...
+[2026-03-26T09:08:57Z] --- Cycle 28 ---
+[1/6] Fetching markets...
+  20 active markets
+[2/6] Auto-resolving...
+Marked market 1714552 as resolved: DOWN
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 776)...
+  BTC: $70,110 | 1h: +0.274% | Trend: neutral
+  BTC: $70,110 | 1h: +0.274%
+  Regime: MEDIUM_VOL / NEUTRAL (autocorr: +0.1085)
+  Signal: NONE (streak_too_short (1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 5:05AM-5:10AM ET...
+  Mkt price: 84%
+    → SKIP (streak_too_short (1))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2222
+    Markets:       775
+    vs Market:     +0.0020 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2222)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T09:09:15Z] Cycle 28 completed successfully
+[2026-03-26T09:09:15Z] Sleeping 300s until next cycle...
+[2026-03-26T09:14:15Z] --- Cycle 29 ---
+[1/6] Fetching markets...
+  20 active markets
+[2/6] Auto-resolving...
+Marked market 1714565 as resolved: UP
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 777)...
+  BTC: $70,005 | 1h: +0.124% | Trend: neutral
+  BTC: $70,005 | 1h: +0.124%
+  Regime: MEDIUM_VOL / NEUTRAL (autocorr: -0.0033)
+  Signal: NONE (streak_too_short (-1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 5:10AM-5:15AM ET...
+  Mkt price: 50%
+    → SKIP (streak_too_short (-1))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2219
+    Markets:       776
+    vs Market:     +0.0020 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2219)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T09:14:48Z] Cycle 29 completed successfully
+[2026-03-26T09:14:48Z] Sleeping 300s until next cycle...
+[2026-03-26T09:19:48Z] --- Cycle 30 ---
+[1/6] Fetching markets...
+  21 active markets
+[2/6] Auto-resolving...
+Marked market 1714574 as resolved: DOWN
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 778)...
+  BTC: $69,910 | 1h: -0.139% | Trend: down
+  BTC: $69,910 | 1h: -0.139%
+  Regime: MEDIUM_VOL / NEUTRAL (autocorr: +0.0573)
+  Signal: NONE (streak_too_short (-2))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 5:15AM-5:20AM ET...
+  Mkt price: 0%
+    → SKIP (streak_too_short (-2))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2219
+    Markets:       777
+    vs Market:     +0.0020 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2219)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T09:19:51Z] Cycle 30 completed successfully
+[2026-03-26T09:19:51Z] Sleeping 300s until next cycle...
+[2026-03-26T09:24:51Z] --- Cycle 31 ---
+[1/6] Fetching markets...
+  20 active markets
+[2/6] Auto-resolving...
+Marked market 1714606 as resolved: DOWN
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 779)...
+  BTC: $69,946 | 1h: -0.142% | Trend: neutral
+  BTC: $69,946 | 1h: -0.142%
+  Regime: MEDIUM_VOL / NEUTRAL (autocorr: +0.0917)
+  Signal: NONE (streak_too_short (2))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 5:25AM-5:30AM ET...
+  Mkt price: 50%
+    → SKIP (streak_too_short (2))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2217
+    Markets:       778
+    vs Market:     +0.0020 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2217)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T09:25:23Z] Cycle 31 completed successfully
+[2026-03-26T09:25:23Z] Sleeping 300s until next cycle...
+[2026-03-26T09:30:23Z] --- Cycle 32 ---
+[1/6] Fetching markets...
+  20 active markets
+[2/6] Auto-resolving...
+Marked market 1714618 as resolved: UP
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 780)...
+  BTC: $69,900 | 1h: -0.315% | Trend: down
+  BTC: $69,900 | 1h: -0.315%
+  Regime: MEDIUM_VOL / NEUTRAL (autocorr: +0.0209)
+  Signal: NONE (streak_too_short (-1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 5:30AM-5:35AM ET...
+  Mkt price: 52%
+    → SKIP (streak_too_short (-1))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2217
+    Markets:       778
+    vs Market:     +0.0020 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2217)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T09:30:55Z] Cycle 32 completed successfully
+[2026-03-26T09:30:55Z] Sleeping 300s until next cycle...
+[2026-03-26T09:35:55Z] --- Cycle 33 ---
+[1/6] Fetching markets...
+  20 active markets
+[2/6] Auto-resolving...
+Marked market 1714658 as resolved: UP
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 781)...
+  BTC: $69,518 | 1h: -0.767% | Trend: neutral
+  BTC: $69,518 | 1h: -0.767%
+  Regime: HIGH_VOL / MEAN_REVERTING (autocorr: -0.2468)
+  SKIP: Mean-reverting regime detected — no trades
+  Signal: NONE (streak_too_short (1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 5:35AM-5:40AM ET...
+  Mkt price: 50%
+    → SKIP (mean-reverting regime)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2217
+    Markets:       779
+    vs Market:     +0.0020 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2217)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T09:36:28Z] Cycle 33 completed successfully
+[2026-03-26T09:36:28Z] Sleeping 300s until next cycle...
+[2026-03-26T09:41:28Z] --- Cycle 34 ---
+[1/6] Fetching markets...
+  19 active markets
+[2/6] Auto-resolving...
+Marked market 1714671 as resolved: DOWN
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 782)...
+  BTC: $69,486 | 1h: -0.796% | Trend: neutral
+  BTC: $69,486 | 1h: -0.796%
+  Regime: HIGH_VOL / NEUTRAL (autocorr: -0.0729)
+  Signal: NONE (streak_too_short (1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 5:40AM-5:45AM ET...
+  Mkt price: 52%
+    → SKIP (streak_too_short (1))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2217
+    Markets:       780
+    vs Market:     +0.0019 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2217)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T09:41:45Z] Cycle 34 completed successfully
+[2026-03-26T09:41:45Z] Sleeping 300s until next cycle...
+[2026-03-26T09:46:45Z] --- Cycle 35 ---
+[1/6] Fetching markets...
+  19 active markets
+[2/6] Auto-resolving...
+Marked market 1714698 as resolved: DOWN
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 783)...
+  BTC: $69,429 | 1h: -0.843% | Trend: neutral
+  BTC: $69,429 | 1h: -0.843%
+  Regime: HIGH_VOL / NEUTRAL (autocorr: -0.0843)
+  Signal: NONE (streak_too_short (-1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 5:45AM-5:50AM ET...
+  Mkt price: 52%
+    → SKIP (streak_too_short (-1))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2218
+    Markets:       781
+    vs Market:     +0.0019 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2218)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T09:47:18Z] Cycle 35 completed successfully
+[2026-03-26T09:47:18Z] Sleeping 300s until next cycle...
+[2026-03-26T09:52:18Z] --- Cycle 36 ---
+[1/6] Fetching markets...
+  19 active markets
+[2/6] Auto-resolving...
+Marked market 1714701 as resolved: UP
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 784)...
+  BTC: $69,505 | 1h: -0.558% | Trend: neutral
+  BTC: $69,505 | 1h: -0.558%
+  Regime: HIGH_VOL / NEUTRAL (autocorr: -0.1130)
+  Signal: NONE (streak_too_short (1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 5:50AM-5:55AM ET...
+  Mkt price: 50%
+    → SKIP (streak_too_short (1))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2218
+    Markets:       782
+    vs Market:     +0.0019 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2218)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T09:52:36Z] Cycle 36 completed successfully
+[2026-03-26T09:52:36Z] Sleeping 300s until next cycle...
+[2026-03-26T09:57:36Z] --- Cycle 37 ---
+[1/6] Fetching markets...
+  19 active markets
+[2/6] Auto-resolving...
+Marked market 1714719 as resolved: DOWN
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 785)...
+  BTC: $69,559 | 1h: -0.420% | Trend: neutral
+  BTC: $69,559 | 1h: -0.420%
+  Regime: HIGH_VOL / NEUTRAL (autocorr: -0.1058)
+  Signal: NONE (streak_too_short (2))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 5:55AM-6:00AM ET...
+  Mkt price: 40%
+    → SKIP (streak_too_short (2))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2219
+    Markets:       783
+    vs Market:     +0.0019 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2219)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T09:57:53Z] Cycle 37 completed successfully
+[2026-03-26T09:57:53Z] Sleeping 300s until next cycle...
+[2026-03-26T10:02:53Z] --- Cycle 38 ---
+[1/6] Fetching markets...
+  20 active markets
+[2/6] Auto-resolving...
+Marked market 1714724 as resolved: UP
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 786)...
+  BTC: $69,500 | 1h: -0.480% | Trend: neutral
+  BTC: $69,500 | 1h: -0.480%
+  Regime: HIGH_VOL / NEUTRAL (autocorr: -0.1116)
+  Signal: NONE (streak_too_short (-2))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 6:00AM-6:05AM ET...
+  Mkt price: 44%
+    → SKIP (streak_too_short (-2))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2219
+    Markets:       784
+    vs Market:     +0.0019 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2219)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T10:03:11Z] Cycle 38 completed successfully
+[2026-03-26T10:03:11Z] Sleeping 300s until next cycle...
+[2026-03-26T10:08:11Z] --- Cycle 39 ---
+[1/6] Fetching markets...
+  20 active markets
+[2/6] Auto-resolving...
+Marked market 1715092 as resolved: DOWN
+Marked market 1715270 as resolved: DOWN
+  Resolved 2 market(s)
+[3/6] Predictions — contrarian rule (cycle 787)...
+  BTC: $69,523 | 1h: -0.418% | Trend: neutral
+  BTC: $69,523 | 1h: -0.418%
+  Regime: HIGH_VOL / NEUTRAL (autocorr: -0.1187)
+  Signal: NONE (streak_too_short (1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 6:05AM-6:10AM ET...
+  Mkt price: 92%
+    → SKIP (streak_too_short (1))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2218
+    Markets:       786
+    vs Market:     +0.0019 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2218)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T10:08:44Z] Cycle 39 completed successfully
+[2026-03-26T10:08:44Z] Sleeping 300s until next cycle...
+[2026-03-26T10:13:44Z] --- Cycle 40 ---
+[1/6] Fetching markets...
+  20 active markets
+[2/6] Auto-resolving...
+Marked market 1715282 as resolved: UP
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 788)...
+  BTC: $69,539 | 1h: -0.421% | Trend: neutral
+  BTC: $69,539 | 1h: -0.421%
+  Regime: HIGH_VOL / NEUTRAL (autocorr: -0.1170)
+  Signal: NONE (streak_too_short (2))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 6:10AM-6:15AM ET...
+  Mkt price: 74%
+    → SKIP (streak_too_short (2))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2215
+    Markets:       787
+    vs Market:     +0.0019 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2215)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T10:14:02Z] Cycle 40 completed successfully
+[2026-03-26T10:14:02Z] Sleeping 300s until next cycle...
+[2026-03-26T10:19:02Z] --- Cycle 41 ---
+[1/6] Fetching markets...
+  20 active markets
+[2/6] Auto-resolving...
+Marked market 1715288 as resolved: UP
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 789)...
+  BTC: $69,618 | 1h: -0.308% | Trend: neutral
+  BTC: $69,618 | 1h: -0.308%
+  Regime: HIGH_VOL / NEUTRAL (autocorr: -0.1201)
+  Signal: FADE UP (streak=3, conf=medium)
+    Exhaustion: compression=False, vol_spike=False (0.1x), shrink=True (0.66x)
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 6:15AM-6:20AM ET...
+  Mkt price: 88%
+    → UP @ 62% (medium)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2213
+    Markets:       788
+    vs Market:     +0.0019 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2213)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T10:19:20Z] Cycle 41 completed successfully
+[2026-03-26T10:19:20Z] Sleeping 300s until next cycle...
+[2026-03-26T10:24:20Z] --- Cycle 42 ---
+[1/6] Fetching markets...
+  20 active markets
+[2/6] Auto-resolving...
+Marked market 1715324 as resolved: UP
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 790)...
+  BTC: $69,640 | 1h: -0.365% | Trend: neutral
+  BTC: $69,640 | 1h: -0.365%
+  Regime: HIGH_VOL / NEUTRAL (autocorr: -0.1139)
+  Signal: FADE UP (streak=4, conf=medium)
+    Exhaustion: compression=False, vol_spike=False (0.2x), shrink=True (0.39x)
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 6:20AM-6:25AM ET...
+  Mkt price: 86%
+    → UP @ 62% (medium)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2212
+    Markets:       789
+    vs Market:     +0.0021 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2212)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T10:24:21Z] Cycle 42 completed successfully
+[2026-03-26T10:24:21Z] Sleeping 300s until next cycle...
+[2026-03-26T10:29:21Z] --- Cycle 43 ---
+[1/6] Fetching markets...
+  18 active markets
+[2/6] Auto-resolving...
+[3/6] Predictions — contrarian rule (cycle 791)...
+  BTC: $69,651 | 1h: -0.416% | Trend: neutral
+  BTC: $69,651 | 1h: -0.416%
+  Regime: HIGH_VOL / NEUTRAL (autocorr: -0.1133)
+  Signal: FADE UP (streak=5, conf=high)
+    Exhaustion: compression=True, vol_spike=False (0.3x), shrink=True (0.17x)
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 6:25AM-6:30AM ET...
+  Mkt price: 52%
+    → UP @ 62% (high)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2212
+    Markets:       789
+    vs Market:     +0.0021 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2212)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T10:29:38Z] Cycle 43 completed successfully
+[2026-03-26T10:29:38Z] Sleeping 300s until next cycle...
+[2026-03-26T10:34:38Z] --- Cycle 44 ---
+[1/6] Fetching markets...
+  17 active markets
+[2/6] Auto-resolving...
+Marked market 1715331 as resolved: UP
+Marked market 1715339 as resolved: DOWN
+  Resolved 2 market(s)
+[3/6] Predictions — contrarian rule (cycle 792)...
+  BTC: $69,582 | 1h: -0.561% | Trend: neutral
+  BTC: $69,582 | 1h: -0.561%
+  Regime: HIGH_VOL / NEUTRAL (autocorr: -0.1203)
+  Signal: NONE (streak_too_short (1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 6:35AM-6:40AM ET...
+  Mkt price: 55%
+    → SKIP (streak_too_short (1))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2213
+    Markets:       791
+    vs Market:     +0.0024 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2213)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T10:35:12Z] Cycle 44 completed successfully
+[2026-03-26T10:35:12Z] Sleeping 300s until next cycle...
+[2026-03-26T10:40:12Z] --- Cycle 45 ---
+[1/6] Fetching markets...
+  16 active markets
+[2/6] Auto-resolving...
+Marked market 1715355 as resolved: DOWN
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 793)...
+  BTC: $69,510 | 1h: -0.638% | Trend: neutral
+  BTC: $69,510 | 1h: -0.638%
+  Regime: HIGH_VOL / NEUTRAL (autocorr: -0.1089)
+  Signal: NONE (streak_too_short (1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 6:40AM-6:45AM ET...
+  Mkt price: 50%
+    → SKIP (streak_too_short (1))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2213
+    Markets:       791
+    vs Market:     +0.0024 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2213)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T10:40:45Z] Cycle 45 completed successfully
+[2026-03-26T10:40:45Z] Sleeping 300s until next cycle...
+[2026-03-26T10:45:45Z] --- Cycle 46 ---
+[1/6] Fetching markets...
+  15 active markets
+[2/6] Auto-resolving...
+Marked market 1715377 as resolved: DOWN
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 794)...
+  BTC: $69,539 | 1h: -0.735% | Trend: neutral
+  BTC: $69,539 | 1h: -0.735%
+  Regime: HIGH_VOL / NEUTRAL (autocorr: -0.1076)
+  Signal: NONE (streak_too_short (2))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 6:45AM-6:50AM ET...
+  Mkt price: 52%
+    → SKIP (streak_too_short (2))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2214
+    Markets:       792
+    vs Market:     +0.0024 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2214)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T10:46:03Z] Cycle 46 completed successfully
+[2026-03-26T10:46:03Z] Sleeping 300s until next cycle...
+[2026-03-26T10:51:03Z] --- Cycle 47 ---
+[1/6] Fetching markets...
+  14 active markets
+[2/6] Auto-resolving...
+Marked market 1715388 as resolved: UP
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 795)...
+  BTC: $69,503 | 1h: -0.700% | Trend: neutral
+  BTC: $69,503 | 1h: -0.700%
+  Regime: HIGH_VOL / NEUTRAL (autocorr: -0.0999)
+  Signal: NONE (streak_too_short (-1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 6:50AM-6:55AM ET...
+  Mkt price: 50%
+    → SKIP (streak_too_short (-1))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2215
+    Markets:       793
+    vs Market:     +0.0024 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2215)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T10:51:36Z] Cycle 47 completed successfully
+[2026-03-26T10:51:36Z] Sleeping 300s until next cycle...
+[2026-03-26T10:56:36Z] --- Cycle 48 ---
+[1/6] Fetching markets...
+  14 active markets
+[2/6] Auto-resolving...
+Marked market 1715404 as resolved: UP
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 796)...
+  BTC: $69,462 | 1h: -0.652% | Trend: up
+  BTC: $69,462 | 1h: -0.652%
+  Regime: HIGH_VOL / NEUTRAL (autocorr: -0.1213)
+  Signal: NONE (streak_too_short (1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 6:55AM-7:00AM ET...
+  Mkt price: 55%
+    → SKIP (streak_too_short (1))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2215
+    Markets:       794
+    vs Market:     +0.0024 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2215)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T10:56:54Z] Cycle 48 completed successfully
+[2026-03-26T10:56:54Z] Sleeping 300s until next cycle...
+[2026-03-26T11:01:54Z] --- Cycle 49 ---
+[1/6] Fetching markets...
+  15 active markets
+[2/6] Auto-resolving...
+Marked market 1715413 as resolved: DOWN
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 797)...
+  BTC: $69,542 | 1h: -0.577% | Trend: neutral
+  BTC: $69,542 | 1h: -0.577%
+  Regime: HIGH_VOL / NEUTRAL (autocorr: +0.0025)
+  Signal: NONE (streak_too_short (1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 7:00AM-7:05AM ET...
+  Mkt price: 72%
+    → SKIP (streak_too_short (1))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2215
+    Markets:       795
+    vs Market:     +0.0024 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2215)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T11:02:28Z] Cycle 49 completed successfully
+[2026-03-26T11:02:28Z] Sleeping 300s until next cycle...
+[2026-03-26T11:07:28Z] --- Cycle 50 ---
+[1/6] Fetching markets...
+  15 active markets
+[2/6] Auto-resolving...
+Marked market 1715499 as resolved: UP
+Marked market 1715626 as resolved: UP
+  Resolved 2 market(s)
+[3/6] Predictions — contrarian rule (cycle 798)...
+  BTC: $69,531 | 1h: -0.667% | Trend: neutral
+  BTC: $69,531 | 1h: -0.667%
+  Regime: MEDIUM_VOL / MEAN_REVERTING (autocorr: -0.3431)
+  SKIP: Mean-reverting regime detected — no trades
+  Signal: NONE (streak_too_short (-1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 7:05AM-7:10AM ET...
+  Mkt price: 52%
+    → SKIP (mean-reverting regime)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2213
+    Markets:       797
+    vs Market:     +0.0024 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2213)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T11:07:42Z] Cycle 50 completed successfully
+[2026-03-26T11:07:42Z] Sleeping 300s until next cycle...
+[2026-03-26T11:12:42Z] --- Cycle 51 ---
+[1/6] Fetching markets...
+  15 active markets
+[2/6] Auto-resolving...
+Marked market 1715641 as resolved: DOWN
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 799)...
+  BTC: $69,547 | 1h: +0.154% | Trend: neutral
+  BTC: $69,547 | 1h: +0.154%
+  Regime: MEDIUM_VOL / MEAN_REVERTING (autocorr: -0.2185)
+  SKIP: Mean-reverting regime detected — no trades
+  Signal: NONE (streak_too_short (-2))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 7:10AM-7:15AM ET...
+  Mkt price: 50%
+    → SKIP (mean-reverting regime)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2214
+    Markets:       798
+    vs Market:     +0.0024 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2214)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T11:13:00Z] Cycle 51 completed successfully
+[2026-03-26T11:13:00Z] Sleeping 300s until next cycle...
+[2026-03-26T11:18:00Z] --- Cycle 52 ---
+[1/6] Fetching markets...
+  15 active markets
+[2/6] Auto-resolving...
+[3/6] Predictions — contrarian rule (cycle 800)...
+  BTC: $69,502 | 1h: +0.119% | Trend: neutral
+  BTC: $69,502 | 1h: +0.119%
+  Regime: MEDIUM_VOL / NEUTRAL (autocorr: -0.1213)
+  Signal: FADE DOWN (streak=-3, conf=medium)
+    Exhaustion: compression=False, vol_spike=False (0.4x), shrink=True (0.57x)
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 7:15AM-7:20AM ET...
+  Mkt price: 24%
+    → DOWN @ 38% (medium)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2214
+    Markets:       798
+    vs Market:     +0.0024 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2214)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T11:18:32Z] Cycle 52 completed successfully
+[2026-03-26T11:18:32Z] Sleeping 300s until next cycle...
+[2026-03-26T11:23:32Z] --- Cycle 53 ---
+[1/6] Fetching markets...
+  15 active markets
+[2/6] Auto-resolving...
+Marked market 1715646 as resolved: DOWN
+Marked market 1715685 as resolved: DOWN
+  Resolved 2 market(s)
+[3/6] Predictions — contrarian rule (cycle 801)...
+  BTC: $69,401 | 1h: -0.109% | Trend: neutral
+  BTC: $69,401 | 1h: -0.109%
+  Regime: MEDIUM_VOL / NEUTRAL (autocorr: +0.0615)
+  Signal: FADE DOWN (streak=-4, conf=medium)
+    Exhaustion: compression=False, vol_spike=True (2.2x), shrink=False (1.58x)
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 7:20AM-7:25AM ET...
+  Mkt price: 12%
+    → DOWN @ 38% (medium)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2213
+    Markets:       800
+    vs Market:     +0.0025 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2213)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T11:24:06Z] Cycle 53 completed successfully
+[2026-03-26T11:24:06Z] Sleeping 300s until next cycle...
+[2026-03-26T11:29:06Z] --- Cycle 54 ---
+[1/6] Fetching markets...
+  15 active markets
+[2/6] Auto-resolving...
+Marked market 1715687 as resolved: DOWN
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 802)...
+  BTC: $69,290 | 1h: -0.148% | Trend: neutral
+  BTC: $69,290 | 1h: -0.148%
+  Regime: MEDIUM_VOL / TRENDING (autocorr: +0.1704)
+  Signal: FADE DOWN (streak=-5, conf=high)
+    Exhaustion: compression=False, vol_spike=True (3.7x), shrink=False (1.84x)
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 7:25AM-7:30AM ET...
+  Mkt price: 14%
+    → DOWN @ 38% (high)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2212
+    Markets:       801
+    vs Market:     +0.0026 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2212)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T11:29:23Z] Cycle 54 completed successfully
+[2026-03-26T11:29:23Z] Sleeping 300s until next cycle...
+[2026-03-26T11:34:23Z] --- Cycle 55 ---
+[1/6] Fetching markets...
+  15 active markets
+[2/6] Auto-resolving...
+Marked market 1715699 as resolved: DOWN
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 803)...
+  BTC: $69,352 | 1h: -0.288% | Trend: neutral
+  BTC: $69,352 | 1h: -0.288%
+  Regime: MEDIUM_VOL / NEUTRAL (autocorr: +0.1244)
+  Signal: NONE (streak_too_short (1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 7:30AM-7:35AM ET...
+  Mkt price: 90%
+    → SKIP (streak_too_short (1))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2211
+    Markets:       802
+    vs Market:     +0.0028 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2211)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T11:34:55Z] Cycle 55 completed successfully
+[2026-03-26T11:34:55Z] Sleeping 300s until next cycle...
+[2026-03-26T11:39:55Z] --- Cycle 56 ---
+[1/6] Fetching markets...
+  16 active markets
+[2/6] Auto-resolving...
+Marked market 1715706 as resolved: UP
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 804)...
+  BTC: $69,391 | 1h: -0.141% | Trend: neutral
+  BTC: $69,391 | 1h: -0.141%
+  Regime: MEDIUM_VOL / TRENDING (autocorr: +0.1857)
+  Signal: FADE UP (streak=3, conf=medium)
+    Exhaustion: compression=False, vol_spike=False (0.0x), shrink=True (0.00x)
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 7:40AM-7:45AM ET...
+  Mkt price: 50%
+    → UP @ 62% (medium)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2209
+    Markets:       803
+    vs Market:     +0.0028 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2209)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T11:40:28Z] Cycle 56 completed successfully
+[2026-03-26T11:40:28Z] Sleeping 300s until next cycle...
+[2026-03-26T11:45:28Z] --- Cycle 57 ---
+[1/6] Fetching markets...
+  14 active markets
+[2/6] Auto-resolving...
+Marked market 1715741 as resolved: UP
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 805)...
+  BTC: $69,372 | 1h: -0.192% | Trend: neutral
+  BTC: $69,372 | 1h: -0.192%
+  Regime: MEDIUM_VOL / TRENDING (autocorr: +0.1507)
+  Signal: NONE (streak_too_short (1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 7:45AM-7:50AM ET...
+  Mkt price: 48%
+    → SKIP (streak_too_short (1))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2209
+    Markets:       803
+    vs Market:     +0.0028 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2209)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T11:45:45Z] Cycle 57 completed successfully
+[2026-03-26T11:45:45Z] Sleeping 300s until next cycle...
+[2026-03-26T11:50:45Z] --- Cycle 58 ---
+[1/6] Fetching markets...
+  13 active markets
+[2/6] Auto-resolving...
+Marked market 1715748 as resolved: DOWN
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 806)...
+  BTC: $69,334 | 1h: -0.295% | Trend: down
+  BTC: $69,334 | 1h: -0.295%
+  Regime: MEDIUM_VOL / NEUTRAL (autocorr: +0.1302)
+  Signal: FADE DOWN (streak=-3, conf=medium)
+    Exhaustion: compression=True, vol_spike=False (0.3x), shrink=True (0.15x)
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 7:50AM-7:55AM ET...
+  Mkt price: 50%
+    → DOWN @ 38% (medium)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2211
+    Markets:       804
+    vs Market:     +0.0029 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2211)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T11:51:17Z] Cycle 58 completed successfully
+[2026-03-26T11:51:17Z] Sleeping 300s until next cycle...
+[2026-03-26T11:56:17Z] --- Cycle 59 ---
+[1/6] Fetching markets...
+  14 active markets
+[2/6] Auto-resolving...
+Marked market 1715755 as resolved: DOWN
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 807)...
+  BTC: $69,325 | 1h: -0.433% | Trend: down
+  BTC: $69,325 | 1h: -0.433%
+  Regime: MEDIUM_VOL / NEUTRAL (autocorr: +0.1108)
+  Signal: NONE (streak_too_short (-1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 7:55AM-8:00AM ET...
+  Mkt price: 50%
+    → SKIP (streak_too_short (-1))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2211
+    Markets:       805
+    vs Market:     +0.0029 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2211)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T11:56:49Z] Cycle 59 completed successfully
+[2026-03-26T11:56:49Z] Sleeping 300s until next cycle...
+[2026-03-26T12:01:49Z] --- Cycle 60 ---
+[1/6] Fetching markets...
+  20 active markets
+[2/6] Auto-resolving...
+Marked market 1715766 as resolved: UP
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 808)...
+  BTC: $69,244 | 1h: -0.569% | Trend: down
+  BTC: $69,244 | 1h: -0.569%
+  Regime: MEDIUM_VOL / NEUTRAL (autocorr: +0.0917)
+  Signal: NONE (streak_too_short (-2))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 8:00AM-8:05AM ET...
+  Mkt price: 50%
+    → SKIP (streak_too_short (-2))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2213
+    Markets:       806
+    vs Market:     +0.0031 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2213)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T12:02:21Z] Cycle 60 completed successfully
+[2026-03-26T12:02:21Z] Sleeping 300s until next cycle...
+[2026-03-26T12:07:21Z] --- Cycle 61 ---
+[1/6] Fetching markets...
+  20 active markets
+[2/6] Auto-resolving...
+Marked market 1715881 as resolved: DOWN
+Marked market 1716019 as resolved: UP
+  Resolved 2 market(s)
+[3/6] Predictions — contrarian rule (cycle 809)...
+  BTC: $69,285 | 1h: -0.513% | Trend: down
+  BTC: $69,285 | 1h: -0.513%
+  Regime: MEDIUM_VOL / NEUTRAL (autocorr: -0.0410)
+  Signal: NONE (streak_too_short (-1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 8:05AM-8:10AM ET...
+  Mkt price: 51%
+    → SKIP (streak_too_short (-1))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2214
+    Markets:       808
+    vs Market:     +0.0031 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2214)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T12:07:39Z] Cycle 61 completed successfully
+[2026-03-26T12:07:39Z] Sleeping 300s until next cycle...
+[2026-03-26T12:12:39Z] --- Cycle 62 ---
+[1/6] Fetching markets...
+  19 active markets
+[2/6] Auto-resolving...
+[3/6] Predictions — contrarian rule (cycle 810)...
+  BTC: $69,350 | 1h: -0.333% | Trend: neutral
+  BTC: $69,350 | 1h: -0.333%
+  Regime: MEDIUM_VOL / NEUTRAL (autocorr: +0.0250)
+  Signal: FADE UP (streak=3, conf=medium)
+    Exhaustion: compression=False, vol_spike=False (1.0x), shrink=True (0.53x)
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 8:10AM-8:15AM ET...
+  Mkt price: 50%
+    → UP @ 62% (medium)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2214
+    Markets:       808
+    vs Market:     +0.0031 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2214)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T12:12:55Z] Cycle 62 completed successfully
+[2026-03-26T12:12:55Z] Sleeping 300s until next cycle...
+[2026-03-26T12:17:55Z] --- Cycle 63 ---
+[1/6] Fetching markets...
+  20 active markets
+[2/6] Auto-resolving...
+Marked market 1716035 as resolved: UP
+Marked market 1716049 as resolved: UP
+  Resolved 2 market(s)
+[3/6] Predictions — contrarian rule (cycle 811)...
+  BTC: $69,349 | 1h: -0.219% | Trend: neutral
+  BTC: $69,349 | 1h: -0.219%
+  Regime: MEDIUM_VOL / NEUTRAL (autocorr: +0.0232)
+  Signal: NONE (streak_too_short (-1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 8:15AM-8:20AM ET...
+  Mkt price: 48%
+    → SKIP (streak_too_short (-1))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2213
+    Markets:       810
+    vs Market:     +0.0030 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2213)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T12:18:13Z] Cycle 63 completed successfully
+[2026-03-26T12:18:13Z] Sleeping 300s until next cycle...
+[2026-03-26T12:23:13Z] --- Cycle 64 ---
+[1/6] Fetching markets...
+  19 active markets
+[2/6] Auto-resolving...
+Marked market 1716094 as resolved: DOWN
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 812)...
+  BTC: $69,361 | 1h: -0.208% | Trend: neutral
+  BTC: $69,361 | 1h: -0.208%
+  Regime: MEDIUM_VOL / NEUTRAL (autocorr: +0.0085)
+  Signal: NONE (streak_too_short (1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 8:20AM-8:25AM ET...
+  Mkt price: 72%
+    → SKIP (streak_too_short (1))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2213
+    Markets:       811
+    vs Market:     +0.0030 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2213)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T12:23:29Z] Cycle 64 completed successfully
+[2026-03-26T12:23:29Z] Sleeping 300s until next cycle...
+[2026-03-26T12:28:29Z] --- Cycle 65 ---
+[1/6] Fetching markets...
+  18 active markets
+[2/6] Auto-resolving...
+[3/6] Predictions — contrarian rule (cycle 813)...
+  BTC: $69,357 | 1h: -0.239% | Trend: neutral
+  BTC: $69,357 | 1h: -0.239%
+  Regime: MEDIUM_VOL / NEUTRAL (autocorr: +0.0247)
+  Signal: NONE (streak_too_short (2))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 8:25AM-8:30AM ET...
+  Mkt price: 60%
+    → SKIP (streak_too_short (2))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2213
+    Markets:       811
+    vs Market:     +0.0030 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2213)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T12:28:31Z] Cycle 65 completed successfully
+[2026-03-26T12:28:31Z] Sleeping 300s until next cycle...
+[2026-03-26T12:33:31Z] --- Cycle 66 ---
+[1/6] Fetching markets...
+  18 active markets
+[2/6] Auto-resolving...
+Marked market 1716120 as resolved: DOWN
+Marked market 1716142 as resolved: UP
+  Resolved 2 market(s)
+[3/6] Predictions — contrarian rule (cycle 814)...
+  BTC: $69,342 | 1h: -0.174% | Trend: neutral
+  BTC: $69,342 | 1h: -0.174%
+  Regime: MEDIUM_VOL / NEUTRAL (autocorr: +0.0010)
+  Signal: NONE (streak_too_short (-1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 8:30AM-8:35AM ET...
+  Mkt price: 58%
+    → SKIP (streak_too_short (-1))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2216
+    Markets:       813
+    vs Market:     +0.0029 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2216)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T12:33:48Z] Cycle 66 completed successfully
+[2026-03-26T12:33:48Z] Sleeping 300s until next cycle...
+[2026-03-26T12:38:48Z] --- Cycle 67 ---
+[1/6] Fetching markets...
+  18 active markets
+[2/6] Auto-resolving...
+Marked market 1716148 as resolved: DOWN
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 815)...
+  BTC: $69,318 | 1h: -0.207% | Trend: neutral
+  BTC: $69,318 | 1h: -0.207%
+  Regime: MEDIUM_VOL / NEUTRAL (autocorr: +0.0081)
+  Signal: NONE (streak_too_short (1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 8:35AM-8:40AM ET...
+  Mkt price: 22%
+    → SKIP (streak_too_short (1))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2217
+    Markets:       814
+    vs Market:     +0.0029 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2217)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T12:39:20Z] Cycle 67 completed successfully
+[2026-03-26T12:39:20Z] Sleeping 300s until next cycle...
+[2026-03-26T12:44:20Z] --- Cycle 68 ---
+[1/6] Fetching markets...
+  17 active markets
+[2/6] Auto-resolving...
+[3/6] Predictions — contrarian rule (cycle 816)...
+  BTC: $69,351 | 1h: -0.357% | Trend: neutral
+  BTC: $69,351 | 1h: -0.357%
+  Regime: MEDIUM_VOL / NEUTRAL (autocorr: +0.0108)
+  Signal: NONE (streak_too_short (2))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 8:40AM-8:45AM ET...
+  Mkt price: 48%
+    → SKIP (streak_too_short (2))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2217
+    Markets:       814
+    vs Market:     +0.0029 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2217)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T12:44:22Z] Cycle 68 completed successfully
+[2026-03-26T12:44:22Z] Sleeping 300s until next cycle...
+[2026-03-26T12:49:22Z] --- Cycle 69 ---
+[1/6] Fetching markets...
+  17 active markets
+[2/6] Auto-resolving...
+Marked market 1716186 as resolved: UP
+Marked market 1716196 as resolved: UP
+  Resolved 2 market(s)
+[3/6] Predictions — contrarian rule (cycle 817)...
+  BTC: $69,357 | 1h: -0.336% | Trend: neutral
+  BTC: $69,357 | 1h: -0.336%
+  Regime: MEDIUM_VOL / NEUTRAL (autocorr: +0.0167)
+  Signal: FADE UP (streak=3, conf=medium)
+    Exhaustion: compression=True, vol_spike=False (0.4x), shrink=True (0.64x)
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 8:45AM-8:50AM ET...
+  Mkt price: 74%
+    → UP @ 62% (medium)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2223
+    Markets:       816
+    vs Market:     +0.0029 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2223)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T12:49:54Z] Cycle 69 completed successfully
+[2026-03-26T12:49:54Z] Sleeping 300s until next cycle...
+[2026-03-26T12:54:54Z] --- Cycle 70 ---
+[1/6] Fetching markets...
+  17 active markets
+[2/6] Auto-resolving...
+Marked market 1716224 as resolved: UP
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 818)...
+  BTC: $69,398 | 1h: -0.150% | Trend: up
+  BTC: $69,398 | 1h: -0.150%
+  Regime: MEDIUM_VOL / MEAN_REVERTING (autocorr: -0.2714)
+  SKIP: Mean-reverting regime detected — no trades
+  Signal: FADE UP (streak=5, conf=high)
+    Exhaustion: compression=True, vol_spike=False (0.0x), shrink=True (0.38x)
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 8:55AM-9:00AM ET...
+  Mkt price: 50%
+    → SKIP (mean-reverting regime)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2222
+    Markets:       817
+    vs Market:     +0.0030 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2222)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T12:55:11Z] Cycle 70 completed successfully
+[2026-03-26T12:55:11Z] Sleeping 300s until next cycle...
+[2026-03-26T13:00:11Z] --- Cycle 71 ---
+[1/6] Fetching markets...
+  20 active markets
+[2/6] Auto-resolving...
+Marked market 1716226 as resolved: UP
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 819)...
+  BTC: $69,400 | 1h: +0.096% | Trend: up
+  BTC: $69,400 | 1h: +0.096%
+  Regime: MEDIUM_VOL / MEAN_REVERTING (autocorr: -0.2065)
+  SKIP: Mean-reverting regime detected — no trades
+  Signal: NONE (streak_too_short (-1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 9:00AM-9:05AM ET...
+  Mkt price: 50%
+    → SKIP (mean-reverting regime)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2222
+    Markets:       817
+    vs Market:     +0.0030 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2222)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T13:00:28Z] Cycle 71 completed successfully
+[2026-03-26T13:00:28Z] Sleeping 300s until next cycle...
+[2026-03-26T13:05:28Z] --- Cycle 72 ---
+[1/6] Fetching markets...
+  20 active markets
+[2/6] Auto-resolving...
+Marked market 1716257 as resolved: UP
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 820)...
+  BTC: $69,450 | 1h: +0.234% | Trend: up
+  BTC: $69,450 | 1h: +0.234%
+  Regime: MEDIUM_VOL / MEAN_REVERTING (autocorr: -0.3135)
+  SKIP: Mean-reverting regime detected — no trades
+  Signal: NONE (streak_too_short (1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 9:05AM-9:10AM ET...
+  Mkt price: 50%
+    → SKIP (mean-reverting regime)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2222
+    Markets:       818
+    vs Market:     +0.0030 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2222)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T13:06:16Z] Cycle 72 completed successfully
+[2026-03-26T13:06:16Z] Sleeping 300s until next cycle...
+[2026-03-26T13:11:16Z] --- Cycle 73 ---
+[1/6] Fetching markets...
+  19 active markets
+[2/6] Auto-resolving...
+Marked market 1716390 as resolved: UP
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 821)...
+  BTC: $69,423 | 1h: +0.102% | Trend: up
+  BTC: $69,423 | 1h: +0.102%
+  Regime: MEDIUM_VOL / MEAN_REVERTING (autocorr: -0.3672)
+  SKIP: Mean-reverting regime detected — no trades
+  Signal: NONE (streak_too_short (-1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 9:10AM-9:15AM ET...
+  Mkt price: 48%
+    → SKIP (mean-reverting regime)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2222
+    Markets:       819
+    vs Market:     +0.0030 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2222)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T13:12:02Z] Cycle 73 completed successfully
+[2026-03-26T13:12:02Z] Sleeping 300s until next cycle...
+[2026-03-26T13:17:02Z] --- Cycle 74 ---
+[1/6] Fetching markets...
+  19 active markets
+[2/6] Auto-resolving...
+Marked market 1716427 as resolved: UP
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 822)...
+  BTC: $69,489 | 1h: +0.141% | Trend: up
+  BTC: $69,489 | 1h: +0.141%
+  Regime: MEDIUM_VOL / MEAN_REVERTING (autocorr: -0.3888)
+  SKIP: Mean-reverting regime detected — no trades
+  Signal: NONE (streak_too_short (1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 9:15AM-9:20AM ET...
+  Mkt price: 60%
+    → SKIP (mean-reverting regime)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2223
+    Markets:       820
+    vs Market:     +0.0030 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2223)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T13:17:20Z] Cycle 74 completed successfully
+[2026-03-26T13:17:20Z] Sleeping 300s until next cycle...
+[2026-03-26T13:22:20Z] --- Cycle 75 ---
+[1/6] Fetching markets...
+  19 active markets
+[2/6] Auto-resolving...
+Marked market 1716435 as resolved: DOWN
+Marked market 1716469 as resolved: DOWN
+  Resolved 2 market(s)
+[3/6] Predictions — contrarian rule (cycle 823)...
+  BTC: $69,410 | 1h: +0.055% | Trend: up
+  BTC: $69,410 | 1h: +0.055%
+  Regime: MEDIUM_VOL / MEAN_REVERTING (autocorr: -0.3940)
+  SKIP: Mean-reverting regime detected — no trades
+  Signal: NONE (streak_too_short (-1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 9:20AM-9:25AM ET...
+  Mkt price: 28%
+    → SKIP (mean-reverting regime)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2224
+    Markets:       822
+    vs Market:     +0.0030 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2224)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T13:23:07Z] Cycle 75 completed successfully
+[2026-03-26T13:23:07Z] Sleeping 300s until next cycle...
+[2026-03-26T13:28:07Z] --- Cycle 76 ---
+[1/6] Fetching markets...
+  18 active markets
+[2/6] Auto-resolving...
+Marked market 1716497 as resolved: DOWN
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 824)...
+  BTC: $69,359 | 1h: +0.020% | Trend: up
+  BTC: $69,359 | 1h: +0.020%
+  Regime: MEDIUM_VOL / MEAN_REVERTING (autocorr: -0.2907)
+  SKIP: Mean-reverting regime detected — no trades
+  Signal: NONE (streak_too_short (-2))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 9:25AM-9:30AM ET...
+  Mkt price: 22%
+    → SKIP (mean-reverting regime)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2223
+    Markets:       823
+    vs Market:     +0.0030 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2223)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T13:28:39Z] Cycle 76 completed successfully
+[2026-03-26T13:28:39Z] Sleeping 300s until next cycle...
+[2026-03-26T13:33:39Z] --- Cycle 77 ---
+[1/6] Fetching markets...
+  17 active markets
+[2/6] Auto-resolving...
+[3/6] Predictions — contrarian rule (cycle 825)...
+  BTC: $69,277 | 1h: -0.125% | Trend: up
+  BTC: $69,277 | 1h: -0.125%
+  Regime: MEDIUM_VOL / NEUTRAL (autocorr: -0.0145)
+  Signal: NONE (no_exhaustion (streak=-3))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 9:30AM-9:35AM ET...
+  Mkt price: 55%
+    → SKIP (no_exhaustion (streak=-3))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2223
+    Markets:       823
+    vs Market:     +0.0030 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2223)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T13:33:55Z] Cycle 77 completed successfully
+[2026-03-26T13:33:55Z] Sleeping 300s until next cycle...
+[2026-03-26T13:38:55Z] --- Cycle 78 ---
+[1/6] Fetching markets...
+  17 active markets
+[2/6] Auto-resolving...
+Marked market 1716512 as resolved: DOWN
+Marked market 1716532 as resolved: DOWN
+  Resolved 2 market(s)
+[3/6] Predictions — contrarian rule (cycle 826)...
+  BTC: $69,350 | 1h: +0.136% | Trend: up
+  BTC: $69,350 | 1h: +0.136%
+  Regime: MEDIUM_VOL / MEAN_REVERTING (autocorr: -0.2356)
+  SKIP: Mean-reverting regime detected — no trades
+  Signal: NONE (streak_too_short (1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 9:35AM-9:40AM ET...
+  Mkt price: 98%
+    → SKIP (mean-reverting regime)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2221
+    Markets:       825
+    vs Market:     +0.0030 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2221)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T13:39:28Z] Cycle 78 completed successfully
+[2026-03-26T13:39:28Z] Sleeping 300s until next cycle...
+[2026-03-26T13:44:28Z] --- Cycle 79 ---
+[1/6] Fetching markets...
+  17 active markets
+[2/6] Auto-resolving...
+Marked market 1716563 as resolved: UP
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 827)...
+  BTC: $69,440 | 1h: +0.181% | Trend: up
+  BTC: $69,440 | 1h: +0.181%
+  Regime: MEDIUM_VOL / NEUTRAL (autocorr: +0.0413)
+  Signal: NONE (streak_too_short (2))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 26, 9:40AM-9:45AM ET...
+  Mkt price: 48%
+    → SKIP (streak_too_short (2))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2219
+    Markets:       826
+    vs Market:     +0.0030 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2219)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-26T13:44:45Z] Cycle 79 completed successfully
+[2026-03-26T13:44:45Z] Sleeping 300s until next cycle...
+[2026-03-26T13:49:45Z] --- Cycle 80 ---
+[2026-03-27T17:15:20Z] === Polymarket bot loop starting ===
+[2026-03-27T17:15:20Z] Repo: /root/polymarket-bot
+[2026-03-27T17:15:20Z] Python: /root/polymarket-bot/.venv/bin/python
+[2026-03-27T17:15:20Z] Sleep between cycles: 300s
+[2026-03-27T17:15:20Z] Cycle timeout: 300s
+[2026-03-27T17:15:20Z] --- Cycle 1 ---
+[1/6] Fetching markets...
+  19 active markets
+[2/6] Auto-resolving...
+Marked market 1716574 as resolved: UP
+Marked market 1716602 as resolved: UP
+Marked market 1716611 as resolved: UP
+Marked market 1716636 as resolved: DOWN
+Marked market 1716765 as resolved: UP
+Marked market 1716803 as resolved: DOWN
+Marked market 1716807 as resolved: DOWN
+Marked market 1716842 as resolved: DOWN
+Marked market 1716867 as resolved: UP
+Marked market 1716910 as resolved: UP
+Marked market 1716923 as resolved: UP
+Marked market 1716960 as resolved: DOWN
+Marked market 1716965 as resolved: DOWN
+Marked market 1716982 as resolved: DOWN
+Marked market 1716991 as resolved: DOWN
+Marked market 1717024 as resolved: UP
+Marked market 1717148 as resolved: DOWN
+  Resolved 17 market(s)
+[3/6] Predictions — contrarian rule (cycle 828)...
+  BTC: $66,179 | 1h: -0.380% | Trend: neutral
+  BTC: $66,179 | 1h: -0.380%
+  Regime: HIGH_VOL / NEUTRAL (autocorr: +0.0964)
+  Signal: NONE (streak_too_short (-1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 27, 1:15PM-1:20PM ET...
+  Mkt price: 48%
+    → SKIP (streak_too_short (-1))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2219
+    Markets:       827
+    vs Market:     +0.0030 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2219)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-27T17:17:42Z] Cycle 1 completed successfully
+[2026-03-27T17:17:42Z] Sleeping 300s until next cycle...
+[2026-03-27T17:22:42Z] --- Cycle 2 ---
+[1/6] Fetching markets...
+  19 active markets
+[2/6] Auto-resolving...
+Marked market 1732887 as resolved: DOWN
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 829)...
+  BTC: $65,974 | 1h: -0.570% | Trend: neutral
+  BTC: $65,974 | 1h: -0.570%
+  Regime: HIGH_VOL / NEUTRAL (autocorr: +0.1038)
+  Signal: NONE (streak_too_short (-2))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 27, 1:20PM-1:25PM ET...
+  Mkt price: 50%
+    → SKIP (streak_too_short (-2))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2219
+    Markets:       828
+    vs Market:     +0.0030 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2219)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-27T17:23:00Z] Cycle 2 completed successfully
+[2026-03-27T17:23:00Z] Sleeping 300s until next cycle...
+[2026-03-27T17:28:00Z] --- Cycle 3 ---
+[1/6] Fetching markets...
+  18 active markets
+[2/6] Auto-resolving...
+[3/6] Predictions — contrarian rule (cycle 830)...
+  BTC: $65,896 | 1h: -0.626% | Trend: neutral
+  BTC: $65,896 | 1h: -0.626%
+  Regime: HIGH_VOL / NEUTRAL (autocorr: +0.0823)
+  Signal: FADE DOWN (streak=-3, conf=medium)
+    Exhaustion: compression=False, vol_spike=False (0.8x), shrink=True (0.52x)
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 27, 1:25PM-1:30PM ET...
+  Mkt price: 26%
+    → DOWN @ 38% (medium)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2219
+    Markets:       828
+    vs Market:     +0.0030 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2219)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-27T17:28:17Z] Cycle 3 completed successfully
+[2026-03-27T17:28:17Z] Sleeping 300s until next cycle...
+[2026-03-27T17:33:17Z] --- Cycle 4 ---
+[1/6] Fetching markets...
+  18 active markets
+[2/6] Auto-resolving...
+Marked market 1732901 as resolved: DOWN
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 831)...
+  BTC: $65,822 | 1h: -0.557% | Trend: neutral
+  BTC: $65,822 | 1h: -0.557%
+  Regime: HIGH_VOL / NEUTRAL (autocorr: +0.0509)
+  Signal: FADE DOWN (streak=-4, conf=medium)
+    Exhaustion: compression=True, vol_spike=False (0.8x), shrink=True (0.37x)
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 27, 1:30PM-1:35PM ET...
+  Mkt price: 72%
+    → DOWN @ 38% (medium)
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2219
+    Markets:       829
+    vs Market:     +0.0030 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2219)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-27T17:33:20Z] Cycle 4 completed successfully
+[2026-03-27T17:33:20Z] Sleeping 300s until next cycle...
+[2026-03-27T17:38:20Z] --- Cycle 5 ---
+[1/6] Fetching markets...
+  17 active markets
+[2/6] Auto-resolving...
+Marked market 1732917 as resolved: DOWN
+Marked market 1732928 as resolved: UP
+  Resolved 2 market(s)
+[3/6] Predictions — contrarian rule (cycle 832)...
+  BTC: $65,861 | 1h: -0.323% | Trend: neutral
+  BTC: $65,861 | 1h: -0.323%
+  Regime: HIGH_VOL / NEUTRAL (autocorr: -0.0753)
+  Signal: NONE (streak_too_short (-1))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 27, 1:35PM-1:40PM ET...
+  Mkt price: 26%
+    → SKIP (streak_too_short (-1))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2220
+    Markets:       831
+    vs Market:     +0.0034 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2220)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-27T17:38:23Z] Cycle 5 completed successfully
+[2026-03-27T17:38:23Z] Sleeping 300s until next cycle...
+[2026-03-27T17:43:23Z] --- Cycle 6 ---
+[1/6] Fetching markets...
+  17 active markets
+[2/6] Auto-resolving...
+Marked market 1732960 as resolved: DOWN
+  Resolved 1 market(s)
+[3/6] Predictions — contrarian rule (cycle 833)...
+  BTC: $65,666 | 1h: -0.393% | Trend: neutral
+  BTC: $65,666 | 1h: -0.393%
+  Regime: HIGH_VOL / NEUTRAL (autocorr: +0.0423)
+  Signal: NONE (streak_too_short (-2))
+  Markets: 1
+
+  Market: Bitcoin Up or Down - March 27, 1:40PM-1:45PM ET...
+  Mkt price: 14%
+    → SKIP (streak_too_short (-2))
+
+Done. Predictions stored in /root/polymarket-bot/data/predictions.db
+[4/6] Live trading...
+  Live trading disabled
+[5/6] Scoring...
+
+======================================================================
+AGENT SCORECARD
+======================================================================
+
+  contrarian_rule
+    Avg Brier:     0.2219
+    Markets:       832
+    vs Market:     +0.0034 (LOSING TO market)
+
+  → WORST PERFORMER: contrarian_rule (Brier: 0.2219)
+  → This agent's prompt should be modified for the next cycle.
+======================================================================
+[6/6] Generating dashboard...
+  Dashboard written to /root/polymarket-bot/docs/index.html
+
+CI run complete.
+[2026-03-27T17:43:56Z] Cycle 6 completed successfully
+[2026-03-27T17:43:56Z] Sleeping 300s until next cycle...
