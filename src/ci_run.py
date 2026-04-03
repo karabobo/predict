@@ -1,22 +1,24 @@
 """
 ci_run.py — One-shot cycle for GitHub Actions.
 
-V3: No LLM agents. Pure computation.
-  1. Fetch active BTC 5-min markets
-  2. Predict using regime-filtered contrarian rule ($0 cost)
-  3. Auto-resolve closed markets
-  4. Score
-  5. Generate static dashboard HTML
+This file remains the full-cycle entrypoint for CI. Local continuous mode uses
+the smaller `predict_cycle.py` and `ops_cycle.py` entrypoints so prediction can
+run faster than scoring and dashboard generation.
 """
 
 import sqlite3
 import sys
 from datetime import datetime, timezone
-from pathlib import Path
 
 from fetch_markets import init_db, fetch_active_markets, store_markets, DB_PATH
 from predict import run_predictions
-from score import auto_resolve, calculate_brier_scores, print_scorecard
+from score import (
+    auto_resolve,
+    calculate_brier_scores,
+    calculate_path_risk_metrics,
+    calculate_trade_metrics,
+    print_scorecard,
+)
 from btc_data import fetch_btc_candles
 from live_trading import execute_live_orders
 
@@ -39,12 +41,23 @@ def has_unpredicted_market(db):
     return cursor.fetchone() is not None
 
 
-def main():
-    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-    db = init_db()
+def _print_btc_summary(btc_data):
+    if btc_data:
+        trend = btc_data.get("trend")
+        if not trend:
+            change = float(btc_data.get("1h_change_pct") or 0.0)
+            trend = "UP" if change > 0.15 else "DOWN" if change < -0.15 else "FLAT"
+        print(
+            f"  BTC: ${btc_data['current_price']:,.0f} | "
+            f"1h: {btc_data['1h_change_pct']:+.3f}% | Trend: {trend}"
+        )
+    else:
+        print("  Warning: BTC price data unavailable")
 
-    # 1. Fetch markets
-    print("[1/6] Fetching markets...")
+
+def run_predict_phase(db):
+    """Fetch markets and write new production predictions when needed."""
+    print("[1/3] Fetching markets...")
     try:
         markets = fetch_active_markets()
         store_markets(db, markets)
@@ -53,26 +66,14 @@ def main():
         print(f"  Fetch error: {e}")
         markets = []
 
-    # 2. Auto-resolve closed markets
-    print("[2/6] Auto-resolving...")
-    resolved = auto_resolve(db)
-    if resolved:
-        print(f"  Resolved {resolved} market(s)")
-
     if not markets and not has_unpredicted_market(db):
         print("No active markets. Exiting early.")
-        db.close()
-        _generate_dashboard()
         return
 
-    # 3. Predict using contrarian rule (no API calls)
     cycle = get_next_cycle(db)
-    print(f"[3/6] Predictions — contrarian rule (cycle {cycle})...")
+    print(f"[2/3] Predictions — baseline momentum (cycle {cycle})...")
     btc_data = fetch_btc_candles(limit=20)
-    if btc_data:
-        print(f"  BTC: ${btc_data['current_price']:,.0f} | 1h: {btc_data['1h_change_pct']:+.3f}% | Trend: {btc_data['trend']}")
-    else:
-        print("  Warning: BTC price data unavailable")
+    _print_btc_summary(btc_data)
 
     if has_unpredicted_market(db):
         db.close()
@@ -80,30 +81,49 @@ def main():
             run_predictions(cycle=cycle, market_limit=1, btc_data=btc_data)
         except Exception as e:
             print(f"  Prediction error: {e}")
-        db = init_db()
-    else:
-        print("  No unpredicted markets")
+        return True
 
-    # 4. Live trading
-    print("[4/6] Live trading...")
+    print("  No unpredicted markets")
+    return False
+
+
+def run_ops_phase(db):
+    """Resolve markets, score performance, refresh dashboard, and handle live trading."""
+    print("[1/4] Auto-resolving...")
+    resolved = auto_resolve(db)
+    if resolved:
+        print(f"  Resolved {resolved} market(s)")
+
+    print("[2/4] Live trading...")
     try:
         execute_live_orders(db)
     except Exception as e:
         print(f"  Live trading error: {e}")
 
-    # 5. Score
-    print("[5/6] Scoring...")
-    results = calculate_brier_scores(db)
-    if results:
-        print_scorecard(results)
+    print("[3/4] Scoring...")
+    signal_metrics = calculate_brier_scores(db)
+    trade_metrics = calculate_trade_metrics(db)
+    path_risk_metrics = calculate_path_risk_metrics(db)
+    if signal_metrics:
+        print_scorecard(signal_metrics, trade_metrics, path_risk_metrics)
     else:
         print("  No resolved markets to score yet")
 
-    db.close()
-
-    # 6. Generate dashboard
-    print("[6/6] Generating dashboard...")
+    print("[4/4] Generating dashboard...")
     _generate_dashboard()
+
+
+def main():
+    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+    db = init_db()
+
+    prediction_db_closed = False
+    prediction_db_closed = bool(run_predict_phase(db))
+    if prediction_db_closed:
+        db = init_db()
+
+    run_ops_phase(db)
+    db.close()
 
     print("\nCI run complete.")
 

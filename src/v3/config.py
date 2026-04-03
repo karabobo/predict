@@ -24,3 +24,11 @@ MIN_EDGE = 0.05             # 5% minimum edge after friction
 
 # --- Database ---
 DB_NAME = "v3.db"
+RESEARCH_DB_NAME = "v3_research.db"
+
+# --- Promotion Gates ---
+PROMOTION_MIN_ROI_DELTA = 5.0          # challenger ROI must beat baseline by 5pp
+PROMOTION_MIN_WIN_RATE_DELTA = 0.0     # challenger cannot lose aggregate win-rate
+PROMOTION_MIN_TRADE_RATIO = 0.60       # challenger must keep at least 60% of baseline trade volume
+PROMOTION_MAX_DRAWDOWN_WORSENING = 0.0 # challenger drawdown cannot be worse than baseline
+PROMOTION_MIN_FOLD_PASS_RATE = 0.60    # majority of blocked folds must pass

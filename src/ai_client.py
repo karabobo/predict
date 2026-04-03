@@ -2,29 +2,66 @@ import os
 import json
 import requests
 from typing import Dict, Any
-from dotenv import load_dotenv
+
+try:
+    from dotenv import load_dotenv
+except ImportError:  # pragma: no cover - optional during lightweight import checks
+    def load_dotenv(*_args, **_kwargs):
+        return False
+
+
+def _load_env_fallback(env_path: str) -> None:
+    """Minimal .env loader for environments without python-dotenv."""
+    if not os.path.exists(env_path):
+        return
+    try:
+        with open(env_path, "r", encoding="utf-8") as handle:
+            for raw_line in handle:
+                line = raw_line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                key, value = line.split("=", 1)
+                key = key.strip()
+                value = value.strip().strip('"').strip("'")
+                if key and key not in os.environ:
+                    os.environ[key] = value
+    except OSError:
+        pass
 
 # 加载 .env 文件
-load_dotenv(os.path.join(os.path.dirname(__file__), '../.env'))
+_ENV_PATH = os.path.join(os.path.dirname(__file__), "../.env")
+load_dotenv(_ENV_PATH)
+_load_env_fallback(_ENV_PATH)
 
 class MultiModelClient:
     def __init__(self):
-        # 供应商 1: 硅基流动
+        # Provider 1: SiliconFlow official OpenAI-compatible endpoint
         self.sf_key = os.getenv("SILICON_FLOW_KEY")
-        self.sf_url = "https://api.siliconflow.cn/v1/chat/completions"
+        self.sf_base_url = os.getenv("SILICON_FLOW_BASE_URL", "https://api.siliconflow.com/v1").rstrip("/")
         
-        # 供应商 2: 新 OpenAI 兼容端
+        # Provider 2: alternate OpenAI-compatible endpoint
         self.op_key = os.getenv("NEW_PROVIDER_KEY")
-        self.op_url = "https://sub.jlypx.de/v1/chat/completions"
+        self.op_base_url = os.getenv("NEW_PROVIDER_BASE_URL", "https://sub.jlypx.de/v1").rstrip("/")
+
+    def _choose_provider(self, model_name: str) -> tuple[str | None, str]:
+        is_openai_team = "gpt-5" in model_name or "gpt-4" in model_name
+        if is_openai_team:
+            return self.op_key, f"{self.op_base_url}/chat/completions"
+        return self.sf_key, f"{self.sf_base_url}/chat/completions"
+
+    def _extract_json(self, content: str) -> Dict[str, Any]:
+        text = content.strip()
+        if "```json" in text:
+            text = text.split("```json", 1)[1].split("```", 1)[0]
+        elif "```" in text:
+            text = text.split("```", 1)[1].split("```", 1)[0]
+        return json.loads(text.strip())
 
     def predict(self, model_name: str, system_prompt: str, user_prompt: str, coach_mode: bool = False) -> Dict[str, Any]:
-        """根据团队归属选择供应商"""
-        
-        # 识别所属团队
-        is_openai_team = "gpt-5" in model_name or "gpt-4" in model_name
-        
-        api_key = self.op_key if is_openai_team else self.sf_key
-        base_url = self.op_url if is_openai_team else self.sf_url
+        """Route prediction requests to the configured provider."""
+        api_key, url = self._choose_provider(model_name)
+        if not api_key:
+            return {"error": f"Missing API key for model {model_name}"}
 
         headers = {
             "Authorization": f"Bearer {api_key}",
@@ -41,20 +78,15 @@ class MultiModelClient:
         }
         
         try:
-            # 进一步增加超时时间，支持大模型深度思考
-            timeout = 120 if coach_mode else 120
-            resp = requests.post(base_url, headers=headers, json=payload, timeout=timeout)
+            timeout = int(os.getenv("MODEL_TIMEOUT_SECONDS", "120"))
+            resp = requests.post(url, headers=headers, json=payload, timeout=timeout)
             
             if resp.status_code == 200:
                 content = resp.json()['choices'][0]['message']['content']
-                # 处理可能带 Markdown 格式的响应
-                if '```json' in content:
-                    content = content.split('```json')[1].split('```')[0]
-                elif '```' in content:
-                    content = content.split('```')[1].split('```')[0]
-                return json.loads(content.strip())
+                return self._extract_json(content)
             else:
-                return {"error": f"API Error {resp.status_code} from {model_name}"}
+                snippet = resp.text[:240].replace("\n", " ")
+                return {"error": f"API Error {resp.status_code} from {model_name}: {snippet}"}
         except Exception as e:
             return {"error": str(e)}
 

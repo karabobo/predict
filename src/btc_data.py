@@ -12,12 +12,19 @@ import statistics
 import time
 from datetime import datetime, timezone
 
-import pandas as pd
-import numpy as np
-import indicators
-
 KRAKEN_OHLC = "https://api.kraken.com/0/public/OHLC"
 COINBASE_CANDLES = "https://api.exchange.coinbase.com/products/BTC-USD/candles"
+
+
+def _load_indicator_stack():
+    """Import heavy indicator dependencies lazily."""
+    import pandas as pd
+    try:
+        import indicators
+    except ImportError:  # pragma: no cover - package-style import for research entrypoints
+        from src import indicators
+
+    return pd, indicators
 
 
 def fetch_btc_candles(interval="5m", limit=30):
@@ -166,6 +173,7 @@ def _fetch_coinbase(limit):
 
 def _compute_summary(candles):
     """Compute derived stats from a list of candles."""
+    pd, indicators = _load_indicator_stack()
     df = pd.DataFrame(candles)
     # Ensure float columns for indicators
     for col in ["open", "high", "low", "close", "volume"]:
@@ -175,11 +183,21 @@ def _compute_summary(candles):
     df = indicators.add_all_indicators(df)
     
     closes = df["close"].tolist()
+    opens = df["open"].tolist()
+    highs = df["high"].tolist()
+    lows = df["low"].tolist()
+    volumes = df["volume"].tolist()
     current_price = closes[-1]
     first_open = candles[0]["open"]
 
     # 1-hour change (from first of our window)
     hour_change_pct = round((current_price - first_open) / first_open * 100, 3)
+    if hour_change_pct > 0.15:
+        trend = "up"
+    elif hour_change_pct < -0.15:
+        trend = "down"
+    else:
+        trend = "neutral"
 
     # 5-min returns for volatility
     returns = []
@@ -190,15 +208,90 @@ def _compute_summary(candles):
 
     # Trend and patterns
     last_row = df.iloc[-1]
+    last_candle = candles[-1]
+    range_high = float(df["high"].max())
+    range_low = float(df["low"].min())
+    full_range = max(range_high - range_low, 1e-9)
+    range_position = (current_price - range_low) / full_range
+    avg_volume = statistics.mean(volumes) if volumes else 0.0
+    last_volume = volumes[-1] if volumes else 0.0
+    avg_prior_volume = statistics.mean(volumes[:-1]) if len(volumes) > 1 else avg_volume
+    last_volume_ratio = (last_volume / avg_prior_volume) if avg_prior_volume > 0 else 1.0
+
+    up_count = sum(1 for candle in candles if candle["direction"] == "UP")
+    down_count = sum(1 for candle in candles if candle["direction"] == "DOWN")
+
+    consecutive_direction = 0
+    last_direction = candles[-1]["direction"]
+    for candle in reversed(candles):
+        if candle["direction"] == last_direction:
+            consecutive_direction += 1
+        else:
+            break
+    consecutive_dir_label = last_direction.lower() if consecutive_direction else "neutral"
+
+    candle_ranges = [float(high) - float(low) for high, low in zip(highs, lows)]
+    last_range = candle_ranges[-1] if candle_ranges else 0.0
+    avg_prior_range = statistics.mean(candle_ranges[:-1]) if len(candle_ranges) > 1 else (last_range or 1.0)
+    last_range_ratio = (last_range / avg_prior_range) if avg_prior_range > 0 else 1.0
+    last_3_range_shrinking = False
+    if len(candle_ranges) >= 3:
+        a, b, c = candle_ranges[-3:]
+        last_3_range_shrinking = a > b > c
+
+    last_open = opens[-1]
+    last_high = highs[-1]
+    last_low = lows[-1]
+    last_close = closes[-1]
+    body = abs(last_close - last_open)
+    upper_wick = max(last_high - max(last_open, last_close), 0.0)
+    lower_wick = max(min(last_open, last_close) - last_low, 0.0)
+    body_for_ratio = body if body > 1e-9 else 1e-9
+    last_wick_upper_ratio = upper_wick / body_for_ratio
+    last_wick_lower_ratio = lower_wick / body_for_ratio
+
+    last_candle_pattern = "none"
+    total_candle_range = last_high - last_low
+    body_ratio = (body / total_candle_range) if total_candle_range > 0 else 0.0
+    if body_ratio <= 0.1:
+        last_candle_pattern = "doji"
+    elif lower_wick > body * 2 and upper_wick <= body:
+        last_candle_pattern = "hammer"
+    elif upper_wick > body * 2 and lower_wick <= body:
+        last_candle_pattern = "inv_hammer"
+    elif len(candles) >= 2:
+        prev = candles[-2]
+        prev_open = float(prev["open"])
+        prev_close = float(prev["close"])
+        if prev_close < prev_open and last_close > last_open and last_close >= prev_open and last_open <= prev_close:
+            last_candle_pattern = "engulfing_bull"
+        elif prev_close > prev_open and last_close < last_open and last_open >= prev_close and last_close <= prev_open:
+            last_candle_pattern = "engulfing_bear"
+        elif last_high <= float(prev["high"]) and last_low >= float(prev["low"]):
+            last_candle_pattern = "inside_bar"
     
     return {
         "candles": candles[-12:], # Only return last 12 for the prompt table
         "current_price": current_price,
         "1h_change_pct": hour_change_pct,
+        "trend": trend,
         "volatility": volatility,
         "last_row": last_row, # Contains all technical indicators
-        "range_high": df["high"].max(),
-        "range_low": df["low"].min(),
+        "consecutive_direction": consecutive_direction,
+        "consecutive_dir_label": consecutive_dir_label,
+        "up_count": up_count,
+        "down_count": down_count,
+        "last_candle": last_candle,
+        "range_high": range_high,
+        "range_low": range_low,
+        "range_position": max(0.0, min(1.0, range_position)),
+        "avg_volume": avg_volume,
+        "last_volume_ratio": last_volume_ratio,
+        "last_3_range_shrinking": last_3_range_shrinking,
+        "last_range_ratio": last_range_ratio,
+        "last_candle_pattern": last_candle_pattern,
+        "last_wick_upper_ratio": last_wick_upper_ratio,
+        "last_wick_lower_ratio": last_wick_lower_ratio,
     }
 
 
@@ -211,6 +304,7 @@ def format_for_prompt(data):
     
     lines = [
         "## BTC Market Technical Analysis (5m Timeframe)",
+        f"- **Current BTC price:** ${data['current_price']:,.2f}",
         f"- **Current Price:** ${data['current_price']:,.2f}",
         f"- **RSI (14):** {last['rsi_14']:.1f} ({'Overbought' if last['rsi_14'] > 70 else 'Oversold' if last['rsi_14'] < 30 else 'Neutral'})",
         f"- **Bollinger Bands:** Upper: {last['bb_upper']:.0f} | Mid: {last['bb_middle']:.0f} | Lower: {last['bb_lower']:.0f}",

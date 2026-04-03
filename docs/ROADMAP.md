@@ -39,7 +39,7 @@ Two backtesting engines built and validated.
 
 ---
 
-## Part 3: LLM Agent Ensemble (DONE → SUPERSEDED)
+## Part 3: LLM Agent Ensemble (DONE -> SUPERSEDED)
 
 Three iterations of Claude-powered prediction agents.
 
@@ -69,48 +69,52 @@ See `docs/BACKTEST_FINDINGS.md` and `src/v3/model.py` for details.
 
 ---
 
-## Part 5: Zero-Cost Observation Mode (NEXT)
+## Part 4.5: Sample-Out Promotion Harness (ACTIVE)
 
-**Goal:** Replace $1.50/day LLM agents with $0/day contrarian rule + regime filter.
-Keep the bot running, keep logging, keep the dashboard — but stop paying for predictions.
+Research is now being rewired around the current production baseline instead of the legacy contrarian-only backtest.
 
-### Why
-- The 3-line contrarian rule (52.7% WR, +3.3% ROI) matches or beats LLM agents
-- Adding a regime filter (skip mean-reverting) should push ROI toward ~12%
-- Mean-reverting regimes cost -$1,821 in backtest — largest single loss source
-- Need 500+ live resolved predictions with regime labels to validate
+- `src/v3/arena.py` provides the shared baseline/challenger evaluation layer
+- `src/v3/promotion.py` is the canonical research entrypoint
+- blocked time-series folds are used for sample-out evaluation
+- every run is stored in `data/v3_research.db`
+- challengers must pass explicit promotion gates before they can be considered for production
 
-### Implementation
-1. Replace `predict.py` — swap Claude API calls with contrarian rule + regime computation
-   - Same output format (estimate, confidence, conviction)
-   - Same DB schema, same dashboard
-   - Add `regime` column to predictions table
-2. Add regime logging — store volatility level + autocorrelation pattern per prediction
-3. Dashboard update — show regime breakdown, live vs backtest comparison
-4. Remove LLM dependencies from CI pipeline (no more ANTHROPIC_API_KEY needed for predict)
+Example:
 
-### Validation criteria (2-4 weeks of live data)
-- [ ] 500+ resolved predictions accumulated
-- [ ] Overall win rate ≥ 52% (above breakeven after fees)
-- [ ] Mean-reverting regime win rate confirmed < 45% (validates skipping it)
-- [ ] Non-mean-reverting regime win rate ≥ 55%
-- [ ] Regime distribution matches backtest (~25% mean-reverting, ~75% other)
+```bash
+PYTHONPATH=. python src/v3/promotion.py --challenger legacy_regime_filtered
+```
 
-### Success gate
-If live data confirms backtest patterns → proceed to Part 6 (paper trading with real orders).
-If live data does NOT confirm → the edge doesn't exist at this timeframe. Evaluate:
-- Different Polymarket categories (sports, politics, events)
-- Different timeframes (hourly, daily)
-- Or shut down
+Current contenders:
+- `production_baseline`
+- `legacy_contrarian`
+- `legacy_regime_filtered`
+- `legacy_enhanced`
+- `v3_ml`
+- `deepseek_v3`
+
+---
+
+## Part 5: Production Baseline Split (DONE)
+
+Production was split away from legacy LLM agents and moved to a deterministic baseline plus research-only challengers.
+
+- `predict.py` now runs the production baseline directly
+- regime labels are stored with predictions
+- dashboard and scorecards separate production from historical or research agents
+- AI challengers are evaluated only in `src/v3/promotion.py`
+
+The live system is now in the validation phase: keep collecting resolved production trades while challengers attempt promotion sample-out.
 
 ---
 
 ## Part 6: Live Paper Trading (DEFERRED)
 
-> Blocked until Part 5 validation criteria are met.
+> Blocked until the production baseline remains positive over a larger live sample and the promotion harness produces a stable challenger or sizing upgrade.
 
 ### Prerequisites
-- Part 5 validation complete with positive results
+- Sustained live production profitability
+- Stable sample-out validation from research
 - Polygon wallet with USDC
 - `py-clob-client` SDK for CLOB order placement
 
@@ -125,7 +129,7 @@ If live data does NOT confirm → the edge doesn't exist at this timeframe. Eval
 ### After paper trading validates
 - Micro-live: $5-10 bets for 200 trades
 - Scale: $25 → $50 → $75 based on continued performance
-- Full plan in `docs/DEPLOYMENT_PLAN.md`
+- Full legacy plan in `docs/archive/v2-deployment-plan.md`
 
 ---
 

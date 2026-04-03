@@ -1,160 +1,198 @@
 """
-predict.py — Multi-Model Arena (AI vs Algorithm)
+predict.py — Production prediction orchestration.
 
-Combines:
-1. Advanced TA Indicators (RSI, MACD, BB, etc.)
-2. Regime Filtering (Autocorrelation)
-3. Multi-Model LLM calls (Gemini 2.0 Flash, 1.5 Pro)
-4. Traditional Rule-based logic (Contrarian/Momentum)
+Production uses one deterministic baseline strategy:
+streak momentum + confirmation + regime filter.
+
+AI remains available for offline research, not for the per-market live path.
 """
 
-import json
+from __future__ import annotations
+
+import argparse
 import sqlite3
-import os
 from datetime import datetime, timezone
 from pathlib import Path
-from concurrent.futures import ThreadPoolExecutor
-import ai_client
-import prompts
-from btc_data import fetch_btc_candles, format_for_prompt
+from typing import Any
+
+from notifier import notify_baseline_trade
+from strategies.momentum import contrarian_signal as _baseline_signal
+from strategies.regime import compute_regime_from_candles as _compute_regime_from_candles
 
 DB_PATH = Path(__file__).parent.parent / "data" / "predictions.db"
+ACTIVE_AGENT = "contrarian_rule"
 
-# --- Models in the Arena ---
-MODELS = [
-    # Team A: Silicon Flow (Fully Functional)
-    "deepseek-ai/DeepSeek-V3",
-    "Pro/zai-org/GLM-5",
-    
-    # Baseline
-    "contrarian_rule"
-]
 
-def compute_regime_from_candles(candles):
-    """Compute regime indicators from candle list."""
-    closes = [float(c["close"]) for c in candles]
-    returns = [(closes[i] - closes[i-1]) / closes[i-1] for i in range(1, len(closes))]
-    if len(returns) < 3: return {"label": "UNKNOWN", "is_mean_reverting": False}
-    
-    import statistics
-    vol = statistics.stdev(returns) * 100
-    n = len(returns)
-    mean_r = sum(returns) / n
-    var = sum((r - mean_r) ** 2 for r in returns) / n
-    autocorr = 0.0
-    if var > 0:
-        cov = sum((returns[i] - mean_r) * (returns[i-1] - mean_r) for i in range(1, n)) / (n - 1)
-        autocorr = cov / var
+def _parse_timestamp(value: str) -> datetime:
+    dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt
 
-    label = f"{'HIGH' if vol > 0.12 else 'LOW'}_VOL / {'TRENDING' if autocorr > 0.15 else 'MEAN_REVERTING' if autocorr < -0.15 else 'NEUTRAL'}"
-    return {"label": label, "autocorr": autocorr, "is_mean_reverting": autocorr < -0.15}
 
-def contrarian_signal(candles):
-    """Traditional rule-based logic (Streak detector)."""
-    last_dir = "UP" if float(candles[-1]["close"]) >= float(candles[-1]["open"]) else "DOWN"
-    streak = 0
-    for i in range(len(candles)-1, -1, -1):
-        d = "UP" if float(candles[i]["close"]) >= float(candles[i]["open"]) else "DOWN"
-        if d == last_dir: streak += 1
-        else: break
-    
-    return {
-        "estimate": 0.65 if last_dir == "UP" else 0.35,
-        "confidence": 3 if streak >= 3 else 1,
-        "reasoning": f"Streak of {streak} {last_dir}",
-        "direction": last_dir
-    }
+def compute_regime_from_candles(candles: list[dict[str, Any]]) -> dict[str, Any]:
+    """Backwards-compatible export for tests and older callers."""
+    return _compute_regime_from_candles(candles)
 
-def get_ai_prediction(model_name, btc_str, market_price, regime_label):
-    if model_name == "contrarian_rule":
-        return None 
-    
-    user_prompt = prompts.build_user_prompt(btc_str, market_price, regime_label, model_name)
-    return ai_client.client.predict(model_name, prompts.SYSTEM_PROMPT, user_prompt)
 
-def ensure_db_schema(db):
-    cols = ["regime", "conviction_score", "model_version"]
-    for col in cols:
+def contrarian_signal(candles: list[dict[str, Any]]) -> dict[str, Any]:
+    """Backwards-compatible export for the current baseline signal."""
+    return _baseline_signal(candles)
+
+
+def ensure_db_schema(db: sqlite3.Connection) -> None:
+    for column in [
+        "regime TEXT",
+        "conviction_score TEXT",
+        "model_version TEXT",
+        "should_trade INTEGER DEFAULT 1",
+        "market_price_yes_snapshot REAL",
+        "seconds_to_expiry INTEGER",
+    ]:
         try:
-            db.execute(f"ALTER TABLE predictions ADD COLUMN {col} TEXT")
+            db.execute(f"ALTER TABLE predictions ADD COLUMN {column}")
             db.commit()
-        except sqlite3.OperationalError: pass
+        except sqlite3.OperationalError:
+            pass
 
-def store_prediction(db, market_id, agent, signal, regime_label, cycle):
+
+def store_prediction(
+    db: sqlite3.Connection,
+    market_id: str,
+    agent: str,
+    signal: dict[str, Any],
+    regime_label: str,
+    cycle: int,
+    market_price_yes_snapshot: float | None = None,
+    seconds_to_expiry: int | None = None,
+) -> None:
     predicted_at = datetime.now(timezone.utc).isoformat()
-    estimate = signal.get("estimate", 0.5)
-    confidence = signal.get("confidence", 0)
-    reasoning = signal.get("reasoning", "")
-    
-    db.execute("""
-        INSERT INTO predictions 
-        (market_id, agent, estimate, edge, confidence, reasoning, predicted_at, cycle, conviction_score, regime)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (
-        market_id, agent, estimate, abs(estimate - 0.5), str(confidence),
-        reasoning, predicted_at, cycle, confidence, regime_label
-    ))
+    estimate = float(signal.get("estimate", 0.5))
+    confidence = str(signal.get("confidence", "low"))
+    conviction_score = int(signal.get("conviction_score", 0))
+    reasoning = str(signal.get("reason", ""))
+    should_trade = 1 if signal.get("should_trade", False) else 0
+
+    db.execute(
+        """
+        INSERT INTO predictions
+        (market_id, agent, estimate, edge, confidence, reasoning, predicted_at, cycle,
+         conviction_score, regime, should_trade, market_price_yes_snapshot, seconds_to_expiry)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            market_id,
+            agent,
+            estimate,
+            abs(estimate - 0.5),
+            confidence,
+            reasoning,
+            predicted_at,
+            cycle,
+            conviction_score,
+            regime_label,
+            should_trade,
+            market_price_yes_snapshot,
+            seconds_to_expiry,
+        ),
+    )
     db.commit()
 
-def run_predictions(cycle=1, market_limit=5):
-    print(f"--- Cycle {cycle}: Multi-Model Arena ---")
+
+def _apply_regime_filter(signal: dict[str, Any], regime: dict[str, Any]) -> dict[str, Any]:
+    """Skip toxic mean-reverting regimes while preserving the baseline signal structure."""
+    if not regime.get("is_mean_reverting"):
+        signal["regime_label"] = regime["label"]
+        return signal
+
+    filtered = dict(signal)
+    filtered["estimate"] = 0.5
+    filtered["should_trade"] = False
+    filtered["direction"] = None
+    filtered["confidence"] = "low"
+    filtered["conviction_score"] = 0
+    filtered["reason"] = f"{signal.get('reason', 'signal')} | regime_filter"
+    filtered["regime_label"] = regime["label"]
+    return filtered
+
+
+def run_predictions(cycle: int = 1, market_limit: int = 5, btc_data: dict[str, Any] | None = None) -> None:
+    print(f"--- Cycle {cycle}: Baseline Momentum ---")
     db = sqlite3.connect(DB_PATH)
     ensure_db_schema(db)
 
-    # 1. Fetch Data
-    btc_data = fetch_btc_candles(limit=30)
-    if not btc_data:
+    if btc_data is None:
+        from btc_data import fetch_btc_candles
+
+        market_data = fetch_btc_candles(limit=20)
+    else:
+        market_data = btc_data
+
+    if not market_data or not market_data.get("candles"):
         print("Error: No BTC data")
+        db.close()
         return
 
-    btc_str = format_for_prompt(btc_data)
-    regime = compute_regime_from_candles(btc_data["candles"])
+    regime = compute_regime_from_candles(market_data["candles"])
     print(f"Regime: {regime['label']}")
 
-    # 2. Get Markets
     now_iso = datetime.now(timezone.utc).isoformat()
-    cursor = db.execute("""
-        SELECT id, question, price_yes FROM markets 
+    cursor = db.execute(
+        """
+        SELECT id, question, price_yes, end_date
+        FROM markets
         WHERE resolved = 0 AND end_date > ?
-        ORDER BY end_date ASC LIMIT ?
-    """, (now_iso, market_limit))
+        ORDER BY end_date ASC
+        LIMIT ?
+        """,
+        (now_iso, market_limit),
+    )
     markets = cursor.fetchall()
 
     if not markets:
         print("No active markets.")
+        db.close()
         return
 
-    # 3. Arena Execution
-    for m_id, question, price_yes in markets:
-        print(f"\nMarket: {question[:50]}... (${price_yes:.0%})")
-        
-        # Run AI models in parallel
-        with ThreadPoolExecutor(max_workers=len(MODELS)) as executor:
-            futures = {executor.submit(get_ai_prediction, m, btc_str, price_yes, regime['label']): m for m in MODELS if m != "contrarian_rule"}
-            
-            # Add Rule-based logic manually
-            rule_sig = contrarian_signal(btc_data["candles"])
-            store_prediction(db, m_id, "contrarian_rule", rule_sig, regime['label'], cycle)
-            print(f"  [Rule] {rule_sig['direction']} ({rule_sig['estimate']:.0%})")
+    raw_signal = contrarian_signal(market_data["candles"])
+    final_signal = _apply_regime_filter(raw_signal, regime)
 
-            for future in futures:
-                model_name = futures[future]
-                try:
-                    res = future.result()
-                    if res and "error" not in res:
-                        store_prediction(db, m_id, model_name, res, regime['label'], cycle)
-                        print(f"  [{model_name}] {res.get('direction')} ({res.get('estimate'):.0%}) - Conf: {res.get('confidence')}")
-                    else:
-                        print(f"  [{model_name}] Error: {res.get('error') if res else 'Empty'}")
-                except Exception as e:
-                    print(f"  [{model_name}] Failed: {e}")
+    for market_id, question, price_yes, end_date in markets:
+        seconds_to_expiry = max(int((_parse_timestamp(end_date) - datetime.now(timezone.utc)).total_seconds()), 0)
+        store_prediction(
+            db,
+            market_id,
+            ACTIVE_AGENT,
+            final_signal,
+            regime["label"],
+            cycle,
+            market_price_yes_snapshot=float(price_yes),
+            seconds_to_expiry=seconds_to_expiry,
+        )
+        estimate = final_signal["estimate"]
+        direction = final_signal.get("direction") or "SKIP"
+        print(
+            f"  [{ACTIVE_AGENT}] {direction} ({estimate:.0%}) "
+            f"| market {price_yes:.0%} | tte {seconds_to_expiry}s | {question[:60]}"
+        )
+        if final_signal.get("should_trade"):
+            notify_baseline_trade(
+                market_id=market_id,
+                question=question,
+                cycle=cycle,
+                signal=final_signal,
+                regime_label=regime["label"],
+                market_price_yes=float(price_yes),
+                seconds_to_expiry=seconds_to_expiry,
+            )
 
     db.close()
-    print(f"\nArena predictions stored in {DB_PATH}")
+    print(f"\nBaseline predictions stored in {DB_PATH}")
+
 
 if __name__ == "__main__":
-    import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("--cycle", type=int, default=1)
+    parser.add_argument("--markets", type=int, default=5)
     args = parser.parse_args()
-    run_predictions(cycle=args.cycle)
+    run_predictions(cycle=args.cycle, market_limit=args.markets)

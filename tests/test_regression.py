@@ -5,6 +5,7 @@ Each test prevents the exact failure from recurring.
 import sys
 import os
 import glob
+import sqlite3
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
@@ -135,3 +136,72 @@ def test_no_evolve_imports():
             f"{fname} still imports from deleted evolve.py"
         assert "import evolve" not in content, \
             f"{fname} still imports deleted evolve module"
+
+
+def test_trade_exposure_survives_later_skip():
+    """Trade stats must keep the first actionable exposure even if later rows skip.
+    Incident: continuous prediction loop can emit TRADE first, then later SKIP on the
+    same market. Latest-snapshot scoring would hide that operational risk.
+    """
+    from score import calculate_trade_metrics, calculate_path_risk_metrics
+
+    db = sqlite3.connect(":memory:")
+    db.row_factory = sqlite3.Row
+    db.execute("""
+        CREATE TABLE markets (
+            id TEXT PRIMARY KEY,
+            question TEXT,
+            price_yes REAL,
+            resolved INTEGER,
+            outcome INTEGER,
+            end_date TEXT
+        )
+    """)
+    db.execute("""
+        CREATE TABLE predictions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            market_id TEXT,
+            agent TEXT,
+            estimate REAL,
+            confidence TEXT,
+            reasoning TEXT,
+            predicted_at TEXT,
+            cycle INTEGER,
+            conviction_score TEXT,
+            should_trade INTEGER,
+            market_price_yes_snapshot REAL
+        )
+    """)
+    db.execute(
+        "INSERT INTO markets (id, question, price_yes, resolved, outcome, end_date) VALUES (?, ?, ?, ?, ?, ?)",
+        ("m1", "BTC market", 0.64, 1, 0, "2026-04-03T08:25:00Z"),
+    )
+    db.execute(
+        """
+        INSERT INTO predictions (
+            market_id, agent, estimate, confidence, reasoning, predicted_at, cycle,
+            conviction_score, should_trade, market_price_yes_snapshot
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        ("m1", "contrarian_rule", 0.38, "medium", "first trade", "2026-04-03T08:20:11Z", 1, "3", 1, 0.475),
+    )
+    db.execute(
+        """
+        INSERT INTO predictions (
+            market_id, agent, estimate, confidence, reasoning, predicted_at, cycle,
+            conviction_score, should_trade, market_price_yes_snapshot
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        ("m1", "contrarian_rule", 0.50, "low", "later skip", "2026-04-03T08:24:57Z", 2, "0", 0, 0.645),
+    )
+    db.commit()
+
+    trade = calculate_trade_metrics(db)["contrarian_rule"]
+    risk = calculate_path_risk_metrics(db)["contrarian_rule"]
+
+    assert trade["num_bets"] == 1
+    assert round(trade["total_pnl"], 2) == 67.86
+    assert risk["ever_trade_markets"] == 1
+    assert risk["trade_then_skip_markets"] == 1

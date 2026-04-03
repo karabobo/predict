@@ -6,6 +6,12 @@ __pycache__/
 .pytest_cache/
 .venv/
 logs/
+.pm2/
+node_modules/
+package-lock.json
+.codex
+.codex/
+.*-loop.lock
 scripts/*.log
 .idea/
 .vscode/

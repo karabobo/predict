@@ -18,7 +18,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+except ImportError:  # pragma: no cover - optional during lightweight import checks
+    def load_dotenv(*_args, **_kwargs):
+        return False
 
 DB_PATH = Path(__file__).parent.parent / "data" / "predictions.db"
 DEFAULT_HOST = "https://clob.polymarket.com"

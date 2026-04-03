@@ -1,75 +1,43 @@
 # Polymarket BTC 5-Min Candle — Program Rules
 
 ## Objective
-Maximize prediction accuracy (minimize Brier score) on Polymarket's "Bitcoin Up or Down" 5-minute candle markets using a multi-agent feedback loop.
+Run a low-noise production baseline on Polymarket BTC 5-minute markets, then challenge it with sample-out research before promoting any new model or rule.
 
-## Architecture
-This follows Karpathy's autoresearch pattern adapted for prediction markets:
+## Current System
 
-```
-fetch_markets.py  →  Fixed. Fetches live BTC 5-min markets. Never modified.
-predict.py        →  Fixed. Sends markets to agents via Claude API. Never modified.
-score.py          →  Fixed. Auto-resolves from API, calculates Brier scores. Never modified.
-evolve.py         →  Fixed. Identifies worst agent, suggests ONE prompt change. Never modified.
-prompts/*.md      →  The ONLY thing that gets modified. Each agent has a prompt file.
-program.md        →  This file. Human-refined strategy. Agents read but don't modify.
-```
-
-## The Loop
-1. `fetch_markets.py` polls Polymarket Gamma API for active BTC 5-min "Up or Down" markets
-2. `predict.py` sends each market + agent prompt to Claude → structured JSON prediction
-3. Predictions stored in `data/predictions.db` (SQLite)
-4. `score.py` checks for resolved markets via API, calculates Brier score per agent
-5. `evolve.py` (every ~10 resolved markets) identifies worst agent → Claude suggests ONE prompt modification
-6. If Brier improves by > 0.01 after next batch: keep change. Otherwise: revert.
-
-## Market Selection
-- **Market type**: "Bitcoin Up or Down" 5-minute candle markets only
-- **Source**: Polymarket Gamma API with `end_date_min` filter for currently active markets
-- **Filter**: Title must match "Bitcoin" + 5-minute time window regex
-- **Resolution**: Automatic — candle closes, market resolves YES (close ≥ open) or NO
-
-## Agent Roster
-- `prompts/base_rate.md` — Statistical priors: base rate (~50%), time-of-day, autocorrelation, mean reversion
-- `prompts/news_momentum.md` — Short-term momentum, trending vs ranging regime, macro catalysts
-- `prompts/contrarian.md` — Mean-reversion, exhaustion signals, fading overcrowded moves
-
-## Prediction Output
-Each agent returns structured JSON:
-```json
-{
-  "market": "BTC Up or Down 5min",
-  "market_price": 0.XX,
-  "estimate": 0.XX,
-  "edge": 0.XX,
-  "confidence": "low|medium|high",
-  "wrong_if": "..."
-}
+```text
+fetch_markets.py   -> fetch active BTC 5-min markets
+predict.py         -> production baseline signal and trade/no-trade decision
+score.py           -> resolve outcomes, update P&L, refresh scorecards
+dashboard.py       -> build local and static dashboard output
+v3/promotion.py    -> research-only promotion gate for challengers
+notifier.py        -> Telegram alerts for baseline trades and DeepSeek promotion passes
 ```
 
-## Confidence Calibration
-Agents must rate confidence honestly:
-- **low**: Near 50%, no real edge. Most predictions should be low confidence.
-- **medium**: Multiple signals align, estimate deviates 4-8pp from 50%.
-- **high**: Strong multi-signal convergence. Rare (~10-15% of predictions).
+## Production Rules
+- Market scope: Polymarket BTC 5-minute up/down markets only.
+- Source: Gamma API for markets plus BTC candle context from exchange data helpers.
+- Production strategy: deterministic baseline with regime filtering and conviction gating.
+- Trade policy: default to `NO_TRADE` unless edge and regime filters both clear.
+- Notification policy: send Telegram only for real baseline trades and successful DeepSeek promotion passes.
 
-Confidence drives simulated position sizing: low=$50, medium=$100, high=$200.
+## Research Rules
+- AI does not sit in the production decision path.
+- `deepseek_v3` is a research-only challenger.
+- Every challenger must run through blocked time-series folds in `src/v3/promotion.py`.
+- Promotion requires passing explicit gates on ROI delta, win rate, trade count, drawdown, and fold consistency.
+- Failed challengers remain in research; they do not alter production behavior.
 
-## Scoring
-- **Primary metric**: Brier score = (prediction - outcome)²
-- **Lower is better**: Perfect = 0.0, worst = 1.0, coin flip = 0.25
-- **Benchmark**: Market price accuracy — agents must beat the market's own implied probability
-- **P&L simulation**: Tracks simulated profit/loss using confidence-based bet sizing at market odds
-
-## Evolution Rules
-- Evaluate after every ~10 resolved markets (tracked by evolution count vs total resolutions)
-- Modify ONE thing in the worst agent's prompt per evolution
-- Keep change if Brier improves by > 0.01, revert otherwise
-- All changes logged in `data/evolution_log.json`
-- Prompt backups saved as `.md.backup` before modification
+## Metrics That Matter
+- Production priority: trade ROI, trade win rate, drawdown, and coverage.
+- Research priority: sample-out improvement versus `production_baseline`.
+- Calibration and Brier score remain supporting diagnostics, not the primary promotion target.
 
 ## Deployment
-- **CI**: GitHub Actions — predictions every 5 minutes, evolution every 2 hours
-- **Dashboard**: Static HTML generated to `docs/index.html`, served via GitHub Pages
-- **Concurrency**: Single workflow group prevents parallel runs
-- **Timeouts**: 4 minutes for predict-and-score, 5 minutes for evolve
+- GitHub Actions: test, run a production cycle, and publish generated artifacts.
+- PM2 local mode: `predict-loop`, `dashboard`, and `research-loop`.
+- Dashboard output: `docs/index.html`
+- Research reports: `docs/research/latest.md`
+
+## Versioning
+Legacy prompt-evolution and Claude multi-agent work is retained as historical material only. Use `docs/ITERATIONS.md` to locate older designs and archived findings.

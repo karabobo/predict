@@ -10,7 +10,7 @@ Usage:
 import argparse
 from fetch_markets import init_db, fetch_active_markets, store_markets, DB_PATH
 from predict import run_predictions
-from score import calculate_brier_scores, print_scorecard, auto_resolve
+from score import calculate_brier_scores, calculate_trade_metrics, print_scorecard, auto_resolve
 import sqlite3
 
 
@@ -28,8 +28,9 @@ def main():
         resolved = auto_resolve(db)
         if resolved:
             print(f"Auto-resolved {resolved} market(s)")
-        results = calculate_brier_scores(db)
-        print_scorecard(results)
+        signal_metrics = calculate_brier_scores(db)
+        trade_metrics = calculate_trade_metrics(db)
+        print_scorecard(signal_metrics, trade_metrics)
         db.close()
         return
 
@@ -54,8 +55,9 @@ def main():
     resolved = auto_resolve(db)
     if resolved:
         print(f"  Auto-resolved {resolved} market(s)")
-    results = calculate_brier_scores(db)
-    print_scorecard(results)
+    signal_metrics = calculate_brier_scores(db)
+    trade_metrics = calculate_trade_metrics(db)
+    print_scorecard(signal_metrics, trade_metrics)
     db.close()
 
     print(f"\nCycle {args.cycle} complete.")
