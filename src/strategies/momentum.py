@@ -31,9 +31,18 @@ def contrarian_signal(candles: list[dict[str, Any]], regime_label: str = "UNKNOW
     if not (compression or volume_spike):
         return _no_trade("no_exhaustion", regime_label)
 
-    confidence = "high" if streak >= 5 else "medium"
-    conviction = 4 if confidence == "high" else 3
-    estimate = 0.62 if last_direction == "UP" else 0.38
+    estimate = estimate_from_signal_features(
+        last_direction=last_direction,
+        streak=streak,
+        compression=compression,
+        volume_spike=volume_spike,
+    )
+    conviction = conviction_from_signal_features(
+        streak=streak,
+        compression=compression,
+        volume_spike=volume_spike,
+    )
+    confidence = "high" if conviction >= 4 else "medium"
 
     reasons = [f"streak_{streak}", f"direction_{last_direction.lower()}"]
     if compression:
@@ -52,6 +61,36 @@ def contrarian_signal(candles: list[dict[str, Any]], regime_label: str = "UNKNOW
         meta={"streak": streak, "compression": compression, "volume_spike": volume_spike},
     )
     return decision.to_record()
+
+
+def estimate_from_signal_features(
+    *,
+    last_direction: str,
+    streak: int,
+    compression: bool,
+    volume_spike: bool,
+) -> float:
+    edge = 0.05
+    edge += min(max(streak - 3, 0), 4) * 0.015
+    if compression:
+        edge += 0.01
+    if volume_spike:
+        edge += 0.02
+    edge = min(edge, 0.18)
+    return 0.5 + edge if last_direction == "UP" else 0.5 - edge
+
+
+def conviction_from_signal_features(
+    *,
+    streak: int,
+    compression: bool,
+    volume_spike: bool,
+) -> int:
+    if streak >= 4 and volume_spike:
+        return 4
+    if streak >= 5 and compression:
+        return 4
+    return 3
 
 
 def _no_trade(reason: str, regime_label: str) -> dict[str, Any]:

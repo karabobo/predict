@@ -146,6 +146,7 @@ def _render_report(run_id: str, timestamp: str, args: argparse.Namespace, result
     baseline = results["baseline"]
     challenger = results["challenger"]
     gate = results["gate"]
+    regime_findings = results.get("regime_findings", {})
 
     lines = [
         "# Research Promotion Report",
@@ -207,6 +208,28 @@ def _render_report(run_id: str, timestamp: str, args: argparse.Namespace, result
             f"{fold['trade_ratio']:.2f} | {'yes' if fold['drawdown_ok'] else 'no'} |"
         )
 
+    regime_rows = regime_findings.get("rows", [])
+    if regime_rows:
+        lines.extend(
+            [
+                "",
+                "## Regime Breakdown",
+                "",
+                "| Regime | Baseline Trades | Challenger Trades | ROI Delta | WR Delta | P&L Delta |",
+                "| --- | ---: | ---: | ---: | ---: | ---: |",
+            ]
+        )
+        for row in regime_rows:
+            lines.append(
+                f"| {row['regime']} | {row['baseline_trades']} | {row['challenger_trades']} | "
+                f"{row['roi_delta']:+.2f}pp | {row['win_rate_delta']:+.2f}pp | {_usd(row['pnl_delta'])} |"
+            )
+        takeaways = regime_findings.get("takeaways", [])
+        if takeaways:
+            lines.extend(["", "### Regime Takeaways", ""])
+            for takeaway in takeaways:
+                lines.append(f"- {takeaway}")
+
     lines.extend(["", "## Recommendation", ""])
     if gate["passed"]:
         lines.append(f"- Promote `{args.challenger}` for the next production challenge round.")
@@ -241,6 +264,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--bet-size", type=float, default=75.0, help="Fixed research bet size")
     parser.add_argument("--min-edge", type=float, default=MIN_EDGE, help="Minimum edge after fees/slippage")
     parser.add_argument("--seed", type=int, default=42, help="Seed for deterministic slippage")
+    parser.add_argument("--btc-candles-file", type=str, default=None, help="Optional local BTC 5m candles parquet/csv")
     parser.add_argument(
         "--max-eval-contexts",
         type=int,
@@ -286,7 +310,7 @@ def main() -> None:
     if args.challenger not in factories:
         raise SystemExit(f"Unknown challenger contender: {args.challenger}")
 
-    dataset = build_research_dataset(days=args.days)
+    dataset = build_research_dataset(days=args.days, candles_file=args.btc_candles_file)
     print(
         f"Dataset: {len(dataset['markets'])} markets from "
         f"{dataset['start_date'].strftime('%Y-%m-%d')} to {dataset['end_date'].strftime('%Y-%m-%d')}"

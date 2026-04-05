@@ -62,8 +62,40 @@ def _ensure_column(db, table, column_definition):
         pass
 
 
+def ensure_market_schema(db):
+    """Ensure shared market/settlement schema exists on any SQLite connection."""
+    _ensure_column(db, "markets", "condition_id TEXT")
+    _ensure_column(db, "markets", "token_yes TEXT")
+    _ensure_column(db, "markets", "token_no TEXT")
+    _ensure_column(db, "markets", "provisional_outcome INTEGER DEFAULT NULL")
+    _ensure_column(db, "markets", "provisional_resolved_at TEXT")
+    _ensure_column(db, "markets", "provisional_source TEXT")
+    _ensure_column(db, "markets", "official_resolved_at TEXT")
+    db.execute(
+        """
+        CREATE TABLE IF NOT EXISTS market_price_snapshots (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            market_id TEXT NOT NULL,
+            observed_at TEXT NOT NULL,
+            price_yes REAL,
+            price_no REAL,
+            closed INTEGER DEFAULT 0,
+            FOREIGN KEY (market_id) REFERENCES markets(id)
+        )
+        """
+    )
+    db.execute(
+        """
+        CREATE INDEX IF NOT EXISTS idx_market_price_snapshots_market_time
+        ON market_price_snapshots (market_id, observed_at DESC)
+        """
+    )
+    db.commit()
+
+
 def init_db():
     db = sqlite3.connect(DB_PATH)
+    db.row_factory = sqlite3.Row
     db.execute("""
         CREATE TABLE IF NOT EXISTS markets (
             id TEXT PRIMARY KEY,
@@ -130,9 +162,7 @@ def init_db():
             FOREIGN KEY (market_id) REFERENCES markets(id)
         )
     """)
-    _ensure_column(db, "markets", "condition_id TEXT")
-    _ensure_column(db, "markets", "token_yes TEXT")
-    _ensure_column(db, "markets", "token_no TEXT")
+    ensure_market_schema(db)
     db.commit()
     return db
 

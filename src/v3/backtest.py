@@ -20,6 +20,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from src.btc_data import _compute_summary
+from src.strategies.momentum import estimate_from_signal_features
 from src.v3.features import compute_features, feature_names, features_to_row
 from src.v3.regime import compute_regime
 from src.v3.config import ROUND_TRIP_FEE, SLIPPAGE_BUFFER, MIN_EDGE
@@ -168,13 +169,21 @@ def contrarian_rule_predict(features):
     if not (has_volume or has_exhaustion):
         return 0.5, False
 
-    # Fade the streak
+    # Fade the streak with dynamic confidence derived from the same feature family.
     if streak >= 3:
-        # Streak is UP → predict DOWN
-        return 0.38, True
+        return estimate_from_signal_features(
+            last_direction="DOWN",
+            streak=abs(streak),
+            compression=has_exhaustion,
+            volume_spike=has_volume,
+        ), True
     elif streak <= -3:
-        # Streak is DOWN → predict UP
-        return 0.62, True
+        return estimate_from_signal_features(
+            last_direction="UP",
+            streak=abs(streak),
+            compression=has_exhaustion,
+            volume_spike=has_volume,
+        ), True
 
     return 0.5, False
 

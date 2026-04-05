@@ -4,7 +4,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="refresh" content="30">
-        <title>Polymarket BTC Dashboard</title>
+        <title>Polymarket BTC 5分钟作战看板</title>
         <style>
             :root {
                 --bg: #0d1117;
@@ -50,7 +50,7 @@
                     radial-gradient(circle at top right, var(--bg-accent-b), transparent 30%),
                     var(--bg);
                 color: var(--text);
-                font: 14px/1.5 Inter, "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+                font: 14px/1.55 "PingFang SC", "Noto Sans SC", "Segoe UI", sans-serif;
                 transition: background 0.2s ease, color 0.2s ease;
             }
             .page { max-width: 1380px; margin: 0 auto; padding: 28px 20px 56px; }
@@ -72,7 +72,8 @@
                 box-shadow: var(--shadow);
             }
             .theme-toggle:hover { border-color: var(--blue); }
-            .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 20px; }
+            .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 18px; }
+            .vol-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 18px; }
             .stat, .panel {
                 background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
                 border: 1px solid var(--border);
@@ -80,6 +81,31 @@
                 box-shadow: var(--shadow);
             }
             .stat { padding: 16px; }
+            .vol-card {
+                position: relative;
+                padding: 16px;
+                border: 1px solid var(--border);
+                border-radius: 18px;
+                background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+                overflow: hidden;
+            }
+            .vol-card::after {
+                content: "";
+                position: absolute;
+                right: -20px;
+                bottom: -28px;
+                width: 110px;
+                height: 110px;
+                border-radius: 999px;
+                opacity: 0.08;
+                background: currentColor;
+            }
+            .vol-card.low { color: var(--blue); }
+            .vol-card.medium { color: var(--yellow); }
+            .vol-card.high { color: var(--red); }
+            .vol-label { font-size: 30px; font-weight: 900; line-height: 1; letter-spacing: 0.06em; }
+            .vol-subtitle { margin-top: 6px; color: var(--text); font-size: 13px; }
+            .vol-note { margin-top: 10px; color: var(--muted); font-size: 12px; }
             .stat .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
             .stat .value { font-size: 28px; font-weight: 700; margin-top: 6px; }
             .stat .meta { color: var(--muted); font-size: 12px; margin-top: 4px; }
@@ -95,6 +121,21 @@
             .pill.skip { background: var(--pill-skip-bg); color: var(--red); }
             .pill.up { background: var(--pill-trade-bg); color: var(--green); }
             .pill.down { background: var(--pill-skip-bg); color: var(--red); }
+            .vol-badge {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 66px;
+                border-radius: 999px;
+                padding: 4px 10px;
+                border: 1px solid currentColor;
+                font-size: 12px;
+                font-weight: 900;
+                letter-spacing: 0.06em;
+            }
+            .vol-badge.low { color: var(--blue); background: rgba(88,166,255,0.10); }
+            .vol-badge.medium { color: var(--yellow); background: rgba(242,204,96,0.12); }
+            .vol-badge.high { color: var(--red); background: rgba(248,81,73,0.12); }
             .market { font-weight: 600; }
             .muted { color: var(--muted); }
             .metric-pos { color: var(--green); }
@@ -131,1107 +172,97 @@
         <div class="page">
             <div class="hero">
                 <div>
-                    <h1>Polymarket BTC Dashboard</h1>
-                    <p>Signal quality and trade quality are tracked separately. A model can improve Brier without improving trade EV, so the production baseline is evaluated on both axes.</p>
+                    <h1>Polymarket BTC 5分钟作战看板</h1>
+                    <p>主页面优先展示生产概览、VOL 分层、研究晋级和规则候选。完整明细请打开实时页。</p>
+                    
+                    <div class="muted" style="margin-top: 8px;"><a href="/live">打开完整实时页</a></div>
+                    
                 </div>
                 <div class="hero-actions">
-                    <button class="theme-toggle" id="theme-toggle" type="button">Switch to Light</button>
-                    <div class="stamp">Generated 2026-04-03T09:49:23.398821+00:00</div>
+                    <button class="theme-toggle" id="theme-toggle" type="button">切换浅色</button>
+                    <div class="stamp">生成时间 2026-04-05T12:25:16.584102+00:00</div>
                 </div>
             </div>
 
             <div class="stats">
                 <div class="stat">
-                    <div class="label">Pending Markets</div>
-                    <div class="value">19</div>
-                    <div class="meta">Trade candidates: 0</div>
+                    <div class="label">待结算市场</div>
+                    <div class="value">16</div>
+                    <div class="meta">当前可交易 0</div>
                 </div>
                 <div class="stat">
-                    <div class="label">Resolved Markets</div>
-                    <div class="value">960</div>
-                    <div class="meta">Predictions stored: 2133</div>
+                    <div class="label">已结算市场</div>
+                    <div class="value">1565</div>
+                    <div class="meta">累计预测 7857</div>
                 </div>
                 <div class="stat">
-                    <div class="label">Ensemble Bets</div>
-                    <div class="value">203</div>
-                    <div class="meta">Skipped: 485</div>
+                    <div class="label">24H 交易 ROI</div>
+                    <div class="value metric-pos">19.15%</div>
+                    <div class="meta">交易 49 笔 / P&amp;L 1134.91</div>
                 </div>
                 <div class="stat">
-                    <div class="label">Breakeven Margin</div>
-                    <div class="value metric-neg">-1.9%</div>
-                    <div class="meta">Current WR 50.7% vs breakeven 52.6%</div>
+                    <div class="label">回测样本</div>
+                    <div class="value">25418</div>
+                    <div class="meta">局部样本 / 2025-12-18 → 2026-04-01</div>
                 </div>
             </div>
 
-            <div class="subgrid">
-                <div class="panel">
-                    <div class="panel-head">
-                        <div>
-                            <h2>Production Last 24h</h2>
-                            <div class="muted">Latest snapshot for signal quality, first exposure for trade risk</div>
-                        </div>
-                    </div>
-                    
-                    <div class="mini-grid">
-                        <div class="mini-card">
-                            <div class="label">Resolved</div>
-                            <div class="value">285</div>
-                        </div>
-                        <div class="mini-card">
-                            <div class="label">Called</div>
-                            <div class="value">14</div>
-                        </div>
-                        <div class="mini-card">
-                            <div class="label">Trades</div>
-                            <div class="value">15</div>
-                        </div>
-                        <div class="mini-card">
-                            <div class="label">Signal WR</div>
-                            <div class="value metric-pos">64.3%</div>
-                        </div>
-                        <div class="mini-card">
-                            <div class="label">Trade WR</div>
-                            <div class="value metric-pos">60.0%</div>
-                        </div>
-                        <div class="mini-card">
-                            <div class="label">Trade ROI</div>
-                            <div class="value metric-pos">24.02%</div>
-                        </div>
-                        <div class="mini-card">
-                            <div class="label">Trade P&amp;L</div>
-                            <div class="value metric-pos">330.3</div>
-                        </div>
-                        <div class="mini-card">
-                            <div class="label">Skip Rate</div>
-                            <div class="value">94.7%</div>
-                        </div>
-                        <div class="mini-card">
-                            <div class="label">Trade-&gt;Skip</div>
-                            <div class="value">1</div>
-                        </div>
-                        <div class="mini-card">
-                            <div class="label">Dir Flips</div>
-                            <div class="value">1</div>
-                        </div>
-                        <div class="mini-card">
-                            <div class="label">Avg Updates</div>
-                            <div class="value">1.7</div>
-                        </div>
-                    </div>
-                    <div class="section-note">
-                        Window 04-02 09:49 -> 04-03 09:49.
-                        Last trade 04-03 08:25.
-                        Trade metrics use first actionable exposure; signal metrics use latest snapshot.
-                    </div>
-                    
-                </div>
-
-                <div class="panel">
-                    <div class="panel-head">
-                        <div>
-                            <h2>Pending Decision Breakdown</h2>
-                            <div class="muted">Current unresolved markets split by trade state and regime</div>
-                        </div>
-                    </div>
-                    
-                    <div class="table-wrap">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Regime</th>
-                                <th>Markets</th>
-                                <th>Trades</th>
-                                <th>Skips</th>
-                                <th>Avg Yes</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            
-                            <tr>
-                                <td>MEDIUM_VOL / MEAN_REVERTING</td>
-                                <td>1</td>
-                                <td class="metric-pos">0</td>
-                                <td class="muted">1</td>
-                                <td>27.0%</td>
-                            </tr>
-                            
-                        </tbody>
-                    </table>
-                    </div>
-                    
-                </div>
-            </div>
-
-            <div class="grid">
-                <div class="panel">
-                    <div class="panel-head">
-                        <div>
-                            <h2>Latest Research Promotion</h2>
-                            <div class="muted">Most recent baseline vs challenger decision</div>
-                        </div>
-                    </div>
-                    
+            
+            <div class="panel" style="margin-bottom: 18px;">
+                <div class="panel-head">
                     <div>
-                        <div>
-                            <strong>deepseek_v3</strong>
-                            vs
-                            <strong>production_baseline</strong>
-                            <span class="pill skip">FAIL</span>
-                        </div>
-                        <div class="muted">Run f8f44fee1bbf at 2026-04-03T09:07:39.807955+00:00</div>
+                        <h2>当前 VOL 分层</h2>
+                        <div class="muted">先看波动，再看信号。当前主导 VOL：<span class="vol-badge low">LOW</span> 低波动</div>
                     </div>
-                    <div class="report-box">
-                        <div class="report-metric">
-                            <div class="label">ROI Delta</div>
-                            <div class="value metric-neg">-101.5pp</div>
-                        </div>
-                        <div class="report-metric">
-                            <div class="label">WR Delta</div>
-                            <div class="value metric-pos">0.0pp</div>
-                        </div>
-                        <div class="report-metric">
-                            <div class="label">Passing Folds</div>
-                            <div class="value">0/2</div>
-                        </div>
-                        <div class="report-metric">
-                            <div class="label">Trade Ratio</div>
-                            <div class="value">1.00</div>
-                        </div>
-                        <div class="report-metric">
-                            <div class="label">Drawdown Ratio</div>
-                            <div class="value">inf</div>
+                </div>
+                <div class="vol-strip">
+                    
+                    <div class="vol-card low">
+                        <div class="vol-label">LOW</div>
+                        <div class="vol-subtitle">低波动</div>
+                        <div class="mini-grid" style="margin-top: 14px;">
+                            <div class="mini-card"><div class="label">待判市场</div><div class="value">1</div></div>
+                            <div class="mini-card"><div class="label">可交易</div><div class="value">0</div></div>
+                            <div class="mini-card"><div class="label">24H 成交</div><div class="value">29</div></div>
+                            <div class="mini-card"><div class="label">24H P&amp;L</div><div class="value metric-pos">554.66</div></div>
                         </div>
                     </div>
                     
-                    <div class="logic" style="margin-top: 12px;">- aggregate ROI delta -101.50pp &lt; required 5.00pp
-- drawdown ratio inf &gt; allowed 1.00
-- passing folds 0/2 &lt; required 2</div>
-                    
-                    
-                    <div class="muted" style="margin-top: 12px;"><a href="research/latest.md">Open latest research report</a></div>
-                    
-                    
-                    <div class="table-wrap" style="margin-top: 14px;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>When</th>
-                                <th>Challenger</th>
-                                <th>Gate</th>
-                                <th>ROI Δ</th>
-                                <th>WR Δ</th>
-                                <th>Folds</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            
-                            <tr>
-                                <td>04-03 09:07</td>
-                                <td>deepseek_v3</td>
-                                <td><span class="pill skip">FAIL</span></td>
-                                <td class="metric-neg">-101.5pp</td>
-                                <td class="metric-pos">0.0pp</td>
-                                <td>0/2</td>
-                            </tr>
-                            
-                            <tr>
-                                <td>04-03 08:04</td>
-                                <td>deepseek_v3</td>
-                                <td><span class="pill trade">PASS</span></td>
-                                <td class="metric-pos">191.22pp</td>
-                                <td class="metric-pos">66.67pp</td>
-                                <td>2/2</td>
-                            </tr>
-                            
-                            <tr>
-                                <td>04-03 07:02</td>
-                                <td>deepseek_v3</td>
-                                <td><span class="pill skip">FAIL</span></td>
-                                <td class="metric-neg">-101.5pp</td>
-                                <td class="metric-pos">0.0pp</td>
-                                <td>1/2</td>
-                            </tr>
-                            
-                            <tr>
-                                <td>04-03 06:11</td>
-                                <td>deepseek_v3</td>
-                                <td><span class="pill skip">FAIL</span></td>
-                                <td class="metric-pos">71.69pp</td>
-                                <td class="metric-pos">66.67pp</td>
-                                <td>1/2</td>
-                            </tr>
-                            
-                            <tr>
-                                <td>04-03 05:08</td>
-                                <td>deepseek_v3</td>
-                                <td><span class="pill skip">FAIL</span></td>
-                                <td class="metric-pos">139.87pp</td>
-                                <td class="metric-pos">50.0pp</td>
-                                <td>1/2</td>
-                            </tr>
-                            
-                        </tbody>
-                    </table>
+                    <div class="vol-card medium">
+                        <div class="vol-label">MEDIUM</div>
+                        <div class="vol-subtitle">中波动</div>
+                        <div class="mini-grid" style="margin-top: 14px;">
+                            <div class="mini-card"><div class="label">待判市场</div><div class="value">0</div></div>
+                            <div class="mini-card"><div class="label">可交易</div><div class="value">0</div></div>
+                            <div class="mini-card"><div class="label">24H 成交</div><div class="value">19</div></div>
+                            <div class="mini-card"><div class="label">24H P&amp;L</div><div class="value metric-pos">384.21</div></div>
+                        </div>
                     </div>
                     
+                    <div class="vol-card high">
+                        <div class="vol-label">HIGH</div>
+                        <div class="vol-subtitle">高波动</div>
+                        <div class="mini-grid" style="margin-top: 14px;">
+                            <div class="mini-card"><div class="label">待判市场</div><div class="value">0</div></div>
+                            <div class="mini-card"><div class="label">可交易</div><div class="value">0</div></div>
+                            <div class="mini-card"><div class="label">24H 成交</div><div class="value">1</div></div>
+                            <div class="mini-card"><div class="label">24H P&amp;L</div><div class="value metric-pos">196.04</div></div>
+                        </div>
+                    </div>
                     
                 </div>
+            </div>
+            
 
-                <div class="panel">
-                    <div class="panel-head">
-                        <div>
-                            <h2>Signal Metrics</h2>
-                            <div class="muted">Current production strategy only, latest snapshot per market</div>
-                        </div>
-                    </div>
-                    <div class="table-wrap">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Agent</th>
-                                <th>Resolved</th>
-                                <th>Call Acc</th>
-                                <th>Avg Brier</th>
-                                <th>vs Market</th>
-                                <th>Trade Rate</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            
-                            
-                            <tr>
-                                <td><span class="agent-dot" style="background: #58a6ff"></span>contrarian_rule</td>
-                                
-                                <td>688</td>
-                                <td>64.6%</td>
-                                <td>0.2413</td>
-                                <td class="metric-neg">0.0237</td>
-                                <td>10.8%</td>
-                                
-                            </tr>
-                            
-                        </tbody>
-                    </table>
-                    </div>
-                </div>
-
-                <div class="panel">
-                    <div class="panel-head">
-                        <div>
-                            <h2>Trade Metrics</h2>
-                            <div class="muted">Current production strategy only, first trade exposure per market</div>
-                        </div>
-                    </div>
-                    <div class="table-wrap">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Agent</th>
-                                <th>Bets</th>
-                                <th>Win Rate</th>
-                                <th>P&amp;L</th>
-                                <th>ROI</th>
-                                <th>Max DD</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            
-                            
-                            <tr>
-                                <td><span class="agent-dot" style="background: #58a6ff"></span>contrarian_rule</td>
-                                
-                                <td>139</td>
-                                <td>53.2%</td>
-                                <td class="metric-pos">614.72</td>
-                                <td class="metric-pos">5.76%</td>
-                                <td>0.0</td>
-                                
-                            </tr>
-                            
-                        </tbody>
-                    </table>
-                    </div>
-                </div>
+            <div class="subgrid">
+                
             </div>
 
             <div class="grid">
-                <div class="panel">
-                    <div class="panel-head">
-                        <div>
-                            <h2>Research Agents</h2>
-                            <div class="muted">Historical challengers and retired agents. These do not drive live predictions.</div>
-                        </div>
-                    </div>
-                    
-                    <div class="table-wrap">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Agent</th>
-                                <th>Resolved</th>
-                                <th>Call Acc</th>
-                                <th>Avg Brier</th>
-                                <th>Trade P&amp;L</th>
-                                <th>Trade ROI</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            
-                            
-                            
-                            <tr>
-                                <td><span class="agent-dot" style="background: #f2cc60"></span>Pro/zai-org/GLM-5</td>
-                                <td>156</td>
-                                <td>56.4%</td>
-                                <td>0.2436</td>
-                                <td class="metric-pos">938.05</td>
-                                <td class="metric-pos">8.57%</td>
-                            </tr>
-                            
-                            
-                            
-                            <tr>
-                                <td><span class="agent-dot" style="background: #3fb950"></span>deepseek-ai/DeepSeek-V3</td>
-                                <td>189</td>
-                                <td>55.0%</td>
-                                <td>0.2462</td>
-                                <td class="metric-neg">-2921.93</td>
-                                <td class="metric-neg">-21.76%</td>
-                            </tr>
-                            
-                            
-                            
-                            <tr>
-                                <td><span class="agent-dot" style="background: #8b949e"></span>gpt-5.4</td>
-                                <td>6</td>
-                                <td>33.3%</td>
-                                <td>0.2736</td>
-                                <td class="metric-pos">2.13</td>
-                                <td class="metric-pos">0.71%</td>
-                            </tr>
-                            
-                            
-                            
-                            <tr>
-                                <td><span class="agent-dot" style="background: #8b949e"></span>gpt-5.4-mini</td>
-                                <td>5</td>
-                                <td>40.0%</td>
-                                <td>0.2653</td>
-                                <td class="metric-pos">99.13</td>
-                                <td class="metric-pos">66.08%</td>
-                            </tr>
-                            
-                        </tbody>
-                    </table>
-                    </div>
-                    
-                </div>
-
-                <div class="panel">
-                    <div class="panel-head">
-                        <div>
-                            <h2>P&amp;L Distribution</h2>
-                            <div class="muted">Per-bet outcomes across all traded predictions</div>
-                        </div>
-                    </div>
-                    <svg viewBox="0 0 720 220" xmlns="http://www.w3.org/2000/svg"><rect width="720" height="220" fill="#0d1117" rx="12" /><line x1="30" y1="110.0" x2="690" y2="110.0" stroke="#30363d" stroke-width="1" /><text x="30" y="28" fill="#8b949e" font-size="12">Wins spread</text><text x="30" y="200" fill="#8b949e" font-size="12">Losses cluster</text><circle cx="1.7" cy="134.1" r="5" fill="#f85149" /><circle cx="3.4" cy="86.4" r="5" fill="#3fb950" /><circle cx="5.1" cy="134.1" r="5" fill="#f85149" /><circle cx="6.8" cy="86.4" r="5" fill="#3fb950" /><circle cx="8.6" cy="86.4" r="5" fill="#3fb950" /><circle cx="10.3" cy="134.1" r="5" fill="#f85149" /><circle cx="12.0" cy="134.1" r="5" fill="#f85149" /><circle cx="13.7" cy="83.4" r="5" fill="#3fb950" /><circle cx="15.4" cy="134.1" r="5" fill="#f85149" /><circle cx="17.1" cy="134.1" r="5" fill="#f85149" /><circle cx="18.8" cy="134.1" r="5" fill="#f85149" /><circle cx="20.5" cy="134.1" r="5" fill="#f85149" /><circle cx="22.2" cy="134.1" r="5" fill="#f85149" /><circle cx="23.9" cy="109.1" r="5" fill="#3fb950" /><circle cx="25.7" cy="81.1" r="5" fill="#3fb950" /><circle cx="27.4" cy="105.2" r="5" fill="#3fb950" /><circle cx="29.1" cy="134.1" r="5" fill="#f85149" /><circle cx="30.8" cy="134.1" r="5" fill="#f85149" /><circle cx="32.5" cy="84.4" r="5" fill="#3fb950" /><circle cx="34.2" cy="89.0" r="5" fill="#3fb950" /><circle cx="35.9" cy="73.1" r="5" fill="#3fb950" /><circle cx="37.6" cy="82.3" r="5" fill="#3fb950" /><circle cx="39.3" cy="79.9" r="5" fill="#3fb950" /><circle cx="41.0" cy="81.1" r="5" fill="#3fb950" /><circle cx="42.8" cy="134.1" r="5" fill="#f85149" /><circle cx="44.5" cy="134.1" r="5" fill="#f85149" /><circle cx="46.2" cy="134.1" r="5" fill="#f85149" /><circle cx="47.9" cy="83.4" r="5" fill="#3fb950" /><circle cx="49.6" cy="85.4" r="5" fill="#3fb950" /><circle cx="51.3" cy="81.1" r="5" fill="#3fb950" /><circle cx="53.0" cy="83.4" r="5" fill="#3fb950" /><circle cx="54.7" cy="99.9" r="5" fill="#3fb950" /><circle cx="56.4" cy="134.1" r="5" fill="#f85149" /><circle cx="58.1" cy="83.4" r="5" fill="#3fb950" /><circle cx="59.9" cy="134.1" r="5" fill="#f85149" /><circle cx="61.6" cy="82.8" r="5" fill="#3fb950" /><circle cx="63.3" cy="134.1" r="5" fill="#f85149" /><circle cx="65.0" cy="134.1" r="5" fill="#f85149" /><circle cx="66.7" cy="134.1" r="5" fill="#f85149" /><circle cx="68.4" cy="134.1" r="5" fill="#f85149" /><circle cx="70.1" cy="134.1" r="5" fill="#f85149" /><circle cx="71.8" cy="134.1" r="5" fill="#f85149" /><circle cx="73.5" cy="134.1" r="5" fill="#f85149" /><circle cx="75.2" cy="84.4" r="5" fill="#3fb950" /><circle cx="77.0" cy="134.1" r="5" fill="#f85149" /><circle cx="78.7" cy="85.4" r="5" fill="#3fb950" /><circle cx="80.4" cy="87.7" r="5" fill="#3fb950" /><circle cx="82.1" cy="134.1" r="5" fill="#f85149" /><circle cx="83.8" cy="134.1" r="5" fill="#f85149" /><circle cx="85.5" cy="134.1" r="5" fill="#f85149" /><circle cx="87.2" cy="134.1" r="5" fill="#f85149" /><circle cx="88.9" cy="71.5" r="5" fill="#3fb950" /><circle cx="90.6" cy="134.1" r="5" fill="#f85149" /><circle cx="92.4" cy="134.1" r="5" fill="#f85149" /><circle cx="94.1" cy="134.1" r="5" fill="#f85149" /><circle cx="95.8" cy="74.6" r="5" fill="#3fb950" /><circle cx="97.5" cy="97.3" r="5" fill="#3fb950" /><circle cx="99.2" cy="134.1" r="5" fill="#f85149" /><circle cx="100.9" cy="134.1" r="5" fill="#f85149" /><circle cx="102.6" cy="134.1" r="5" fill="#f85149" /><circle cx="104.3" cy="134.1" r="5" fill="#f85149" /><circle cx="106.0" cy="134.1" r="5" fill="#f85149" /><circle cx="107.7" cy="84.4" r="5" fill="#3fb950" /><circle cx="109.5" cy="83.9" r="5" fill="#3fb950" /><circle cx="111.2" cy="84.4" r="5" fill="#3fb950" /><circle cx="112.9" cy="107.8" r="5" fill="#3fb950" /><circle cx="114.6" cy="134.1" r="5" fill="#f85149" /><circle cx="116.3" cy="134.1" r="5" fill="#f85149" /><circle cx="118.0" cy="85.4" r="5" fill="#3fb950" /><circle cx="119.7" cy="108.0" r="5" fill="#3fb950" /><circle cx="121.4" cy="83.4" r="5" fill="#3fb950" /><circle cx="123.1" cy="134.1" r="5" fill="#f85149" /><circle cx="124.8" cy="76.0" r="5" fill="#3fb950" /><circle cx="126.6" cy="134.1" r="5" fill="#f85149" /><circle cx="128.3" cy="79.9" r="5" fill="#3fb950" /><circle cx="130.0" cy="134.1" r="5" fill="#f85149" /><circle cx="131.7" cy="82.3" r="5" fill="#3fb950" /><circle cx="133.4" cy="109.1" r="5" fill="#3fb950" /><circle cx="135.1" cy="86.4" r="5" fill="#3fb950" /><circle cx="136.8" cy="134.1" r="5" fill="#f85149" /><circle cx="138.5" cy="84.4" r="5" fill="#3fb950" /><circle cx="140.2" cy="134.1" r="5" fill="#f85149" /><circle cx="141.9" cy="134.1" r="5" fill="#f85149" /><circle cx="143.7" cy="84.4" r="5" fill="#3fb950" /><circle cx="145.4" cy="134.1" r="5" fill="#f85149" /><circle cx="147.1" cy="134.1" r="5" fill="#f85149" /><circle cx="148.8" cy="84.4" r="5" fill="#3fb950" /><circle cx="150.5" cy="134.1" r="5" fill="#f85149" /><circle cx="152.2" cy="101.3" r="5" fill="#3fb950" /><circle cx="153.9" cy="134.1" r="5" fill="#f85149" /><circle cx="155.6" cy="73.1" r="5" fill="#3fb950" /><circle cx="157.3" cy="79.9" r="5" fill="#3fb950" /><circle cx="159.0" cy="134.1" r="5" fill="#f85149" /><circle cx="160.8" cy="83.9" r="5" fill="#3fb950" /><circle cx="162.5" cy="134.1" r="5" fill="#f85149" /><circle cx="164.2" cy="87.3" r="5" fill="#3fb950" /><circle cx="165.9" cy="92.9" r="5" fill="#3fb950" /><circle cx="167.6" cy="134.1" r="5" fill="#f85149" /><circle cx="169.3" cy="104.9" r="5" fill="#3fb950" /><circle cx="171.0" cy="87.3" r="5" fill="#3fb950" /><circle cx="172.7" cy="68.1" r="5" fill="#3fb950" /><circle cx="174.4" cy="134.1" r="5" fill="#f85149" /><circle cx="176.2" cy="78.7" r="5" fill="#3fb950" /><circle cx="177.9" cy="82.3" r="5" fill="#3fb950" /><circle cx="179.6" cy="134.1" r="5" fill="#f85149" /><circle cx="181.3" cy="82.3" r="5" fill="#3fb950" /><circle cx="183.0" cy="81.7" r="5" fill="#3fb950" /><circle cx="184.7" cy="73.1" r="5" fill="#3fb950" /><circle cx="186.4" cy="134.1" r="5" fill="#f85149" /><circle cx="188.1" cy="81.1" r="5" fill="#3fb950" /><circle cx="189.8" cy="83.4" r="5" fill="#3fb950" /><circle cx="191.5" cy="134.1" r="5" fill="#f85149" /><circle cx="193.3" cy="108.6" r="5" fill="#3fb950" /><circle cx="195.0" cy="134.1" r="5" fill="#f85149" /><circle cx="196.7" cy="134.1" r="5" fill="#f85149" /><circle cx="198.4" cy="134.1" r="5" fill="#f85149" /><circle cx="200.1" cy="86.4" r="5" fill="#3fb950" /><circle cx="201.8" cy="84.4" r="5" fill="#3fb950" /><circle cx="203.5" cy="134.1" r="5" fill="#f85149" /><circle cx="205.2" cy="105.9" r="5" fill="#3fb950" /><circle cx="206.9" cy="109.8" r="5" fill="#3fb950" /><circle cx="208.6" cy="82.3" r="5" fill="#3fb950" /><circle cx="210.4" cy="82.3" r="5" fill="#3fb950" /><circle cx="212.1" cy="83.4" r="5" fill="#3fb950" /><circle cx="213.8" cy="85.4" r="5" fill="#3fb950" /><circle cx="215.5" cy="97.3" r="5" fill="#3fb950" /><circle cx="217.2" cy="87.3" r="5" fill="#3fb950" /><circle cx="218.9" cy="62.1" r="5" fill="#3fb950" /><circle cx="220.6" cy="103.4" r="5" fill="#3fb950" /><circle cx="222.3" cy="102.2" r="5" fill="#3fb950" /><circle cx="224.0" cy="64.4" r="5" fill="#3fb950" /><circle cx="225.7" cy="62.5" r="5" fill="#3fb950" /><circle cx="227.5" cy="134.1" r="5" fill="#f85149" /><circle cx="229.2" cy="134.1" r="5" fill="#f85149" /><circle cx="230.9" cy="134.1" r="5" fill="#f85149" /><circle cx="232.6" cy="134.1" r="5" fill="#f85149" /><circle cx="234.3" cy="134.1" r="5" fill="#f85149" /><circle cx="236.0" cy="74.6" r="5" fill="#3fb950" /><circle cx="237.7" cy="134.1" r="5" fill="#f85149" /><circle cx="239.4" cy="134.1" r="5" fill="#f85149" /><circle cx="241.1" cy="174.3" r="5" fill="#f85149" /><circle cx="242.9" cy="134.1" r="5" fill="#f85149" /><circle cx="244.6" cy="134.1" r="5" fill="#f85149" /><circle cx="246.3" cy="134.1" r="5" fill="#f85149" /><circle cx="248.0" cy="134.1" r="5" fill="#f85149" /><circle cx="249.7" cy="174.3" r="5" fill="#f85149" /><circle cx="251.4" cy="174.3" r="5" fill="#f85149" /><circle cx="253.1" cy="174.3" r="5" fill="#f85149" /><circle cx="254.8" cy="96.1" r="5" fill="#3fb950" /><circle cx="256.5" cy="89.9" r="5" fill="#3fb950" /><circle cx="258.2" cy="134.1" r="5" fill="#f85149" /><circle cx="260.0" cy="134.1" r="5" fill="#f85149" /><circle cx="261.7" cy="134.1" r="5" fill="#f85149" /><circle cx="263.4" cy="134.1" r="5" fill="#f85149" /><circle cx="265.1" cy="134.1" r="5" fill="#f85149" /><circle cx="266.8" cy="134.1" r="5" fill="#f85149" /><circle cx="268.5" cy="81.1" r="5" fill="#3fb950" /><circle cx="270.2" cy="97.3" r="5" fill="#3fb950" /><circle cx="271.9" cy="89.9" r="5" fill="#3fb950" /><circle cx="273.6" cy="174.3" r="5" fill="#f85149" /><circle cx="275.3" cy="134.1" r="5" fill="#f85149" /><circle cx="277.1" cy="54.1" r="5" fill="#3fb950" /><circle cx="278.8" cy="134.1" r="5" fill="#f85149" /><circle cx="280.5" cy="134.1" r="5" fill="#f85149" /><circle cx="282.2" cy="134.1" r="5" fill="#f85149" /><circle cx="283.9" cy="134.1" r="5" fill="#f85149" /><circle cx="285.6" cy="174.3" r="5" fill="#f85149" /><circle cx="287.3" cy="174.3" r="5" fill="#f85149" /><circle cx="289.0" cy="174.3" r="5" fill="#f85149" /><circle cx="290.7" cy="134.1" r="5" fill="#f85149" /><circle cx="292.4" cy="86.4" r="5" fill="#3fb950" /><circle cx="294.2" cy="134.1" r="5" fill="#f85149" /><circle cx="295.9" cy="134.1" r="5" fill="#f85149" /><circle cx="297.6" cy="134.1" r="5" fill="#f85149" /><circle cx="299.3" cy="134.1" r="5" fill="#f85149" /><circle cx="301.0" cy="134.1" r="5" fill="#f85149" /><circle cx="302.7" cy="33.0" r="5" fill="#3fb950" /><circle cx="304.4" cy="38.9" r="5" fill="#3fb950" /><circle cx="306.1" cy="83.1" r="5" fill="#3fb950" /><circle cx="307.8" cy="89.9" r="5" fill="#3fb950" /><circle cx="309.5" cy="134.1" r="5" fill="#f85149" /><circle cx="311.3" cy="174.3" r="5" fill="#f85149" /><circle cx="313.0" cy="37.5" r="5" fill="#3fb950" /><circle cx="314.7" cy="134.1" r="5" fill="#f85149" /><circle cx="316.4" cy="89.9" r="5" fill="#3fb950" /><circle cx="318.1" cy="94.3" r="5" fill="#3fb950" /><circle cx="319.8" cy="89.0" r="5" fill="#3fb950" /><circle cx="321.5" cy="134.1" r="5" fill="#f85149" /><circle cx="323.2" cy="134.1" r="5" fill="#f85149" /><circle cx="324.9" cy="86.4" r="5" fill="#3fb950" /><circle cx="326.7" cy="66.2" r="5" fill="#3fb950" /><circle cx="328.4" cy="83.9" r="5" fill="#3fb950" /><circle cx="330.1" cy="85.4" r="5" fill="#3fb950" /><circle cx="331.8" cy="74.6" r="5" fill="#3fb950" /><circle cx="333.5" cy="104.5" r="5" fill="#3fb950" /><circle cx="335.2" cy="134.1" r="5" fill="#f85149" /><circle cx="336.9" cy="101.7" r="5" fill="#3fb950" /><circle cx="338.6" cy="88.2" r="5" fill="#3fb950" /><circle cx="340.3" cy="85.4" r="5" fill="#3fb950" /><circle cx="342.0" cy="134.1" r="5" fill="#f85149" /><circle cx="343.8" cy="134.1" r="5" fill="#f85149" /><circle cx="345.5" cy="134.1" r="5" fill="#f85149" /><circle cx="347.2" cy="85.4" r="5" fill="#3fb950" /><circle cx="348.9" cy="134.1" r="5" fill="#f85149" /><circle cx="350.6" cy="134.1" r="5" fill="#f85149" /><circle cx="352.3" cy="85.4" r="5" fill="#3fb950" /><circle cx="354.0" cy="134.1" r="5" fill="#f85149" /><circle cx="355.7" cy="134.1" r="5" fill="#f85149" /><circle cx="357.4" cy="74.6" r="5" fill="#3fb950" /><circle cx="359.1" cy="86.4" r="5" fill="#3fb950" /><circle cx="360.9" cy="94.3" r="5" fill="#3fb950" /><circle cx="362.6" cy="105.9" r="5" fill="#3fb950" /><circle cx="364.3" cy="84.4" r="5" fill="#3fb950" /><circle cx="366.0" cy="83.4" r="5" fill="#3fb950" /><circle cx="367.7" cy="134.1" r="5" fill="#f85149" /><circle cx="369.4" cy="134.1" r="5" fill="#f85149" /><circle cx="371.1" cy="134.1" r="5" fill="#f85149" /><circle cx="372.8" cy="84.9" r="5" fill="#3fb950" /><circle cx="374.5" cy="134.1" r="5" fill="#f85149" /><circle cx="376.2" cy="134.1" r="5" fill="#f85149" /><circle cx="378.0" cy="85.4" r="5" fill="#3fb950" /><circle cx="379.7" cy="88.2" r="5" fill="#3fb950" /><circle cx="381.4" cy="134.1" r="5" fill="#f85149" /><circle cx="383.1" cy="134.1" r="5" fill="#f85149" /><circle cx="384.8" cy="134.1" r="5" fill="#f85149" /><circle cx="386.5" cy="108.9" r="5" fill="#3fb950" /><circle cx="388.2" cy="86.4" r="5" fill="#3fb950" /><circle cx="389.9" cy="134.1" r="5" fill="#f85149" /><circle cx="391.6" cy="85.4" r="5" fill="#3fb950" /><circle cx="393.3" cy="134.1" r="5" fill="#f85149" /><circle cx="395.1" cy="108.0" r="5" fill="#3fb950" /><circle cx="396.8" cy="83.4" r="5" fill="#3fb950" /><circle cx="398.5" cy="134.1" r="5" fill="#f85149" /><circle cx="400.2" cy="134.1" r="5" fill="#f85149" /><circle cx="401.9" cy="134.1" r="5" fill="#f85149" /><circle cx="403.6" cy="49.5" r="5" fill="#3fb950" /><circle cx="405.3" cy="109.1" r="5" fill="#3fb950" /><circle cx="407.0" cy="86.4" r="5" fill="#3fb950" /><circle cx="408.7" cy="174.3" r="5" fill="#f85149" /><circle cx="410.5" cy="41.7" r="5" fill="#3fb950" /><circle cx="412.2" cy="174.3" r="5" fill="#f85149" /><circle cx="413.9" cy="134.1" r="5" fill="#f85149" /><circle cx="415.6" cy="134.1" r="5" fill="#f85149" /><circle cx="417.3" cy="174.3" r="5" fill="#f85149" /><circle cx="419.0" cy="134.1" r="5" fill="#f85149" /><circle cx="420.7" cy="96.7" r="5" fill="#3fb950" /><circle cx="422.4" cy="86.4" r="5" fill="#3fb950" /><circle cx="424.1" cy="134.1" r="5" fill="#f85149" /><circle cx="425.8" cy="134.1" r="5" fill="#f85149" /><circle cx="427.6" cy="101.3" r="5" fill="#3fb950" /><circle cx="429.3" cy="134.1" r="5" fill="#f85149" /><circle cx="431.0" cy="73.1" r="5" fill="#3fb950" /><circle cx="432.7" cy="134.1" r="5" fill="#f85149" /><circle cx="434.4" cy="134.1" r="5" fill="#f85149" /><circle cx="436.1" cy="134.1" r="5" fill="#f85149" /><circle cx="437.8" cy="134.1" r="5" fill="#f85149" /><circle cx="439.5" cy="89.0" r="5" fill="#3fb950" /><circle cx="441.2" cy="134.1" r="5" fill="#f85149" /><circle cx="442.9" cy="174.3" r="5" fill="#f85149" /><circle cx="444.7" cy="49.5" r="5" fill="#3fb950" /><circle cx="446.4" cy="134.1" r="5" fill="#f85149" /><circle cx="448.1" cy="134.1" r="5" fill="#f85149" /><circle cx="449.8" cy="69.8" r="5" fill="#3fb950" /><circle cx="451.5" cy="134.1" r="5" fill="#f85149" /><circle cx="453.2" cy="134.1" r="5" fill="#f85149" /><circle cx="454.9" cy="106.6" r="5" fill="#3fb950" /><circle cx="456.6" cy="87.7" r="5" fill="#3fb950" /><circle cx="458.3" cy="92.9" r="5" fill="#3fb950" /><circle cx="460.0" cy="134.1" r="5" fill="#f85149" /><circle cx="461.8" cy="104.9" r="5" fill="#3fb950" /><circle cx="463.5" cy="87.3" r="5" fill="#3fb950" /><circle cx="465.2" cy="68.1" r="5" fill="#3fb950" /><circle cx="466.9" cy="85.4" r="5" fill="#3fb950" /><circle cx="468.6" cy="81.1" r="5" fill="#3fb950" /><circle cx="470.3" cy="108.6" r="5" fill="#3fb950" /><circle cx="472.0" cy="174.3" r="5" fill="#f85149" /><circle cx="473.7" cy="174.3" r="5" fill="#f85149" /><circle cx="475.4" cy="134.1" r="5" fill="#f85149" /><circle cx="477.1" cy="86.4" r="5" fill="#3fb950" /><circle cx="478.9" cy="134.1" r="5" fill="#f85149" /><circle cx="480.6" cy="134.1" r="5" fill="#f85149" /><circle cx="482.3" cy="38.9" r="5" fill="#3fb950" /><circle cx="484.0" cy="50.7" r="5" fill="#3fb950" /><circle cx="485.7" cy="174.3" r="5" fill="#f85149" /><circle cx="487.4" cy="174.3" r="5" fill="#f85149" /><circle cx="489.1" cy="134.1" r="5" fill="#f85149" /><circle cx="490.8" cy="85.4" r="5" fill="#3fb950" /><circle cx="492.5" cy="96.1" r="5" fill="#3fb950" /><circle cx="494.3" cy="89.9" r="5" fill="#3fb950" /><circle cx="496.0" cy="134.1" r="5" fill="#f85149" /><circle cx="497.7" cy="134.1" r="5" fill="#f85149" /><circle cx="499.4" cy="134.1" r="5" fill="#f85149" /><circle cx="501.1" cy="92.9" r="5" fill="#3fb950" /><circle cx="502.8" cy="134.1" r="5" fill="#f85149" /><circle cx="504.5" cy="105.2" r="5" fill="#3fb950" /><circle cx="506.2" cy="134.1" r="5" fill="#f85149" /><circle cx="507.9" cy="64.2" r="5" fill="#3fb950" /><circle cx="509.6" cy="84.4" r="5" fill="#3fb950" /><circle cx="511.4" cy="134.1" r="5" fill="#f85149" /><circle cx="513.1" cy="134.1" r="5" fill="#f85149" /><circle cx="514.8" cy="134.1" r="5" fill="#f85149" /><circle cx="516.5" cy="134.1" r="5" fill="#f85149" /><circle cx="518.2" cy="134.1" r="5" fill="#f85149" /><circle cx="519.9" cy="89.0" r="5" fill="#3fb950" /><circle cx="521.6" cy="68.1" r="5" fill="#3fb950" /><circle cx="523.3" cy="88.2" r="5" fill="#3fb950" /><circle cx="525.0" cy="134.1" r="5" fill="#f85149" /><circle cx="526.7" cy="86.4" r="5" fill="#3fb950" /><circle cx="528.5" cy="134.1" r="5" fill="#f85149" /><circle cx="530.2" cy="49.5" r="5" fill="#3fb950" /><circle cx="531.9" cy="89.9" r="5" fill="#3fb950" /><circle cx="533.6" cy="87.3" r="5" fill="#3fb950" /><circle cx="535.3" cy="85.4" r="5" fill="#3fb950" /><circle cx="537.0" cy="81.1" r="5" fill="#3fb950" /><circle cx="538.7" cy="134.1" r="5" fill="#f85149" /><circle cx="540.4" cy="85.4" r="5" fill="#3fb950" /><circle cx="542.1" cy="134.1" r="5" fill="#f85149" /><circle cx="543.8" cy="89.0" r="5" fill="#3fb950" /><circle cx="545.6" cy="87.7" r="5" fill="#3fb950" /><circle cx="547.3" cy="85.4" r="5" fill="#3fb950" /><circle cx="549.0" cy="85.4" r="5" fill="#3fb950" /><circle cx="550.7" cy="85.4" r="5" fill="#3fb950" /><circle cx="552.4" cy="85.4" r="5" fill="#3fb950" /><circle cx="554.1" cy="106.2" r="5" fill="#3fb950" /><circle cx="555.8" cy="71.5" r="5" fill="#3fb950" /><circle cx="557.5" cy="134.1" r="5" fill="#f85149" /><circle cx="559.2" cy="74.6" r="5" fill="#3fb950" /><circle cx="561.0" cy="86.4" r="5" fill="#3fb950" /><circle cx="562.7" cy="94.3" r="5" fill="#3fb950" /><circle cx="564.4" cy="134.1" r="5" fill="#f85149" /><circle cx="566.1" cy="84.4" r="5" fill="#3fb950" /><circle cx="567.8" cy="85.4" r="5" fill="#3fb950" /><circle cx="569.5" cy="83.4" r="5" fill="#3fb950" /><circle cx="571.2" cy="134.1" r="5" fill="#f85149" /><circle cx="572.9" cy="84.9" r="5" fill="#3fb950" /><circle cx="574.6" cy="134.1" r="5" fill="#f85149" /><circle cx="576.3" cy="134.1" r="5" fill="#f85149" /><circle cx="578.1" cy="85.4" r="5" fill="#3fb950" /><circle cx="579.8" cy="88.2" r="5" fill="#3fb950" /><circle cx="581.5" cy="134.1" r="5" fill="#f85149" /><circle cx="583.2" cy="134.1" r="5" fill="#f85149" /><circle cx="584.9" cy="134.1" r="5" fill="#f85149" /><circle cx="586.6" cy="108.9" r="5" fill="#3fb950" /><circle cx="588.3" cy="86.4" r="5" fill="#3fb950" /><circle cx="590.0" cy="85.4" r="5" fill="#3fb950" /><circle cx="591.7" cy="84.4" r="5" fill="#3fb950" /><circle cx="593.4" cy="83.9" r="5" fill="#3fb950" /><circle cx="595.2" cy="84.4" r="5" fill="#3fb950" /><circle cx="596.9" cy="89.9" r="5" fill="#3fb950" /><circle cx="598.6" cy="102.6" r="5" fill="#3fb950" /><circle cx="600.3" cy="85.4" r="5" fill="#3fb950" /><circle cx="602.0" cy="134.1" r="5" fill="#f85149" /><circle cx="603.7" cy="134.1" r="5" fill="#f85149" /><circle cx="605.4" cy="134.1" r="5" fill="#f85149" /><circle cx="607.1" cy="134.1" r="5" fill="#f85149" /><circle cx="608.8" cy="134.1" r="5" fill="#f85149" /><circle cx="610.5" cy="134.1" r="5" fill="#f85149" /><circle cx="612.3" cy="134.1" r="5" fill="#f85149" /><circle cx="614.0" cy="82.3" r="5" fill="#3fb950" /><circle cx="615.7" cy="134.1" r="5" fill="#f85149" /><circle cx="617.4" cy="134.1" r="5" fill="#f85149" /><circle cx="619.1" cy="134.1" r="5" fill="#f85149" /><circle cx="620.8" cy="134.1" r="5" fill="#f85149" /><circle cx="622.5" cy="134.1" r="5" fill="#f85149" /><circle cx="624.2" cy="134.1" r="5" fill="#f85149" /><circle cx="625.9" cy="134.1" r="5" fill="#f85149" /><circle cx="627.6" cy="105.2" r="5" fill="#3fb950" /><circle cx="629.4" cy="86.4" r="5" fill="#3fb950" /><circle cx="631.1" cy="134.1" r="5" fill="#f85149" /><circle cx="632.8" cy="134.1" r="5" fill="#f85149" /><circle cx="634.5" cy="134.1" r="5" fill="#f85149" /><circle cx="636.2" cy="86.4" r="5" fill="#3fb950" /><circle cx="637.9" cy="134.1" r="5" fill="#f85149" /><circle cx="639.6" cy="101.3" r="5" fill="#3fb950" /><circle cx="641.3" cy="134.1" r="5" fill="#f85149" /><circle cx="643.0" cy="73.1" r="5" fill="#3fb950" /><circle cx="644.8" cy="134.1" r="5" fill="#f85149" /><circle cx="646.5" cy="134.1" r="5" fill="#f85149" /><circle cx="648.2" cy="134.1" r="5" fill="#f85149" /><circle cx="649.9" cy="79.9" r="5" fill="#3fb950" /><circle cx="651.6" cy="89.0" r="5" fill="#3fb950" /><circle cx="653.3" cy="83.9" r="5" fill="#3fb950" /><circle cx="655.0" cy="85.4" r="5" fill="#3fb950" /><circle cx="656.7" cy="87.3" r="5" fill="#3fb950" /><circle cx="658.4" cy="134.1" r="5" fill="#f85149" /><circle cx="660.1" cy="134.1" r="5" fill="#f85149" /><circle cx="661.9" cy="69.8" r="5" fill="#3fb950" /><circle cx="663.6" cy="134.1" r="5" fill="#f85149" /><circle cx="665.3" cy="134.1" r="5" fill="#f85149" /><circle cx="667.0" cy="106.6" r="5" fill="#3fb950" /><circle cx="668.7" cy="87.7" r="5" fill="#3fb950" /><circle cx="670.4" cy="92.9" r="5" fill="#3fb950" /><circle cx="672.1" cy="134.1" r="5" fill="#f85149" /><circle cx="673.8" cy="96.4" r="5" fill="#3fb950" /><circle cx="675.5" cy="87.3" r="5" fill="#3fb950" /><circle cx="677.2" cy="81.1" r="5" fill="#3fb950" /><circle cx="679.0" cy="84.4" r="5" fill="#3fb950" /><circle cx="680.7" cy="134.1" r="5" fill="#f85149" /><circle cx="682.4" cy="78.7" r="5" fill="#3fb950" /><circle cx="684.1" cy="82.3" r="5" fill="#3fb950" /><circle cx="685.8" cy="134.1" r="5" fill="#f85149" /><circle cx="687.5" cy="82.3" r="5" fill="#3fb950" /><circle cx="689.2" cy="81.7" r="5" fill="#3fb950" /><circle cx="690.9" cy="73.1" r="5" fill="#3fb950" /><circle cx="692.6" cy="89.9" r="5" fill="#3fb950" /><circle cx="694.3" cy="83.4" r="5" fill="#3fb950" /><circle cx="696.1" cy="134.1" r="5" fill="#f85149" /><circle cx="697.8" cy="86.4" r="5" fill="#3fb950" /><circle cx="699.5" cy="134.1" r="5" fill="#f85149" /><circle cx="701.2" cy="108.6" r="5" fill="#3fb950" /><circle cx="702.9" cy="134.1" r="5" fill="#f85149" /><circle cx="704.6" cy="134.1" r="5" fill="#f85149" /><circle cx="706.3" cy="134.1" r="5" fill="#f85149" /><circle cx="708.0" cy="86.4" r="5" fill="#3fb950" /><circle cx="709.7" cy="83.4" r="5" fill="#3fb950" /><circle cx="711.4" cy="87.7" r="5" fill="#3fb950" /><circle cx="713.2" cy="134.1" r="5" fill="#f85149" /><circle cx="714.9" cy="134.1" r="5" fill="#f85149" /><circle cx="716.6" cy="87.7" r="5" fill="#3fb950" /><circle cx="718.3" cy="100.4" r="5" fill="#3fb950" /></svg>
-                </div>
-
-                <div class="panel">
-                    <div class="panel-head">
-                        <div>
-                            <h2>Ensemble Summary</h2>
-                            <div class="muted">Consensus metrics using only trade-eligible rows</div>
-                        </div>
-                    </div>
-                    <div class="table-wrap">
-                    <table>
-                        <tbody>
-                            <tr><th>Total P&amp;L</th><td class="metric-pos">194.21</td></tr>
-                            <tr><th>Total Wagered</th><td>18850.0</td></tr>
-                            <tr><th>ROI</th><td class="metric-pos">1.03%</td></tr>
-                            <tr><th>Bets / Skips</th><td>203 / 485</td></tr>
-                            <tr><th>EV per Bet</th><td class="metric-neg">-3.02</td></tr>
-                        </tbody>
-                    </table>
-                    </div>
-                </div>
+                
             </div>
 
-            <div class="subgrid">
-                <div class="panel">
-                    <div class="panel-head">
-                        <div>
-                            <h2>24h Regime Breakdown</h2>
-                            <div class="muted">Production trades grouped by regime over the last 24 hours</div>
-                        </div>
-                    </div>
-                    
-                    <div class="table-wrap">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Regime</th>
-                                <th>Resolved</th>
-                                <th>Trades</th>
-                                <th>WR</th>
-                                <th>P&amp;L</th>
-                                <th>ROI</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            
-                            <tr>
-                                <td>MEDIUM_VOL / TRENDING</td>
-                                <td>27</td>
-                                <td>6</td>
-                                <td>83.3%</td>
-                                <td class="metric-pos">336.1</td>
-                                <td class="metric-pos">48.01%</td>
-                            </tr>
-                            
-                            <tr>
-                                <td>MEDIUM_VOL / NEUTRAL</td>
-                                <td>57</td>
-                                <td>5</td>
-                                <td>40.0%</td>
-                                <td class="metric-neg">-75.31</td>
-                                <td class="metric-neg">-20.08%</td>
-                            </tr>
-                            
-                            <tr>
-                                <td>HIGH_VOL / NEUTRAL</td>
-                                <td>30</td>
-                                <td>2</td>
-                                <td>0.0%</td>
-                                <td class="metric-neg">-150.0</td>
-                                <td class="metric-neg">-100.0%</td>
-                            </tr>
-                            
-                            <tr>
-                                <td>HIGH_VOL / TRENDING</td>
-                                <td>20</td>
-                                <td>2</td>
-                                <td>100.0%</td>
-                                <td class="metric-pos">219.51</td>
-                                <td class="metric-pos">146.34%</td>
-                            </tr>
-                            
-                            <tr>
-                                <td>HIGH_VOL / MEAN_REVERTING</td>
-                                <td>42</td>
-                                <td>0</td>
-                                <td>0.0%</td>
-                                <td class="metric-pos">0.0</td>
-                                <td class="metric-pos">0.0%</td>
-                            </tr>
-                            
-                            <tr>
-                                <td>MEDIUM_VOL / MEAN_REVERTING</td>
-                                <td>109</td>
-                                <td>0</td>
-                                <td>0.0%</td>
-                                <td class="metric-pos">0.0</td>
-                                <td class="metric-pos">0.0%</td>
-                            </tr>
-                            
-                        </tbody>
-                    </table>
-                    </div>
-                    
-                </div>
-
-                <div class="panel">
-                    <div class="panel-head">
-                        <div>
-                            <h2>Recent Trades</h2>
-                            <div class="muted">Latest resolved production trades with realized outcome</div>
-                        </div>
-                    </div>
-                    
-                    <div class="table-wrap">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>When</th>
-                                <th>Direction</th>
-                                <th>Regime</th>
-                                <th>Est</th>
-                                <th>Market</th>
-                                <th>P&amp;L</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            
-                            <tr>
-                                <td class="nowrap">04-03 08:25</td>
-                                <td><span class="pill down">DOWN</span></td>
-                                <td>HIGH_VOL / NEUTRAL</td>
-                                <td>38.0%</td>
-                                <td>
-                                    <div class="metric-neg">loss</div>
-                                    <div class="logic">streak_3 | direction_down | compression</div>
-                                </td>
-                                <td class="metric-neg">-75.0</td>
-                            </tr>
-                            
-                            <tr>
-                                <td class="nowrap">04-03 07:35</td>
-                                <td><span class="pill up">UP</span></td>
-                                <td>MEDIUM_VOL / NEUTRAL</td>
-                                <td>62.0%</td>
-                                <td>
-                                    <div class="metric-pos">win</div>
-                                    <div class="logic">streak_4 | direction_up | volume_spike</div>
-                                </td>
-                                <td class="metric-pos">110.19</td>
-                            </tr>
-                            
-                            <tr>
-                                <td class="nowrap">04-03 06:35</td>
-                                <td><span class="pill down">DOWN</span></td>
-                                <td>MEDIUM_VOL / NEUTRAL</td>
-                                <td>38.0%</td>
-                                <td>
-                                    <div class="metric-neg">loss</div>
-                                    <div class="logic">streak_3 | direction_down | compression</div>
-                                </td>
-                                <td class="metric-neg">-75.0</td>
-                            </tr>
-                            
-                            <tr>
-                                <td class="nowrap">04-03 01:35</td>
-                                <td><span class="pill up">UP</span></td>
-                                <td>MEDIUM_VOL / NEUTRAL</td>
-                                <td>62.0%</td>
-                                <td>
-                                    <div class="metric-neg">loss</div>
-                                    <div class="logic">streak_3 | direction_up | compression</div>
-                                </td>
-                                <td class="metric-neg">-75.0</td>
-                            </tr>
-                            
-                            <tr>
-                                <td class="nowrap">04-02 22:45</td>
-                                <td><span class="pill up">UP</span></td>
-                                <td>MEDIUM_VOL / NEUTRAL</td>
-                                <td>62.0%</td>
-                                <td>
-                                    <div class="metric-neg">loss</div>
-                                    <div class="logic">streak_3 | direction_up | compression</div>
-                                </td>
-                                <td class="metric-neg">-75.0</td>
-                            </tr>
-                            
-                            <tr>
-                                <td class="nowrap">04-02 19:35</td>
-                                <td><span class="pill up">UP</span></td>
-                                <td>MEDIUM_VOL / TRENDING</td>
-                                <td>62.0%</td>
-                                <td>
-                                    <div class="metric-neg">loss</div>
-                                    <div class="logic">streak_3 | direction_up | compression</div>
-                                </td>
-                                <td class="metric-neg">-75.0</td>
-                            </tr>
-                            
-                            <tr>
-                                <td class="nowrap">04-02 18:25</td>
-                                <td><span class="pill up">UP</span></td>
-                                <td>HIGH_VOL / NEUTRAL</td>
-                                <td>62.0%</td>
-                                <td>
-                                    <div class="metric-neg">loss</div>
-                                    <div class="logic">streak_3 | direction_up | compression</div>
-                                </td>
-                                <td class="metric-neg">-75.0</td>
-                            </tr>
-                            
-                            <tr>
-                                <td class="nowrap">04-02 16:55</td>
-                                <td><span class="pill up">UP</span></td>
-                                <td>MEDIUM_VOL / TRENDING</td>
-                                <td>62.0%</td>
-                                <td>
-                                    <div class="metric-pos">win</div>
-                                    <div class="logic">streak_6 | direction_up | compression</div>
-                                </td>
-                                <td class="metric-pos">147.83</td>
-                            </tr>
-                            
-                            <tr>
-                                <td class="nowrap">04-02 16:50</td>
-                                <td><span class="pill up">UP</span></td>
-                                <td>MEDIUM_VOL / TRENDING</td>
-                                <td>62.0%</td>
-                                <td>
-                                    <div class="metric-pos">win</div>
-                                    <div class="logic">streak_5 | direction_up | compression</div>
-                                </td>
-                                <td class="metric-pos">141.88</td>
-                            </tr>
-                            
-                            <tr>
-                                <td class="nowrap">04-02 16:45</td>
-                                <td><span class="pill up">UP</span></td>
-                                <td>MEDIUM_VOL / TRENDING</td>
-                                <td>62.0%</td>
-                                <td>
-                                    <div class="metric-pos">win</div>
-                                    <div class="logic">streak_4 | direction_up | volume_spike</div>
-                                </td>
-                                <td class="metric-pos">24.34</td>
-                            </tr>
-                            
-                            <tr>
-                                <td class="nowrap">04-02 16:40</td>
-                                <td><span class="pill up">UP</span></td>
-                                <td>MEDIUM_VOL / TRENDING</td>
-                                <td>62.0%</td>
-                                <td>
-                                    <div class="metric-pos">win</div>
-                                    <div class="logic">streak_3 | direction_up | volume_spike</div>
-                                </td>
-                                <td class="metric-pos">20.54</td>
-                            </tr>
-                            
-                            <tr>
-                                <td class="nowrap">04-02 14:20</td>
-                                <td><span class="pill up">UP</span></td>
-                                <td>HIGH_VOL / TRENDING</td>
-                                <td>62.0%</td>
-                                <td>
-                                    <div class="metric-pos">win</div>
-                                    <div class="logic">streak_3 | direction_up | compression</div>
-                                </td>
-                                <td class="metric-pos">148.88</td>
-                            </tr>
-                            
-                        </tbody>
-                    </table>
-                    </div>
-                    
-                </div>
-            </div>
-
-            <div class="matrix">
-                <div class="panel">
-                    <div class="panel-head">
-                        <div>
-                            <h2>Pending Markets</h2>
-                            <div class="muted">Latest signal per market and agent</div>
-                        </div>
-                    </div>
-                    
-                    <div class="table-wrap">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Market</th>
-                                <th>Market Price</th>
-                                
-                                <th>contrarian_rule</th>
-                                
-                            </tr>
-                        </thead>
-                        <tbody>
-                            
-                            <tr>
-                                <td>
-                                    <div class="market">Bitcoin Up or Down - April 3, 5:45AM-5:50AM ET</div>
-                                    <div class="muted">Ends 2026-04-03T09:50:00Z</div>
-                                </td>
-                                <td>27.0%</td>
-                                
-                                
-                                <td>
-                                    
-                                    <div><span class="pill skip">SKIP</span></div>
-                                    <div><strong>50.0%</strong> UP</div>
-                                    <div class="muted">MEDIUM_VOL / MEAN_REVERTING | conviction 0</div>
-                                    <div class="logic">streak_too_short | regime_filter</div>
-                                    
-                                </td>
-                                
-                            </tr>
-                            
-                            <tr>
-                                <td>
-                                    <div class="market">Bitcoin Up or Down - April 3, 5:50AM-5:55AM ET</div>
-                                    <div class="muted">Ends 2026-04-03T09:55:00Z</div>
-                                </td>
-                                <td>50.5%</td>
-                                
-                                
-                                <td>
-                                    
-                                    <span class="muted">No signal</span>
-                                    
-                                </td>
-                                
-                            </tr>
-                            
-                            <tr>
-                                <td>
-                                    <div class="market">Bitcoin Up or Down - April 3, 5:55AM-6:00AM ET</div>
-                                    <div class="muted">Ends 2026-04-03T10:00:00Z</div>
-                                </td>
-                                <td>50.5%</td>
-                                
-                                
-                                <td>
-                                    
-                                    <span class="muted">No signal</span>
-                                    
-                                </td>
-                                
-                            </tr>
-                            
-                            <tr>
-                                <td>
-                                    <div class="market">Bitcoin Up or Down - April 3, 6:00AM-6:05AM ET</div>
-                                    <div class="muted">Ends 2026-04-03T10:05:00Z</div>
-                                </td>
-                                <td>50.5%</td>
-                                
-                                
-                                <td>
-                                    
-                                    <span class="muted">No signal</span>
-                                    
-                                </td>
-                                
-                            </tr>
-                            
-                            <tr>
-                                <td>
-                                    <div class="market">Bitcoin Up or Down - April 3, 6:05AM-6:10AM ET</div>
-                                    <div class="muted">Ends 2026-04-03T10:10:00Z</div>
-                                </td>
-                                <td>50.5%</td>
-                                
-                                
-                                <td>
-                                    
-                                    <span class="muted">No signal</span>
-                                    
-                                </td>
-                                
-                            </tr>
-                            
-                            <tr>
-                                <td>
-                                    <div class="market">Bitcoin Up or Down - April 3, 6:10AM-6:15AM ET</div>
-                                    <div class="muted">Ends 2026-04-03T10:15:00Z</div>
-                                </td>
-                                <td>50.5%</td>
-                                
-                                
-                                <td>
-                                    
-                                    <span class="muted">No signal</span>
-                                    
-                                </td>
-                                
-                            </tr>
-                            
-                            <tr>
-                                <td>
-                                    <div class="market">Bitcoin Up or Down - April 3, 6:15AM-6:20AM ET</div>
-                                    <div class="muted">Ends 2026-04-03T10:20:00Z</div>
-                                </td>
-                                <td>50.5%</td>
-                                
-                                
-                                <td>
-                                    
-                                    <span class="muted">No signal</span>
-                                    
-                                </td>
-                                
-                            </tr>
-                            
-                            <tr>
-                                <td>
-                                    <div class="market">Bitcoin Up or Down - April 3, 6:20AM-6:25AM ET</div>
-                                    <div class="muted">Ends 2026-04-03T10:25:00Z</div>
-                                </td>
-                                <td>50.5%</td>
-                                
-                                
-                                <td>
-                                    
-                                    <span class="muted">No signal</span>
-                                    
-                                </td>
-                                
-                            </tr>
-                            
-                            <tr>
-                                <td>
-                                    <div class="market">Bitcoin Up or Down - April 3, 6:25AM-6:30AM ET</div>
-                                    <div class="muted">Ends 2026-04-03T10:30:00Z</div>
-                                </td>
-                                <td>50.5%</td>
-                                
-                                
-                                <td>
-                                    
-                                    <span class="muted">No signal</span>
-                                    
-                                </td>
-                                
-                            </tr>
-                            
-                            <tr>
-                                <td>
-                                    <div class="market">Bitcoin Up or Down - April 3, 6:30AM-6:35AM ET</div>
-                                    <div class="muted">Ends 2026-04-03T10:35:00Z</div>
-                                </td>
-                                <td>49.5%</td>
-                                
-                                
-                                <td>
-                                    
-                                    <span class="muted">No signal</span>
-                                    
-                                </td>
-                                
-                            </tr>
-                            
-                        </tbody>
-                    </table>
-                    </div>
-                    
-                </div>
-
-                <div class="panel">
-                    <div class="panel-head">
-                        <div>
-                            <h2>Recent Settled Markets</h2>
-                            <div class="muted">Latest resolved markets with signal and trade outcome</div>
-                        </div>
-                    </div>
-                    
-                    <div class="table-wrap">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Market</th>
-                                <th>Outcome</th>
-                                
-                                <th>contrarian_rule</th>
-                                
-                            </tr>
-                        </thead>
-                        <tbody>
-                            
-                            <tr>
-                                <td>
-                                    <div class="market">Bitcoin Up or Down - April 3, 5:40AM-5:45AM ET</div>
-                                    <div class="muted">Resolved 2026-04-03T09:45:00Z</div>
-                                </td>
-                                <td><span class="pill up">UP</span></td>
-                                
-                                
-                                <td>
-                                    
-                                    <div><span class="pill skip">SKIP</span></div>
-                                    <div><strong>50.0%</strong> UP</div>
-                                    <div class="metric-neg">signal wrong</div>
-                                    
-                                    <div class="logic">streak_too_short | regime_filter</div>
-                                    
-                                </td>
-                                
-                            </tr>
-                            
-                            <tr>
-                                <td>
-                                    <div class="market">Bitcoin Up or Down - April 3, 5:35AM-5:40AM ET</div>
-                                    <div class="muted">Resolved 2026-04-03T09:40:00Z</div>
-                                </td>
-                                <td><span class="pill down">DOWN</span></td>
-                                
-                                
-                                <td>
-                                    
-                                    <div><span class="pill skip">SKIP</span></div>
-                                    <div><strong>50.0%</strong> UP</div>
-                                    <div class="metric-neg">signal wrong</div>
-                                    
-                                    <div class="logic">streak_too_short | regime_filter</div>
-                                    
-                                </td>
-                                
-                            </tr>
-                            
-                            <tr>
-                                <td>
-                                    <div class="market">Bitcoin Up or Down - April 3, 5:30AM-5:35AM ET</div>
-                                    <div class="muted">Resolved 2026-04-03T09:35:00Z</div>
-                                </td>
-                                <td><span class="pill up">UP</span></td>
-                                
-                                
-                                <td>
-                                    
-                                    <div><span class="pill skip">SKIP</span></div>
-                                    <div><strong>50.0%</strong> UP</div>
-                                    <div class="metric-neg">signal wrong</div>
-                                    
-                                    <div class="logic">streak_too_short | regime_filter</div>
-                                    
-                                </td>
-                                
-                            </tr>
-                            
-                            <tr>
-                                <td>
-                                    <div class="market">Bitcoin Up or Down - April 3, 5:25AM-5:30AM ET</div>
-                                    <div class="muted">Resolved 2026-04-03T09:30:00Z</div>
-                                </td>
-                                <td><span class="pill up">UP</span></td>
-                                
-                                
-                                <td>
-                                    
-                                    <div><span class="pill skip">SKIP</span></div>
-                                    <div><strong>50.0%</strong> UP</div>
-                                    <div class="metric-neg">signal wrong</div>
-                                    
-                                    <div class="logic">streak_too_short | regime_filter</div>
-                                    
-                                </td>
-                                
-                            </tr>
-                            
-                            <tr>
-                                <td>
-                                    <div class="market">Bitcoin Up or Down - April 3, 5:20AM-5:25AM ET</div>
-                                    <div class="muted">Resolved 2026-04-03T09:25:00Z</div>
-                                </td>
-                                <td><span class="pill down">DOWN</span></td>
-                                
-                                
-                                <td>
-                                    
-                                    <div><span class="pill skip">SKIP</span></div>
-                                    <div><strong>50.0%</strong> UP</div>
-                                    <div class="metric-neg">signal wrong</div>
-                                    
-                                    <div class="logic">no_exhaustion | regime_filter</div>
-                                    
-                                </td>
-                                
-                            </tr>
-                            
-                            <tr>
-                                <td>
-                                    <div class="market">Bitcoin Up or Down - April 3, 5:15AM-5:20AM ET</div>
-                                    <div class="muted">Resolved 2026-04-03T09:20:00Z</div>
-                                </td>
-                                <td><span class="pill down">DOWN</span></td>
-                                
-                                
-                                <td>
-                                    
-                                    <div><span class="pill skip">SKIP</span></div>
-                                    <div><strong>50.0%</strong> UP</div>
-                                    <div class="metric-neg">signal wrong</div>
-                                    
-                                    <div class="logic">streak_too_short | regime_filter</div>
-                                    
-                                </td>
-                                
-                            </tr>
-                            
-                            <tr>
-                                <td>
-                                    <div class="market">Bitcoin Up or Down - April 3, 5:10AM-5:15AM ET</div>
-                                    <div class="muted">Resolved 2026-04-03T09:15:00Z</div>
-                                </td>
-                                <td><span class="pill up">UP</span></td>
-                                
-                                
-                                <td>
-                                    
-                                    <div><span class="pill skip">SKIP</span></div>
-                                    <div><strong>50.0%</strong> UP</div>
-                                    <div class="metric-neg">signal wrong</div>
-                                    
-                                    <div class="logic">no_exhaustion | regime_filter</div>
-                                    
-                                </td>
-                                
-                            </tr>
-                            
-                            <tr>
-                                <td>
-                                    <div class="market">Bitcoin Up or Down - April 3, 5:05AM-5:10AM ET</div>
-                                    <div class="muted">Resolved 2026-04-03T09:10:00Z</div>
-                                </td>
-                                <td><span class="pill down">DOWN</span></td>
-                                
-                                
-                                <td>
-                                    
-                                    <div><span class="pill skip">SKIP</span></div>
-                                    <div><strong>50.0%</strong> UP</div>
-                                    <div class="metric-neg">signal wrong</div>
-                                    
-                                    <div class="logic">streak_too_short | regime_filter</div>
-                                    
-                                </td>
-                                
-                            </tr>
-                            
-                            <tr>
-                                <td>
-                                    <div class="market">Bitcoin Up or Down - April 3, 5:00AM-5:05AM ET</div>
-                                    <div class="muted">Resolved 2026-04-03T09:05:00Z</div>
-                                </td>
-                                <td><span class="pill down">DOWN</span></td>
-                                
-                                
-                                <td>
-                                    
-                                    <div><span class="pill skip">SKIP</span></div>
-                                    <div><strong>50.0%</strong> UP</div>
-                                    <div class="metric-neg">signal wrong</div>
-                                    
-                                    <div class="logic">streak_too_short | regime_filter</div>
-                                    
-                                </td>
-                                
-                            </tr>
-                            
-                            <tr>
-                                <td>
-                                    <div class="market">Bitcoin Up or Down - April 3, 4:55AM-5:00AM ET</div>
-                                    <div class="muted">Resolved 2026-04-03T09:00:00Z</div>
-                                </td>
-                                <td><span class="pill up">UP</span></td>
-                                
-                                
-                                <td>
-                                    
-                                    <div><span class="pill skip">SKIP</span></div>
-                                    <div><strong>50.0%</strong> UP</div>
-                                    <div class="metric-neg">signal wrong</div>
-                                    
-                                    <div class="logic">streak_too_short | regime_filter</div>
-                                    
-                                </td>
-                                
-                            </tr>
-                            
-                        </tbody>
-                    </table>
-                    </div>
-                    
-                </div>
-            </div>
+            
         </div>
         <script>
             (function () {
@@ -1242,7 +273,7 @@
                 function applyTheme(theme) {
                     body.setAttribute("data-theme", theme);
                     if (button) {
-                        button.textContent = theme === "light" ? "Switch to Dark" : "Switch to Light";
+                        button.textContent = theme === "light" ? "切换深色" : "切换浅色";
                     }
                 }
 

@@ -61,7 +61,7 @@ def test_streak_3_up_with_compression():
 
     result = contrarian_signal(candles)
     assert result["should_trade"] is True
-    assert result["estimate"] == 0.62  # ride UP → predict UP (momentum)
+    assert 0.55 < result["estimate"] < 0.65
     assert result["direction"] == "UP"
 
 
@@ -84,7 +84,7 @@ def test_streak_3_down_with_volume_spike():
 
     result = contrarian_signal(candles)
     assert result["should_trade"] is True
-    assert result["estimate"] == 0.38  # ride DOWN → predict DOWN (momentum)
+    assert 0.35 < result["estimate"] < 0.45
     assert result["direction"] == "DOWN"
 
 

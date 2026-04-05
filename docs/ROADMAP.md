@@ -133,6 +133,30 @@ The live system is now in the validation phase: keep collecting resolved product
 
 ---
 
+## Part 6.5: NautilusTrader Execution Split (ACTIVE)
+
+Execution is being moved into a dedicated sibling project: `/root/program/predict-nautilus`.
+
+- `predict` stays research-first:
+  - baseline logic
+  - sample-out promotion
+  - score / dashboard / research reports
+- `predict-nautilus` becomes execution-first:
+  - NautilusTrader runner
+  - Polymarket data + execution adapters
+  - maker-style intent / layer state
+  - bankroll and execution telemetry
+
+Initial scope of the NautilusTrader project:
+- copied baseline signal and regime filter from this repo
+- trusted-edge and fractional-Kelly sizing
+- staged maker quoting (`L1/L2/L3`)
+- `shadow`, `paper`, and `live` runners
+
+Promotion logic remains here. A challenger should still prove itself in `src/v3/promotion.py` before execution policy is changed downstream.
+
+---
+
 ## Part 7: Mac Mini Deployment (DEFERRED)
 
 Move from GitHub Actions (unreliable cron, 1-30 min delays) to always-on Mac Mini.

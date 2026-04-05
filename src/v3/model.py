@@ -131,8 +131,8 @@ class V3Model:
         lr_up = lr_prob > 0.5
         agree = xgb_up == lr_up
 
-        # Conviction check: calibrated probability must be decisive
-        decisive = cal_prob <= 0.38 or cal_prob >= 0.62
+        # Conviction check: require minimum edge away from 50/50.
+        decisive = abs(cal_prob - 0.5) >= 0.12
 
         should_trade = agree and decisive
 

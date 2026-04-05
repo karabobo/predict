@@ -6,11 +6,9 @@ Trade metrics answer "what happened after conviction gates and bet sizing?"
 """
 
 import sqlite3
-import json
-import requests
-from datetime import datetime, timezone
 from pathlib import Path
 
+from fetch_markets import ensure_market_schema
 from metrics import (
     compute_path_risk,
     compute_pnl,
@@ -18,6 +16,7 @@ from metrics import (
     select_exposure_rows,
     select_latest_rows,
 )
+from settlement import mark_official_resolved, sync_settlements
 
 PRODUCTION_AGENTS = {"contrarian_rule"}
 RESEARCH_AGENTS = {
@@ -29,9 +28,7 @@ RESEARCH_AGENTS = {
     "volume_wick",
 }
 
-GAMMA_API = "https://gamma-api.polymarket.com"
 DB_PATH = Path(__file__).parent.parent / "data" / "predictions.db"
-HTTP_TIMEOUT = 15
 
 
 LATEST_PREDICTIONS_SUBQUERY = """
@@ -55,56 +52,16 @@ def _rows_as_dicts(cursor) -> list[dict]:
 
 def mark_resolved(db, market_id, outcome):
     """Mark a market as resolved with outcome 1 (UP) or 0 (DOWN)."""
-    db.execute("UPDATE markets SET resolved = 1, outcome = ? WHERE id = ?", (outcome, market_id))
-    db.commit()
+    ensure_market_schema(db)
+    mark_official_resolved(db, market_id, outcome, commit=True)
     print(f"Marked market {market_id} as resolved: {'UP' if outcome == 1 else 'DOWN'}")
 
 
 def auto_resolve(db):
-    """Check the Polymarket API for resolved markets and update the database."""
-    now_iso = datetime.now(timezone.utc).isoformat()
-    cursor = db.execute("""
-        SELECT id, question
-        FROM markets
-        WHERE resolved = 0
-          AND end_date <= ?
-        ORDER BY end_date ASC
-    """, (now_iso,))
-    unresolved = cursor.fetchall()
-    if not unresolved:
-        return 0
-
-    resolved_count = 0
-    for market_id, question in unresolved:
-        try:
-            resp = requests.get(
-                f"{GAMMA_API}/markets/{market_id}",
-                timeout=HTTP_TIMEOUT,
-            )
-            resp.raise_for_status()
-            market = resp.json()
-
-            if not market.get("closed"):
-                continue
-
-            raw_prices = market.get("outcomePrices", "[]")
-            prices = json.loads(raw_prices) if isinstance(raw_prices, str) else raw_prices
-            price_yes = float(prices[0])
-
-            # Resolved markets snap to 0 or 1
-            if price_yes == 1.0:
-                outcome = 1
-            elif price_yes == 0.0:
-                outcome = 0
-            else:
-                continue  # Closed but not yet fully resolved
-
-            mark_resolved(db, market_id, outcome)
-            resolved_count += 1
-        except (requests.RequestException, ValueError, KeyError, IndexError):
-            continue
-
-    return resolved_count
+    """Check for official Polymarket resolutions and update the database."""
+    ensure_market_schema(db)
+    counts = sync_settlements(db, include_provisional=False)
+    return counts["official_resolved"]
 
 
 def calculate_signal_metrics(db):
@@ -271,7 +228,7 @@ def print_scorecard(signal_metrics, trade_metrics=None, path_risk_metrics=None):
 
     if research_rows:
         print("\n" + "=" * 70)
-        print("HISTORICAL / RESEARCH SCORECARD")
+        print("CHALLENGERS / RESEARCH COACHES")
         print("=" * 70)
 
         worst_agent = None
@@ -281,7 +238,8 @@ def print_scorecard(signal_metrics, trade_metrics=None, path_risk_metrics=None):
             avg_vs_market = data["avg_vs_market"]
             beat_market = "BEATING" if avg_vs_market < 0 else "LOSING TO"
 
-            print(f"\n  {agent}")
+            role = "challenger" if agent == "deepseek-ai/DeepSeek-V3" else "research coach"
+            print(f"\n  {agent} [{role}]")
             print(f"    Avg Brier:     {avg_brier:.4f}")
             print(f"    Resolved:      {data['resolved_count']}")
             print(f"    Call Acc:      {data['directional_accuracy'] * 100:.1f}%")
@@ -301,7 +259,7 @@ def print_scorecard(signal_metrics, trade_metrics=None, path_risk_metrics=None):
 
         if worst_agent is not None:
             print(f"\n  → WORST RESEARCH PERFORMER: {worst_agent} (Brier: {worst_brier:.4f})")
-            print("  → Historical diagnostics only. Production remains pinned to contrarian_rule.")
+            print("  → Research rows are diagnostic only. Production remains pinned to contrarian_rule.")
     print("=" * 70)
 
     return "contrarian_rule"

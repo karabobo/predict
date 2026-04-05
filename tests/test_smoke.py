@@ -96,3 +96,42 @@ def test_dashboard_pnl_on_empty_data():
     ens = compute_ensemble_pnl([])
     assert ens["total_pnl"] == 0
     assert ens["num_bets"] == 0
+
+
+def test_rule_candidate_report_includes_recent_windows():
+    """Rule candidate report includes recent-window stats for the spotlight rule."""
+    from dashboard import render_rule_candidate_markdown
+
+    markdown = render_rule_candidate_markdown()
+    assert "## Recent Windows" in markdown
+    assert "Last 14d" in markdown
+    assert "Last 30d" in markdown
+    assert "## Baseline V3 vs V4 Reversal Family" in markdown
+    assert "## Baseline V4 Reversal Legs" in markdown
+    assert "## Baseline V2 Research Skeletons" in markdown
+    assert "## Router Overlay Candidates" in markdown
+    assert "LVN Alpha≥2 骨架" in markdown
+
+
+def test_promotion_registers_v4_challenger():
+    """Promotion contender registry should expose the V4 reversal candidate."""
+    from v3.arena import contender_factories
+
+    factories = contender_factories()
+    assert "baseline_v4_window_state" in factories
+
+
+def test_promotion_registers_router_v1_challenger():
+    """Promotion contender registry should expose the broad regime-router candidate."""
+    from v3.arena import contender_factories
+
+    factories = contender_factories()
+    assert "baseline_router_v1" in factories
+
+
+def test_promotion_registers_router_v2_challenger():
+    """Promotion contender registry should expose the upgraded broad regime-router candidate."""
+    from v3.arena import contender_factories
+
+    factories = contender_factories()
+    assert "baseline_router_v2" in factories

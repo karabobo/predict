@@ -13,13 +13,17 @@ import os
 import random
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Callable
+
+import pandas as pd
 
 from src import prompts
 from src.ai_client import client as ai_client
 from src.btc_data import _compute_summary
 from src.btc_data import format_for_prompt
 from src.strategies.momentum import contrarian_signal as production_momentum_signal
+from src.strategies.momentum import estimate_from_signal_features
 from src.strategies.regime import compute_regime_from_candles as production_regime
 from src.v3.backtest import build_synthetic_markets, candles_to_btc_format, download_historical_candles
 from src.v3.backtest import contrarian_rule_predict as legacy_contrarian_predict
@@ -34,6 +38,7 @@ from src.v3.config import (
 )
 from src.v3.features import compute_features
 from src.v3.regime import compute_regime as v3_regime
+from src.v3.rule_variants import available_rules as available_rule_variants
 
 
 @dataclass(frozen=True)
@@ -145,7 +150,12 @@ class LegacyEnhancedContender(BaseContender):
         if exhaustion_count < 2:
             return _deterministic_decision(0.5, False, f"{self.name}:need_2_of_3")
 
-        prob_up = 0.38 if streak >= 3 else 0.62
+        prob_up = estimate_from_signal_features(
+            last_direction="DOWN" if streak >= 3 else "UP",
+            streak=abs(streak),
+            compression=context.features.get("compression", 0) > 0 or context.features.get("range_ratio", 1.0) < 0.7,
+            volume_spike=context.features.get("volume_ratio", 1.0) > 1.8,
+        )
         return _deterministic_decision(prob_up, True, self.name)
 
 
@@ -219,6 +229,46 @@ class DeepSeekV3Contender(BaseContender):
         )
 
 
+class RuleVariantContender(BaseContender):
+    rule_name = "rule_variant"
+
+    def __init__(self) -> None:
+        rules = available_rule_variants()
+        if self.rule_name not in rules:
+            raise ValueError(f"Unknown rule variant contender: {self.rule_name}")
+        self._rule = rules[self.rule_name]
+
+    def predict(self, context: ResearchContext) -> ResearchDecision:
+        signal = self._rule(context.formatted_candles, context.production_regime)
+        return ResearchDecision(
+            prob_up=float(signal.get("estimate", 0.5)),
+            should_trade=bool(signal.get("should_trade", False)),
+            reason=str(signal.get("reason", self.rule_name)),
+            conviction_score=int(signal.get("conviction_score", 0)),
+            confidence=str(signal.get("confidence", "low")),
+        )
+
+
+class CandidateLVNUpVolumeSpikeStreak4PContender(RuleVariantContender):
+    name = "candidate_lvn_up_volume_spike_streak4p"
+    rule_name = "only_lvn_up_volume_spike_streak4p"
+
+
+class BaselineV4WindowStateContender(RuleVariantContender):
+    name = "baseline_v4_window_state"
+    rule_name = "baseline_v4_window_state"
+
+
+class BaselineRouterV1Contender(RuleVariantContender):
+    name = "baseline_router_v1"
+    rule_name = "baseline_router_v1"
+
+
+class BaselineRouterV2Contender(RuleVariantContender):
+    name = "baseline_router_v2"
+    rule_name = "baseline_router_v2"
+
+
 def contender_factories() -> dict[str, Callable[[], BaseContender]]:
     return {
         ProductionBaselineContender.name: ProductionBaselineContender,
@@ -227,6 +277,10 @@ def contender_factories() -> dict[str, Callable[[], BaseContender]]:
         LegacyEnhancedContender.name: LegacyEnhancedContender,
         V3MLContender.name: V3MLContender,
         DeepSeekV3Contender.name: DeepSeekV3Contender,
+        CandidateLVNUpVolumeSpikeStreak4PContender.name: CandidateLVNUpVolumeSpikeStreak4PContender,
+        BaselineV4WindowStateContender.name: BaselineV4WindowStateContender,
+        BaselineRouterV1Contender.name: BaselineRouterV1Contender,
+        BaselineRouterV2Contender.name: BaselineRouterV2Contender,
     }
 
 
@@ -271,12 +325,15 @@ def prepare_market_contexts(markets: list[dict[str, Any]]) -> list[ResearchConte
     return contexts
 
 
-def build_research_dataset(days: int, lookback: int = 20) -> dict[str, Any]:
+def build_research_dataset(days: int, lookback: int = 20, candles_file: str | None = None) -> dict[str, Any]:
     from datetime import datetime, timedelta, timezone
 
     end_date = datetime.now(timezone.utc)
     start_date = end_date - timedelta(days=days)
-    candles = download_historical_candles(start_date, end_date)
+    if candles_file:
+        candles = _load_local_candles(Path(candles_file), start_date, end_date)
+    else:
+        candles = download_historical_candles(start_date, end_date)
     markets = build_synthetic_markets(candles, lookback=lookback)
     contexts = prepare_market_contexts(markets)
     return {
@@ -286,6 +343,54 @@ def build_research_dataset(days: int, lookback: int = 20) -> dict[str, Any]:
         "markets": markets,
         "contexts": contexts,
     }
+
+
+def _load_local_candles(path: Path, start_date: datetime, end_date: datetime) -> list[dict[str, Any]]:
+    if path.suffix.lower() == ".parquet":
+        frame = pd.read_parquet(path)
+    elif path.suffix.lower() == ".csv":
+        frame = pd.read_csv(path)
+    else:
+        raise ValueError(f"Unsupported candles file: {path.suffix}")
+
+    cols = {c.lower(): c for c in frame.columns}
+    ts_col = next((cols[c] for c in ("ts", "timestamp", "time", "datetime") if c in cols), None)
+    if ts_col is None:
+        raise ValueError("Candles file must include ts/timestamp/time column")
+
+    def to_ts(value: Any) -> int:
+        if isinstance(value, pd.Timestamp):
+            if value.tzinfo is None:
+                value = value.tz_localize("UTC")
+            return int(value.timestamp())
+        text = str(value)
+        try:
+            return int(float(text))
+        except ValueError:
+            parsed = pd.Timestamp(text)
+            if parsed.tzinfo is None:
+                parsed = parsed.tz_localize("UTC")
+            return int(parsed.timestamp())
+
+    start_ts = int(start_date.timestamp())
+    end_ts = int(end_date.timestamp())
+    candles: list[dict[str, Any]] = []
+    for record in frame.to_dict(orient="records"):
+        ts = to_ts(record[ts_col])
+        if ts < start_ts or ts > end_ts:
+            continue
+        candles.append(
+            {
+                "timestamp": ts,
+                "open": float(record[cols.get("open", "open")]),
+                "high": float(record[cols.get("high", "high")]),
+                "low": float(record[cols.get("low", "low")]),
+                "close": float(record[cols.get("close", "close")]),
+                "volume": float(record.get(cols.get("volume", "volume"), 0.0) or 0.0),
+            }
+        )
+    candles.sort(key=lambda row: row["timestamp"])
+    return candles
 
 
 def evaluate_head_to_head(
@@ -353,6 +458,10 @@ def evaluate_head_to_head(
         fold_comparisons,
         gate or PromotionGate(),
     )
+    regime_findings = compare_regime_breakdowns(
+        baseline_summary.get("regime_breakdown", {}),
+        challenger_summary.get("regime_breakdown", {}),
+    )
 
     return {
         "baseline": baseline_summary,
@@ -361,6 +470,7 @@ def evaluate_head_to_head(
         "baseline_folds": baseline_folds,
         "challenger_folds": challenger_folds,
         "gate": gate_result,
+        "regime_findings": regime_findings,
     }
 
 
@@ -435,6 +545,7 @@ def evaluate_fold(
             "called": called,
             "correct_call": correct_call,
             "should_trade": decision.should_trade,
+            "regime": context.production_regime["label"],
             "reason": decision.reason,
         })
 
@@ -512,6 +623,7 @@ def summarize_fold_results(
     total_pnl = sum(trade["pnl"] for trade in trade_log)
     total_wagered = len(trade_log) * bet_size
     max_drawdown = _max_drawdown_amount([trade["pnl"] for trade in trade_log])
+    regime_breakdown = _summarize_regime_breakdown(signal_rows, trade_log, bet_size)
 
     return {
         "name": contender_name,
@@ -535,6 +647,7 @@ def summarize_fold_results(
         "wagered": total_wagered,
         "roi": total_pnl / total_wagered * 100.0 if total_wagered > 0 else 0.0,
         "max_drawdown": max_drawdown,
+        "regime_breakdown": regime_breakdown,
         "trade_log": trade_log,
     }
 
@@ -556,11 +669,12 @@ def aggregate_fold_results(name: str, fold_results: list[dict[str, Any]]) -> dic
             "wins": 0,
             "losses": 0,
             "win_rate": 0.0,
-            "pnl": 0.0,
-            "wagered": 0.0,
-            "roi": 0.0,
-            "max_drawdown": 0.0,
-        }
+        "pnl": 0.0,
+        "wagered": 0.0,
+        "roi": 0.0,
+        "max_drawdown": 0.0,
+        "regime_breakdown": {},
+    }
 
     eval_markets = sum(result["eval_markets"] for result in fold_results)
     signal_calls = sum(result["signal_calls"] for result in fold_results)
@@ -589,6 +703,7 @@ def aggregate_fold_results(name: str, fold_results: list[dict[str, Any]]) -> dic
         "wagered": wagered,
         "roi": pnl / wagered * 100.0 if wagered else 0.0,
         "max_drawdown": max((result["max_drawdown"] for result in fold_results), default=0.0),
+        "regime_breakdown": _aggregate_regime_breakdowns(fold_results),
     }
 
 
@@ -607,6 +722,148 @@ def compare_fold_results(baseline: dict[str, Any], challenger: dict[str, Any]) -
         "drawdown_ratio": drawdown_ratio,
         "baseline_trades": baseline["trades"],
         "challenger_trades": challenger["trades"],
+    }
+
+
+def _summarize_regime_breakdown(
+    signal_rows: list[dict[str, Any]],
+    trade_log: list[dict[str, Any]],
+    bet_size: float,
+) -> dict[str, dict[str, Any]]:
+    regimes = {
+        str(row.get("regime") or "UNKNOWN") for row in signal_rows
+    } | {
+        str(trade.get("regime") or "UNKNOWN") for trade in trade_log
+    }
+    breakdown: dict[str, dict[str, Any]] = {}
+
+    for regime in regimes:
+        regime_signals = [row for row in signal_rows if str(row.get("regime") or "UNKNOWN") == regime]
+        regime_trades = [trade for trade in trade_log if str(trade.get("regime") or "UNKNOWN") == regime]
+        called = sum(1 for row in regime_signals if row["called"])
+        correct_calls = sum(1 for row in regime_signals if row["correct_call"])
+        wins = sum(1 for trade in regime_trades if trade["correct"])
+        pnl = sum(float(trade["pnl"]) for trade in regime_trades)
+        wagered = len(regime_trades) * bet_size
+
+        breakdown[regime] = {
+            "regime": regime,
+            "eval_markets": len(regime_signals),
+            "signal_calls": called,
+            "correct_calls": correct_calls,
+            "directional_accuracy": correct_calls / called if called else 0.0,
+            "avg_brier": (
+                sum(float(row["brier"]) for row in regime_signals) / len(regime_signals)
+                if regime_signals else 0.0
+            ),
+            "avg_vs_market": (
+                sum(float(row["brier"]) - float(row["market_brier"]) for row in regime_signals) / len(regime_signals)
+                if regime_signals else 0.0
+            ),
+            "signal_trade_rate": (
+                sum(1 for row in regime_signals if row["should_trade"]) / len(regime_signals)
+                if regime_signals else 0.0
+            ),
+            "trades": len(regime_trades),
+            "wins": wins,
+            "losses": len(regime_trades) - wins,
+            "win_rate": wins / len(regime_trades) if regime_trades else 0.0,
+            "pnl": pnl,
+            "wagered": wagered,
+            "roi": pnl / wagered * 100.0 if wagered else 0.0,
+        }
+    return breakdown
+
+
+def _aggregate_regime_breakdowns(fold_results: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for fold in fold_results:
+        for regime, stats in fold.get("regime_breakdown", {}).items():
+            grouped.setdefault(regime, []).append(stats)
+
+    aggregate: dict[str, dict[str, Any]] = {}
+    for regime, rows in grouped.items():
+        eval_markets = sum(int(row["eval_markets"]) for row in rows)
+        signal_calls = sum(int(row["signal_calls"]) for row in rows)
+        correct_calls = sum(int(row["correct_calls"]) for row in rows)
+        trades = sum(int(row["trades"]) for row in rows)
+        wins = sum(int(row["wins"]) for row in rows)
+        wagered = sum(float(row["wagered"]) for row in rows)
+        pnl = sum(float(row["pnl"]) for row in rows)
+        aggregate[regime] = {
+            "regime": regime,
+            "eval_markets": eval_markets,
+            "signal_calls": signal_calls,
+            "correct_calls": correct_calls,
+            "directional_accuracy": correct_calls / signal_calls if signal_calls else 0.0,
+            "avg_brier": _weighted_mean(rows, "avg_brier", "eval_markets"),
+            "avg_vs_market": _weighted_mean(rows, "avg_vs_market", "eval_markets"),
+            "signal_trade_rate": _weighted_mean(rows, "signal_trade_rate", "eval_markets"),
+            "trades": trades,
+            "wins": wins,
+            "losses": trades - wins,
+            "win_rate": wins / trades if trades else 0.0,
+            "pnl": pnl,
+            "wagered": wagered,
+            "roi": pnl / wagered * 100.0 if wagered else 0.0,
+        }
+    return aggregate
+
+
+def compare_regime_breakdowns(
+    baseline_breakdown: dict[str, dict[str, Any]],
+    challenger_breakdown: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
+    rows = []
+    for regime in sorted(set(baseline_breakdown) | set(challenger_breakdown)):
+        base = baseline_breakdown.get(regime, {"trades": 0, "roi": 0.0, "pnl": 0.0, "win_rate": 0.0, "eval_markets": 0})
+        chal = challenger_breakdown.get(regime, {"trades": 0, "roi": 0.0, "pnl": 0.0, "win_rate": 0.0, "eval_markets": 0})
+        rows.append(
+            {
+                "regime": regime,
+                "baseline_trades": int(base.get("trades", 0)),
+                "challenger_trades": int(chal.get("trades", 0)),
+                "baseline_roi": float(base.get("roi", 0.0)),
+                "challenger_roi": float(chal.get("roi", 0.0)),
+                "baseline_pnl": float(base.get("pnl", 0.0)),
+                "challenger_pnl": float(chal.get("pnl", 0.0)),
+                "baseline_wr": float(base.get("win_rate", 0.0)),
+                "challenger_wr": float(chal.get("win_rate", 0.0)),
+                "eval_markets": max(int(base.get("eval_markets", 0)), int(chal.get("eval_markets", 0))),
+                "roi_delta": float(chal.get("roi", 0.0)) - float(base.get("roi", 0.0)),
+                "pnl_delta": float(chal.get("pnl", 0.0)) - float(base.get("pnl", 0.0)),
+                "win_rate_delta": (float(chal.get("win_rate", 0.0)) - float(base.get("win_rate", 0.0))) * 100.0,
+            }
+        )
+
+    helpful = [
+        row for row in rows
+        if row["challenger_trades"] > 0 and row["roi_delta"] > 0 and row["pnl_delta"] >= 0
+    ]
+    harmful = [
+        row for row in rows
+        if row["challenger_trades"] > 0 and row["roi_delta"] < 0 and row["pnl_delta"] <= 0
+    ]
+    helpful.sort(key=lambda row: (row["roi_delta"], row["pnl_delta"]), reverse=True)
+    harmful.sort(key=lambda row: (row["roi_delta"], row["pnl_delta"]))
+
+    takeaways = []
+    if helpful:
+        top = helpful[0]
+        takeaways.append(
+            f"Best challenger regime: {top['regime']} ({top['roi_delta']:+.2f}pp ROI, {top['pnl_delta']:+.2f} P&L vs baseline)"
+        )
+    if harmful:
+        worst = harmful[0]
+        takeaways.append(
+            f"Worst challenger regime: {worst['regime']} ({worst['roi_delta']:+.2f}pp ROI, {worst['pnl_delta']:+.2f} P&L vs baseline)"
+        )
+
+    return {
+        "rows": rows,
+        "helpful": helpful[:5],
+        "harmful": harmful[:5],
+        "takeaways": takeaways,
     }
 
 

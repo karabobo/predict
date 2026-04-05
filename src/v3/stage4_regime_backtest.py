@@ -18,6 +18,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from src.btc_data import _compute_summary
+from src.strategies.momentum import estimate_from_signal_features
 from src.v3.backtest import (
     download_historical_candles,
     build_synthetic_markets,
@@ -89,11 +90,21 @@ def enhanced_contrarian(features):
     if exhaustion_count < 2:
         return 0.5, False
 
-    # Fade the streak
+    # Fade the streak with dynamic confidence derived from the same feature family.
     if streak >= 3:
-        return 0.38, True
+        return estimate_from_signal_features(
+            last_direction="DOWN",
+            streak=abs(streak),
+            compression=exhaustion_count >= 1,
+            volume_spike=volume_ratio > 1.8,
+        ), True
     elif streak <= -3:
-        return 0.62, True
+        return estimate_from_signal_features(
+            last_direction="UP",
+            streak=abs(streak),
+            compression=exhaustion_count >= 1,
+            volume_spike=volume_ratio > 1.8,
+        ), True
 
     return 0.5, False
 

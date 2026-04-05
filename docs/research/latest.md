@@ -1,7 +1,7 @@
 # Research Promotion Report
 
-- Run ID: `f8f44fee1bbf`
-- Generated: `2026-04-03T09:07:39.810820+00:00`
+- Run ID: `451b2b4d3f47`
+- Generated: `2026-04-05T12:08:42.842755+00:00`
 - Baseline: `production_baseline`
 - Challenger: `deepseek_v3`
 - Dataset days: `3`
@@ -15,37 +15,43 @@
 | Metric | Baseline | Challenger | Delta |
 | --- | ---: | ---: | ---: |
 | Eval markets | 24 | 24 | 0 |
-| Trades | 0 | 2 | 2 |
+| Trades | 0 | 0 | 0 |
 | Directional accuracy | 0.0% | 62.5% | +62.50pp |
-| Avg Brier | 0.2500 | 0.2463 | -0.0037 |
+| Avg Brier | 0.2526 | 0.2421 | -0.0106 |
 | Win rate | 0.0% | 0.0% | +0.00pp |
-| ROI | +0.00% | -101.50% | -101.50pp |
-| P&L | $+0.00 | $-152.25 | $-152.25 |
-| Max drawdown | $+0.00 | $+76.12 | $+76.12 |
+| ROI | +0.00% | +0.00% | +0.00pp |
+| P&L | $+0.00 | $+0.00 | $+0.00 |
+| Max drawdown | $+0.00 | $+0.00 | $+0.00 |
 
 ## Gate Decision
 
 - Result: `FAIL`
-- Passing folds: `0/2`
-- Aggregate ROI delta: `-101.50pp`
+- Passing folds: `2/2`
+- Aggregate ROI delta: `+0.00pp`
 - Aggregate win-rate delta: `+0.00pp`
 - Trade ratio: `1.00`
-- Drawdown ratio: `inf`
+- Drawdown ratio: `0.00`
 
 ### Why It Failed
 
-- aggregate ROI delta -101.50pp < required 5.00pp
-- drawdown ratio inf > allowed 1.00
-- passing folds 0/2 < required 2
+- aggregate ROI delta +0.00pp < required 5.00pp
 
 ## Fold Checks
 
 | Fold | Result | ROI Delta | WR Delta | Trade Ratio | Drawdown OK |
 | --- | --- | ---: | ---: | ---: | --- |
-| 0 | FAIL | -101.50pp | +0.00pp | inf | no |
-| 1 | FAIL | -101.50pp | +0.00pp | inf | no |
+| 0 | PASS | +0.00pp | +0.00pp | 1.00 | yes |
+| 1 | PASS | +0.00pp | +0.00pp | 1.00 | yes |
+
+## Regime Breakdown
+
+| Regime | Baseline Trades | Challenger Trades | ROI Delta | WR Delta | P&L Delta |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| LOW_VOL / MEAN_REVERTING | 0 | 0 | +0.00pp | +0.00pp | $+0.00 |
+| LOW_VOL / NEUTRAL | 0 | 0 | +0.00pp | +0.00pp | $+0.00 |
+| MEDIUM_VOL / MEAN_REVERTING | 0 | 0 | +0.00pp | +0.00pp | $+0.00 |
 
 ## Recommendation
 
 - Keep production pinned to `production_baseline`.
-- Primary blocker: aggregate ROI delta -101.50pp < required 5.00pp
+- Primary blocker: aggregate ROI delta +0.00pp < required 5.00pp
