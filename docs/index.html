@@ -136,25 +136,25 @@
                 </div>
                 <div class="hero-actions">
                     <button class="theme-toggle" id="theme-toggle" type="button">Switch to Light</button>
-                    <div class="stamp">Generated 2026-04-11T18:16:41.221680+00:00</div>
+                    <div class="stamp">Generated 2026-04-11T18:22:16.901576+00:00</div>
                 </div>
             </div>
 
             <div class="stats">
                 <div class="stat">
                     <div class="label">Pending Markets</div>
-                    <div class="value">16</div>
+                    <div class="value">15</div>
                     <div class="meta">Trade candidates: 0</div>
                 </div>
                 <div class="stat">
                     <div class="label">Resolved Markets</div>
-                    <div class="value">3357</div>
-                    <div class="meta">Predictions stored: 4298</div>
+                    <div class="value">3358</div>
+                    <div class="meta">Predictions stored: 4299</div>
                 </div>
                 <div class="stat">
                     <div class="label">Ensemble Bets</div>
                     <div class="value">367</div>
-                    <div class="meta">Skipped: 2478</div>
+                    <div class="meta">Skipped: 2479</div>
                 </div>
                 <div class="stat">
                     <div class="label">Breakeven Margin</div>
@@ -219,7 +219,7 @@
                         </div>
                     </div>
                     <div class="section-note">
-                        Window 04-10 18:16 -> 04-11 18:16.
+                        Window 04-10 18:22 -> 04-11 18:22.
                         Last trade 04-11 17:05.
                         Trade metrics use first actionable exposure; signal metrics use latest snapshot.
                     </div>
@@ -249,10 +249,18 @@
                             
                             <tr>
                                 <td>MEDIUM_VOL / MEAN_REVERTING</td>
-                                <td>2</td>
+                                <td>1</td>
                                 <td class="metric-pos">0</td>
-                                <td class="muted">2</td>
-                                <td>51.5%</td>
+                                <td class="muted">1</td>
+                                <td>50.5%</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>MEDIUM_VOL / NEUTRAL</td>
+                                <td>1</td>
+                                <td class="metric-pos">0</td>
+                                <td class="muted">1</td>
+                                <td>50.0%</td>
                             </tr>
                             
                         </tbody>
@@ -300,7 +308,7 @@
                             <tr>
                                 <td><span class="agent-dot" style="background: #58a6ff"></span>contrarian_rule</td>
                                 
-                                <td>2845</td>
+                                <td>2846</td>
                                 <td>65.8%</td>
                                 <td>0.2463</td>
                                 <td class="metric-neg">0.0219</td>
@@ -448,7 +456,7 @@
                             <tr><th>Total P&amp;L</th><td class="metric-pos">4255.03</td></tr>
                             <tr><th>Total Wagered</th><td>36150.0</td></tr>
                             <tr><th>ROI</th><td class="metric-pos">11.77%</td></tr>
-                            <tr><th>Bets / Skips</th><td>367 / 2478</td></tr>
+                            <tr><th>Bets / Skips</th><td>367 / 2479</td></tr>
                             <tr><th>EV per Bet</th><td class="metric-pos">4.78</td></tr>
                         </tbody>
                     </table>
@@ -499,7 +507,7 @@
                             
                             <tr>
                                 <td>MEDIUM_VOL / NEUTRAL</td>
-                                <td>65</td>
+                                <td>64</td>
                                 <td>5</td>
                                 <td>80.0%</td>
                                 <td class="metric-pos">159.39</td>
@@ -544,7 +552,7 @@
                             
                             <tr>
                                 <td>MEDIUM_VOL / MEAN_REVERTING</td>
-                                <td>48</td>
+                                <td>49</td>
                                 <td>0</td>
                                 <td>0.0%</td>
                                 <td class="metric-pos">0.0</td>
@@ -754,25 +762,6 @@
                             
                             <tr>
                                 <td>
-                                    <div class="market">Bitcoin Up or Down - April 11, 2:10PM-2:15PM ET</div>
-                                    <div class="muted">Ends 2026-04-11T18:15:00Z</div>
-                                </td>
-                                <td>52.5%</td>
-                                
-                                
-                                <td>
-                                    
-                                    <div><span class="pill skip">SKIP</span></div>
-                                    <div><strong>50.0%</strong> UP</div>
-                                    <div class="muted">MEDIUM_VOL / MEAN_REVERTING | conviction 0</div>
-                                    <div class="logic">streak_too_short | regime_filter</div>
-                                    
-                                </td>
-                                
-                            </tr>
-                            
-                            <tr>
-                                <td>
                                     <div class="market">Bitcoin Up or Down - April 11, 2:15PM-2:20PM ET</div>
                                     <div class="muted">Ends 2026-04-11T18:20:00Z</div>
                                 </td>
@@ -795,12 +784,15 @@
                                     <div class="market">Bitcoin Up or Down - April 11, 2:20PM-2:25PM ET</div>
                                     <div class="muted">Ends 2026-04-11T18:25:00Z</div>
                                 </td>
-                                <td>50.5%</td>
+                                <td>50.0%</td>
                                 
                                 
                                 <td>
                                     
-                                    <span class="muted">No signal</span>
+                                    <div><span class="pill skip">SKIP</span></div>
+                                    <div><strong>50.0%</strong> UP</div>
+                                    <div class="muted">MEDIUM_VOL / NEUTRAL | conviction 0</div>
+                                    <div class="logic">no_exhaustion</div>
                                     
                                 </td>
                                 
@@ -918,6 +910,22 @@
                                 
                             </tr>
                             
+                            <tr>
+                                <td>
+                                    <div class="market">Bitcoin Up or Down - April 11, 3:00PM-3:05PM ET</div>
+                                    <div class="muted">Ends 2026-04-11T19:05:00Z</div>
+                                </td>
+                                <td>50.5%</td>
+                                
+                                
+                                <td>
+                                    
+                                    <span class="muted">No signal</span>
+                                    
+                                </td>
+                                
+                            </tr>
+                            
                         </tbody>
                     </table>
                     </div>
@@ -944,6 +952,26 @@
                             </tr>
                         </thead>
                         <tbody>
+                            
+                            <tr>
+                                <td>
+                                    <div class="market">Bitcoin Up or Down - April 11, 2:10PM-2:15PM ET</div>
+                                    <div class="muted">Resolved 2026-04-11T18:15:00Z</div>
+                                </td>
+                                <td><span class="pill up">UP</span></td>
+                                
+                                
+                                <td>
+                                    
+                                    <div><span class="pill skip">SKIP</span></div>
+                                    <div><strong>50.0%</strong> UP</div>
+                                    <div class="metric-neg">signal wrong</div>
+                                    
+                                    <div class="logic">streak_too_short | regime_filter</div>
+                                    
+                                </td>
+                                
+                            </tr>
                             
                             <tr>
                                 <td>
@@ -1107,26 +1135,6 @@
                                     <div class="muted">Resolved 2026-04-11T17:30:00Z</div>
                                 </td>
                                 <td><span class="pill down">DOWN</span></td>
-                                
-                                
-                                <td>
-                                    
-                                    <div><span class="pill skip">SKIP</span></div>
-                                    <div><strong>50.0%</strong> UP</div>
-                                    <div class="metric-neg">signal wrong</div>
-                                    
-                                    <div class="logic">streak_too_short</div>
-                                    
-                                </td>
-                                
-                            </tr>
-                            
-                            <tr>
-                                <td>
-                                    <div class="market">Bitcoin Up or Down - April 11, 1:20PM-1:25PM ET</div>
-                                    <div class="muted">Resolved 2026-04-11T17:25:00Z</div>
-                                </td>
-                                <td><span class="pill up">UP</span></td>
                                 
                                 
                                 <td>
