@@ -136,25 +136,25 @@
                 </div>
                 <div class="hero-actions">
                     <button class="theme-toggle" id="theme-toggle" type="button">Switch to Light</button>
-                    <div class="stamp">Generated 2026-04-26T21:29:13.036767+00:00</div>
+                    <div class="stamp">Generated 2026-04-26T21:34:47.497371+00:00</div>
                 </div>
             </div>
 
             <div class="stats">
                 <div class="stat">
                     <div class="label">Pending Markets</div>
-                    <div class="value">19</div>
-                    <div class="meta">Trade candidates: 0</div>
+                    <div class="value">18</div>
+                    <div class="meta">Trade candidates: 1</div>
                 </div>
                 <div class="stat">
                     <div class="label">Resolved Markets</div>
-                    <div class="value">7696</div>
-                    <div class="meta">Predictions stored: 8206</div>
+                    <div class="value">7697</div>
+                    <div class="meta">Predictions stored: 8207</div>
                 </div>
                 <div class="stat">
                     <div class="label">Ensemble Bets</div>
                     <div class="value">621</div>
-                    <div class="meta">Skipped: 6117</div>
+                    <div class="meta">Skipped: 6118</div>
                 </div>
                 <div class="stat">
                     <div class="label">Breakeven Margin</div>
@@ -175,7 +175,7 @@
                     <div class="mini-grid">
                         <div class="mini-card">
                             <div class="label">Resolved</div>
-                            <div class="value">257</div>
+                            <div class="value">258</div>
                         </div>
                         <div class="mini-card">
                             <div class="label">Called</div>
@@ -219,7 +219,7 @@
                         </div>
                     </div>
                     <div class="section-note">
-                        Window 04-25 21:29 -> 04-26 21:29.
+                        Window 04-25 21:34 -> 04-26 21:34.
                         Last trade 04-26 19:00.
                         Trade metrics use first actionable exposure; signal metrics use latest snapshot.
                     </div>
@@ -249,9 +249,17 @@
                             
                             <tr>
                                 <td>MEDIUM_VOL / MEAN_REVERTING</td>
-                                <td>2</td>
+                                <td>1</td>
                                 <td class="metric-pos">0</td>
-                                <td class="muted">2</td>
+                                <td class="muted">1</td>
+                                <td>51.5%</td>
+                            </tr>
+                            
+                            <tr>
+                                <td>MEDIUM_VOL / NEUTRAL</td>
+                                <td>1</td>
+                                <td class="metric-pos">1</td>
+                                <td class="muted">0</td>
                                 <td>50.5%</td>
                             </tr>
                             
@@ -300,7 +308,7 @@
                             <tr>
                                 <td><span class="agent-dot" style="background: #58a6ff"></span>contrarian_rule</td>
                                 
-                                <td>6738</td>
+                                <td>6739</td>
                                 <td>66.6%</td>
                                 <td>0.2473</td>
                                 <td class="metric-neg">0.0192</td>
@@ -448,7 +456,7 @@
                             <tr><th>Total P&amp;L</th><td class="metric-pos">14119.37</td></tr>
                             <tr><th>Total Wagered</th><td>63575.0</td></tr>
                             <tr><th>ROI</th><td class="metric-pos">22.21%</td></tr>
-                            <tr><th>Bets / Skips</th><td>621 / 6117</td></tr>
+                            <tr><th>Bets / Skips</th><td>621 / 6118</td></tr>
                             <tr><th>EV per Bet</th><td class="metric-pos">15.1</td></tr>
                         </tbody>
                     </table>
@@ -535,7 +543,7 @@
                             
                             <tr>
                                 <td>MEDIUM_VOL / MEAN_REVERTING</td>
-                                <td>35</td>
+                                <td>36</td>
                                 <td>0</td>
                                 <td>0.0%</td>
                                 <td class="metric-pos">0.0</td>
@@ -745,25 +753,6 @@
                             
                             <tr>
                                 <td>
-                                    <div class="market">Bitcoin Up or Down - April 26, 5:20PM-5:25PM ET</div>
-                                    <div class="muted">Ends 2026-04-26T21:25:00Z</div>
-                                </td>
-                                <td>49.5%</td>
-                                
-                                
-                                <td>
-                                    
-                                    <div><span class="pill skip">SKIP</span></div>
-                                    <div><strong>50.0%</strong> UP</div>
-                                    <div class="muted">MEDIUM_VOL / MEAN_REVERTING | conviction 0</div>
-                                    <div class="logic">streak_too_short | regime_filter</div>
-                                    
-                                </td>
-                                
-                            </tr>
-                            
-                            <tr>
-                                <td>
                                     <div class="market">Bitcoin Up or Down - April 26, 5:25PM-5:30PM ET</div>
                                     <div class="muted">Ends 2026-04-26T21:30:00Z</div>
                                 </td>
@@ -791,7 +780,10 @@
                                 
                                 <td>
                                     
-                                    <span class="muted">No signal</span>
+                                    <div><span class="pill trade">TRADE</span></div>
+                                    <div><strong>38.0%</strong> DOWN</div>
+                                    <div class="muted">MEDIUM_VOL / NEUTRAL | conviction 3</div>
+                                    <div class="logic">streak_3 | direction_down | volume_spike</div>
                                     
                                 </td>
                                 
@@ -909,6 +901,22 @@
                                 
                             </tr>
                             
+                            <tr>
+                                <td>
+                                    <div class="market">Bitcoin Up or Down - April 26, 6:10PM-6:15PM ET</div>
+                                    <div class="muted">Ends 2026-04-26T22:15:00Z</div>
+                                </td>
+                                <td>50.5%</td>
+                                
+                                
+                                <td>
+                                    
+                                    <span class="muted">No signal</span>
+                                    
+                                </td>
+                                
+                            </tr>
+                            
                         </tbody>
                     </table>
                     </div>
@@ -935,6 +943,26 @@
                             </tr>
                         </thead>
                         <tbody>
+                            
+                            <tr>
+                                <td>
+                                    <div class="market">Bitcoin Up or Down - April 26, 5:20PM-5:25PM ET</div>
+                                    <div class="muted">Resolved 2026-04-26T21:25:00Z</div>
+                                </td>
+                                <td><span class="pill up">UP</span></td>
+                                
+                                
+                                <td>
+                                    
+                                    <div><span class="pill skip">SKIP</span></div>
+                                    <div><strong>50.0%</strong> UP</div>
+                                    <div class="metric-neg">signal wrong</div>
+                                    
+                                    <div class="logic">streak_too_short | regime_filter</div>
+                                    
+                                </td>
+                                
+                            </tr>
                             
                             <tr>
                                 <td>
@@ -1107,26 +1135,6 @@
                                     <div class="metric-neg">signal wrong</div>
                                     
                                     <div class="logic">streak_too_short | regime_filter</div>
-                                    
-                                </td>
-                                
-                            </tr>
-                            
-                            <tr>
-                                <td>
-                                    <div class="market">Bitcoin Up or Down - April 26, 4:30PM-4:35PM ET</div>
-                                    <div class="muted">Resolved 2026-04-26T20:35:00Z</div>
-                                </td>
-                                <td><span class="pill up">UP</span></td>
-                                
-                                
-                                <td>
-                                    
-                                    <div><span class="pill skip">SKIP</span></div>
-                                    <div><strong>50.0%</strong> UP</div>
-                                    <div class="metric-neg">signal wrong</div>
-                                    
-                                    <div class="logic">no_exhaustion</div>
                                     
                                 </td>
                                 
