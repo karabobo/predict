@@ -147,6 +147,7 @@ def _render_report(run_id: str, timestamp: str, args: argparse.Namespace, result
     challenger = results["challenger"]
     gate = results["gate"]
     regime_findings = results.get("regime_findings", {})
+    challenger_meta = challenger.get("contender_metadata", {})
 
     lines = [
         "# Research Promotion Report",
@@ -237,6 +238,23 @@ def _render_report(run_id: str, timestamp: str, args: argparse.Namespace, result
         lines.append(f"- Keep production pinned to `{args.baseline}`.")
         if gate["reasons"]:
             lines.append(f"- Primary blocker: {gate['reasons'][0]}")
+
+    if challenger_meta:
+        lines.extend(["", "## Challenger Metadata", ""])
+        for key in (
+            "foundation_status",
+            "train_samples",
+            "calibration_samples",
+            "primary_model_name",
+            "secondary_model_name",
+            "calibrated",
+        ):
+            if key in challenger_meta:
+                lines.append(f"- {key}: `{challenger_meta[key]}`")
+        diagnostics = challenger_meta.get("diagnostics")
+        if isinstance(diagnostics, dict) and diagnostics:
+            for key, value in diagnostics.items():
+                lines.append(f"- diagnostics.{key}: `{value}`")
 
     lines.append("")
     return "\n".join(lines)

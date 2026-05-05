@@ -36,6 +36,17 @@ except ModuleNotFoundError:  # pragma: no cover - direct `python src/dashboard.p
 
 RuleFn = Callable[[list[dict[str, Any]], dict[str, Any]], dict[str, Any]]
 RESEARCH_DB_PATH = Path(__file__).resolve().parents[2] / "data" / "v3_research.db"
+FOUNDATION_RULE_TAGS = {
+    "low_vol_branch_v1",
+    "clean_continuation_up",
+    "clean_continuation_down",
+    "medium_neutral_down_continuation",
+    "medium_neutral_down_continuation_balanced",
+    "medium_neutral_down_continuation_core",
+    "flush_bounce_up",
+    "spike_reversal_down",
+    "spike_reversal_down_no_hvt",
+}
 
 
 def available_rules() -> dict[str, RuleFn]:
@@ -69,6 +80,7 @@ def available_rules() -> dict[str, RuleFn]:
         "high_vol_branch_v1": high_vol_branch_v1,
         "baseline_router_v1": baseline_router_v1,
         "baseline_router_v2": baseline_router_v2,
+        "baseline_router_v2_candidate_filter": baseline_router_v2_candidate_filter,
         "baseline_router_v1_plus_lvn_alpha3": baseline_router_v1_plus_lvn_alpha3,
         "baseline_router_v1_plus_v4": baseline_router_v1_plus_v4,
         "baseline_router_v1_plus_sparse_combo": baseline_router_v1_plus_sparse_combo,
@@ -899,6 +911,49 @@ def baseline_router_v2(candles: list[dict[str, Any]], regime: dict[str, Any]) ->
         if signal["should_trade"]:
             return signal
     return _skip_record(_no_trade_stub(regime["label"]), "baseline_router_v2")
+
+
+def baseline_router_v2_candidate_filter(candles: list[dict[str, Any]], regime: dict[str, Any]) -> dict[str, Any]:
+    signal = baseline_router_v2(candles, regime)
+    if not signal.get("should_trade"):
+        return _skip_record(signal, "baseline_router_v2_candidate_filter")
+    direction = str(signal.get("direction", "SKIP") or "SKIP")
+    confidence = str(signal.get("confidence", "low") or "low")
+    original_reason = str(signal.get("reason", "baseline_router_v2") or "baseline_router_v2")
+    original_estimate = float(signal.get("estimate", 0.5))
+    conviction_score = int(signal.get("conviction_score", 0))
+    branch_tokens = [part.strip() for part in original_reason.split("|") if part.strip()]
+    branch_name = branch_tokens[0] if branch_tokens else "baseline_router_v2"
+    exact_rule_name = next((tag for tag in reversed(branch_tokens) if tag in FOUNDATION_RULE_TAGS), branch_name)
+    shape_flags = {
+        "has_continuation": "continuation" in original_reason,
+        "has_reversal": "reversal" in original_reason or "bounce" in original_reason,
+        "has_volume_spike": "volume_spike" in original_reason,
+        "has_range_compression": "shrinking_ranges" in original_reason or "compression" in original_reason,
+        "has_wick_signal": "upper_wick" in original_reason or "lower_wick" in original_reason,
+        "has_near_extreme": "near_local_high" in original_reason or "near_local_low" in original_reason,
+    }
+    return {
+        "estimate": 0.5,
+        "should_trade": True,
+        "direction": direction,
+        "confidence": confidence,
+        "conviction_score": conviction_score,
+        "reason": f"{original_reason} | baseline_router_v2_candidate_filter",
+        "regime_label": signal.get("regime_label", regime["label"]),
+        "meta": {
+            "candidate_filter": "baseline_router_v2",
+            "estimate_ignored": True,
+            "original_estimate": original_estimate,
+            "original_reason": original_reason,
+            "branch_name": branch_name,
+            "exact_rule_name": exact_rule_name,
+            "direction": direction,
+            "confidence": confidence,
+            "conviction_score": conviction_score,
+            **shape_flags,
+        },
+    }
 
 
 def baseline_router_v1_plus_lvn_alpha3(candles: list[dict[str, Any]], regime: dict[str, Any]) -> dict[str, Any]:

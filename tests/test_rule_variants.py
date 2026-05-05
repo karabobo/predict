@@ -666,3 +666,29 @@ def test_baseline_router_v2_uses_medium_vol_branch_v3():
     assert result["should_trade"] is True
     assert result["direction"] == "DOWN"
     assert "medium_neutral_down_continuation_balanced" in result["reason"]
+
+
+def test_baseline_router_v2_candidate_filter_strips_estimate_but_keeps_direction():
+    candles = [
+        {"open": 100.00, "high": 100.08, "low": 99.94, "close": 100.02, "volume": 10},
+        {"open": 100.02, "high": 100.07, "low": 99.95, "close": 100.00, "volume": 10},
+        {"open": 100.04, "high": 100.10, "low": 99.98, "close": 100.01, "volume": 10},
+        {"open": 100.01, "high": 100.07, "low": 99.96, "close": 100.03, "volume": 10},
+        {"open": 100.03, "high": 100.08, "low": 99.97, "close": 100.00, "volume": 10},
+        {"open": 100.00, "high": 100.05, "low": 99.95, "close": 100.01, "volume": 10},
+        {"open": 99.98, "high": 100.02, "low": 99.88, "close": 99.93, "volume": 10},
+        {"open": 99.93, "high": 99.98, "low": 99.80, "close": 99.87, "volume": 10},
+        {"open": 99.87, "high": 99.92, "low": 99.73, "close": 99.81, "volume": 10},
+        {"open": 99.81, "high": 99.86, "low": 99.67, "close": 99.75, "volume": 10},
+    ]
+    regime = {"label": "MEDIUM_VOL / NEUTRAL", "is_mean_reverting": False}
+    result = available_rules()["baseline_router_v2_candidate_filter"](candles, regime)
+    assert result["should_trade"] is True
+    assert result["direction"] == "DOWN"
+    assert result["estimate"] == 0.5
+    assert result["meta"]["estimate_ignored"] is True
+    assert result["meta"]["branch_name"] == "medium_neutral_down_continuation"
+    assert result["meta"]["exact_rule_name"] == "medium_neutral_down_continuation_balanced"
+    assert result["meta"]["has_continuation"] is True
+    assert result["meta"]["direction"] == "DOWN"
+    assert "baseline_router_v2_candidate_filter" in result["reason"]

@@ -1,6 +1,6 @@
 # Rule Candidate Report
 
-- Generated: `2026-04-05T12:25:34.846245+00:00`
+- Generated: `2026-05-05T18:56:56.287679+00:00`
 
 ## Sample Scope
 
@@ -93,9 +93,8 @@
 
 | Draft | Family | Scope | Trades | WR | Neutral ROI | Edge-8 ROI |
 | --- | --- | --- | ---: | ---: | ---: | ---: |
-| Allow volume-spike continuation [LOW_VOL / TRENDING] (`coach_spec__skip_coach__allow_trending_volume_spike__low_vol_trending`) | feature_allow | LOW_VOL / TRENDING | 1303 | 47.81% | -4.60% | -5.74% |
-| Loosen streak threshold [LOW_VOL / TRENDING] (`coach_spec__skip_coach__loosen_streak_threshold__low_vol_trending`) | threshold_loosen | LOW_VOL / TRENDING | 1321 | 47.69% | -4.75% | -5.86% |
 | Block baseline in observed regime [LOW_VOL / NEUTRAL] (`coach_spec__toxicity_coach__block_high_vol_neutral__low_vol_neutral`) | regime_block | LOW_VOL / NEUTRAL | 1162 | 48.11% | -4.68% | -5.87% |
+| Loosen streak threshold [LOW_VOL / TRENDING] (`coach_spec__skip_coach__loosen_streak_threshold__low_vol_trending`) | threshold_loosen | LOW_VOL / TRENDING | 1321 | 47.69% | -4.75% | -5.86% |
 
 ## Latest Candidate Runs
 
@@ -139,9 +138,7 @@
 | LVN 做多 | model_edge_8 | 74 | 54.05% | +357.41 | +5.07% |
 | LVN 做多 | model_edge_5 | 74 | 54.05% | -32.46 | -0.46% |
 | 仅 LOW_VOL / NEUTRAL | neutral_50 | 126 | 48.41% | +75.00 | +0.63% |
-| Allow volume-spike continuation [LOW_VOL / TRENDING] | neutral_50 | 1303 | 47.81% | -7275.00 | -4.60% |
-| Allow volume-spike continuation [LOW_VOL / TRENDING] | model_edge_8 | 1303 | 47.81% | -9089.20 | -5.74% |
-| Loosen streak threshold [LOW_VOL / TRENDING] | neutral_50 | 1321 | 47.69% | -7575.00 | -4.75% |
-| Loosen streak threshold [LOW_VOL / TRENDING] | model_edge_8 | 1321 | 47.69% | -9345.45 | -5.86% |
 | Block baseline in observed regime [LOW_VOL / NEUTRAL] | neutral_50 | 1162 | 48.11% | -6675.00 | -4.68% |
 | Block baseline in observed regime [LOW_VOL / NEUTRAL] | model_edge_8 | 1162 | 48.11% | -8384.60 | -5.87% |
+| Loosen streak threshold [LOW_VOL / TRENDING] | neutral_50 | 1321 | 47.69% | -7575.00 | -4.75% |
+| Loosen streak threshold [LOW_VOL / TRENDING] | model_edge_8 | 1321 | 47.69% | -9345.45 | -5.86% |

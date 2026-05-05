@@ -15,6 +15,7 @@ from pathlib import Path
 GAMMA_API = "https://gamma-api.polymarket.com"
 DB_PATH = Path(__file__).parent.parent / "data" / "predictions.db"
 HTTP_TIMEOUT = 15
+DB_BUSY_TIMEOUT_MS = 10000
 
 # Regex to capture a hyphenated time range like "11:55AM-12:00PM"
 TIME_RANGE_RE = re.compile(r"(\d{1,2}:\d{2}[AP]M)\s*-\s*(\d{1,2}:\d{2}[AP]M)")
@@ -96,6 +97,8 @@ def ensure_market_schema(db):
 def init_db():
     db = sqlite3.connect(DB_PATH)
     db.row_factory = sqlite3.Row
+    db.execute("PRAGMA journal_mode=WAL")
+    db.execute(f"PRAGMA busy_timeout={DB_BUSY_TIMEOUT_MS}")
     db.execute("""
         CREATE TABLE IF NOT EXISTS markets (
             id TEXT PRIMARY KEY,

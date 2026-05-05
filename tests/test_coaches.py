@@ -1,6 +1,7 @@
 import os
 import sqlite3
 import sys
+from datetime import datetime, timedelta, timezone
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
@@ -236,7 +237,9 @@ def test_refresh_candidate_rollups_marks_eligible_tags():
     db = sqlite3.connect(":memory:")
     db.row_factory = sqlite3.Row
     ensure_schema(db)
+    base_time = datetime.now(timezone.utc) - timedelta(hours=1)
     for idx in range(5):
+        audited_at = (base_time + timedelta(minutes=idx)).isoformat()
         db.execute(
             """
             INSERT INTO coach_audits (
@@ -251,12 +254,12 @@ def test_refresh_candidate_rollups_marks_eligible_tags():
                     'missed_trade_up', 'UP', 4, 'reason', ?, ?, ?)
             """,
             (
-                f"m{idx}",
-                1 if idx < 4 else 0,
-                0 if idx < 4 else 1,
-                f"2026-04-03T08:0{idx}:00+00:00",
-            ),
-        )
+                    f"m{idx}",
+                    1 if idx < 4 else 0,
+                    0 if idx < 4 else 1,
+                    audited_at,
+                ),
+            )
         audit_id = db.execute("SELECT last_insert_rowid()").fetchone()[0]
         db.execute(
             """
@@ -272,7 +275,7 @@ def test_refresh_candidate_rollups_marks_eligible_tags():
                 f"m{idx}",
                 1 if idx < 4 else 0,
                 0 if idx < 4 else 1,
-                f"2026-04-03T08:0{idx}:00+00:00",
+                audited_at,
             ),
         )
     db.commit()

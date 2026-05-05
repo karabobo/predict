@@ -19,6 +19,7 @@ from fetch_markets import GAMMA_API, HTTP_TIMEOUT, ensure_market_schema
 
 PROVISIONAL_PRICE_THRESHOLD = float(os.getenv("PROVISIONAL_PRICE_THRESHOLD", "0.99"))
 PROVISIONAL_CONFIRMATIONS = int(os.getenv("PROVISIONAL_CONFIRMATIONS", "2"))
+OFFICIAL_CLOSED_PRICE_THRESHOLD = float(os.getenv("OFFICIAL_CLOSED_PRICE_THRESHOLD", "0.99"))
 
 
 def fetch_market_state(market_id: str) -> dict[str, Any]:
@@ -54,9 +55,10 @@ def determine_official_outcome(state: dict[str, Any]) -> int | None:
     price_yes = state.get("price_yes")
     if price_yes is None or not state.get("closed"):
         return None
-    if float(price_yes) == 1.0:
+    price_yes = float(price_yes)
+    if price_yes >= OFFICIAL_CLOSED_PRICE_THRESHOLD:
         return 1
-    if float(price_yes) == 0.0:
+    if price_yes <= 1.0 - OFFICIAL_CLOSED_PRICE_THRESHOLD:
         return 0
     return None
 

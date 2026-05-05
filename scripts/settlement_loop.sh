@@ -13,7 +13,7 @@ CYCLE_TIMEOUT_SECONDS="${SETTLEMENT_TIMEOUT_SECONDS:-120}"
 mkdir -p "$LOG_DIR"
 
 log() {
-    echo "[$(date -u '+%Y-%m-%dT%H:%M:%SZ')] $*" | tee -a "$LOG_FILE"
+    echo "[$(TZ=America/New_York date '+%Y-%m-%d %I:%M:%S %p ET')] $*" | tee -a "$LOG_FILE"
 }
 
 if [ ! -x "$VENV_PYTHON" ]; then

@@ -48,8 +48,10 @@ from metrics import (
     select_exposure_rows,
     select_latest_rows,
 )
+from foundation_shadow import ensure_shadow_schema
 from score import calculate_path_risk_metrics, calculate_signal_metrics
 from fetch_markets import ensure_market_schema
+from time_display import format_et, format_et_short, now_et_label
 from v3.coaches import ensure_schema as ensure_coach_schema
 from v3.rule_variants import load_dynamic_coach_rule_metadata
 
@@ -231,6 +233,7 @@ def get_db() -> sqlite3.Connection:
     db.row_factory = sqlite3.Row
     ensure_market_schema(db)
     ensure_prediction_schema(db)
+    ensure_shadow_schema(db)
     return db
 
 
@@ -271,7 +274,7 @@ def get_status() -> dict[str, object]:
             "total_predictions": prediction_counts["total_predictions"] or 0,
             "trade_candidates": live_candidates["trade_candidates"] or 0,
             "last_prediction_at": prediction_counts["last_prediction_at"],
-            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "generated_at": now_et_label(),
         }
     finally:
         db.close()
@@ -300,6 +303,7 @@ def build_html(*, lite_homepage: bool = False) -> str:
         recent_research_runs = _recent_research_runs(limit=5)
         rule_candidates = _rule_absorption_candidates()
         production_24h = _production_recent_summary(db, hours=24, agent="contrarian_rule")
+        shadow_summary = _shadow_model_summary(db)
         context = {
             "status": get_status(),
             "agents": agents,
@@ -321,6 +325,7 @@ def build_html(*, lite_homepage: bool = False) -> str:
             "coach_latest": _latest_coach_findings(limit=10),
             "coach_rollup": _coach_rollup(days=7),
             "production_24h": production_24h,
+            "shadow_summary": shadow_summary,
             "regime_breakdown_24h": regime_breakdown_24h,
             "recent_trades": _recent_trade_blotter(db, agent="contrarian_rule", limit=12),
             "pending_breakdown": pending_breakdown,
@@ -513,7 +518,7 @@ def build_html(*, lite_homepage: bool = False) -> str:
                 </div>
                 <div class="hero-actions">
                     <button class="theme-toggle" id="theme-toggle" type="button">切换浅色</button>
-                    <div class="stamp">生成时间 {{ status.generated_at }}</div>
+                <div class="stamp">生成时间 {{ status.generated_at }}</div>
                 </div>
             </div>
 
@@ -536,7 +541,12 @@ def build_html(*, lite_homepage: bool = False) -> str:
                 <div class="stat">
                     <div class="label">回测样本</div>
                     <div class="value">{{ backtest_coverage.markets if backtest_coverage else 'n/a' }}</div>
-                    <div class="meta">{% if backtest_coverage %}{{ backtest_coverage.sample_label }} / {{ backtest_coverage.first_end_date[:10] }} → {{ backtest_coverage.last_end_date[:10] }}{% else %}暂无本地历史覆盖{% endif %}</div>
+                    <div class="meta">{% if backtest_coverage %}{{ backtest_coverage.sample_label }} / {{ fmt_et(backtest_coverage.first_end_date, '%Y-%m-%d ET') }} → {{ fmt_et(backtest_coverage.last_end_date, '%Y-%m-%d ET') }}{% else %}暂无本地历史覆盖{% endif %}</div>
+                </div>
+                <div class="stat">
+                    <div class="label">Foundation Shadow</div>
+                    <div class="value">{{ shadow_summary.prob_up_label if shadow_summary else 'n/a' }}</div>
+                    <div class="meta">{% if shadow_summary %}{{ shadow_summary.status }} / spread {{ shadow_summary.spread_label }} / imb {{ shadow_summary.imbalance_label }}{% else %}暂无 shadow 记录{% endif %}</div>
                 </div>
             </div>
 
@@ -706,7 +716,7 @@ def build_html(*, lite_homepage: bool = False) -> str:
                             <tr>
                                 <td>
                                     <div class="market">{{ row.question }}</div>
-                                    <div class="muted">结束 {{ row.end_date }}</div>
+                                    <div class="muted">结束 {{ fmt_et(row.end_date) }}</div>
                                 </td>
                                 <td><span class="pill {{ 'up' if row.provisional_outcome == 1 else 'down' }}">{{ 'UP' if row.provisional_outcome == 1 else 'DOWN' }}</span></td>
                                 <td>{{ (row.last_price_yes * 100)|round(1) }}%</td>
@@ -741,7 +751,7 @@ def build_html(*, lite_homepage: bool = False) -> str:
                             <strong>{{ latest_research.baseline }}</strong>
                         <span class="pill {{ 'trade' if latest_research.passed else 'skip' }}">{{ '通过' if latest_research.passed else '失败' }}</span>
                         </div>
-                        <div class="muted">运行 {{ latest_research.run_id }} · {{ latest_research.created_at }}</div>
+                        <div class="muted">运行 {{ latest_research.run_id }} · {{ fmt_et(latest_research.created_at) }}</div>
                     </div>
                     <div class="report-box">
                         <div class="report-metric">
@@ -815,7 +825,7 @@ def build_html(*, lite_homepage: bool = False) -> str:
                             {% if rule_candidates.coverage %}
                             <div class="logic" style="margin-top: 8px;">
                                 - 样本范围：<strong>{{ rule_candidates.coverage.sample_label|upper }}</strong>，
-                                覆盖 {{ rule_candidates.coverage.first_end_date[:10] }} → {{ rule_candidates.coverage.last_end_date[:10] }}。
+                                覆盖 {{ fmt_et(rule_candidates.coverage.first_end_date, '%Y-%m-%d ET') }} → {{ fmt_et(rule_candidates.coverage.last_end_date, '%Y-%m-%d ET') }}。
                                 当前本地研究集含 {{ rule_candidates.coverage.markets }} 个市场（{{ rule_candidates.coverage.resolved_markets }} 个已结算），来源 {{ rule_candidates.coverage.source_names|join(', ') }}。
                             </div>
                             {% endif %}
@@ -1446,7 +1456,7 @@ def build_html(*, lite_homepage: bool = False) -> str:
                             <tr>
                                 <td>
                                     <div class="market">{{ row.market.question }}</div>
-                                    <div class="muted">结束 {{ row.market.end_date }}</div>
+                                    <div class="muted">结束 {{ fmt_et(row.market.end_date) }}</div>
                                 </td>
                                 <td>{{ (row.market.price_yes * 100)|round(1) }}%</td>
                                 {% for agent in production_agents %}
@@ -1496,7 +1506,7 @@ def build_html(*, lite_homepage: bool = False) -> str:
                             <tr>
                                 <td>
                                     <div class="market">{{ row.market.question }}</div>
-                                    <div class="muted">结算 {{ row.market.end_date }}</div>
+                                    <div class="muted">结算 {{ fmt_et(row.market.end_date) }}</div>
                                 </td>
                                 <td><span class="pill {{ 'up' if row.market.outcome == 1 else 'down' }}">{{ 'UP' if row.market.outcome == 1 else 'DOWN' }}</span></td>
                                 {% for agent in production_agents %}
@@ -1558,7 +1568,13 @@ def build_html(*, lite_homepage: bool = False) -> str:
     """
 
     with app.app_context():
-        return render_template_string(template, model_colors=MODEL_COLORS, lite_homepage=lite_homepage, **context)
+        return render_template_string(
+            template,
+            model_colors=MODEL_COLORS,
+            lite_homepage=lite_homepage,
+            fmt_et=format_et,
+            **context,
+        )
 
 
 @app.route("/")
@@ -1812,7 +1828,7 @@ def _recent_research_runs(limit: int = 5) -> list[dict[str, object]]:
                 {
                     "run_id": row["run_id"],
                     "created_at": row["created_at"],
-                    "created_at_short": row["created_at"][5:16].replace("T", " "),
+                    "created_at_short": format_et_short(row["created_at"]),
                     "baseline": row["baseline"],
                     "challenger": row["challenger"],
                     "passed": bool(row["gate_passed"]),
@@ -2462,6 +2478,60 @@ def _table_exists(db: sqlite3.Connection, table_name: str) -> bool:
     return row is not None
 
 
+def _shadow_model_summary(db: sqlite3.Connection) -> dict[str, object] | None:
+    if not _table_exists(db, "prediction_shadow_models"):
+        return None
+    row = db.execute(
+        """
+        SELECT
+            s.status,
+            s.model_name,
+            s.prob_up,
+            s.primary_raw,
+            s.secondary_prob,
+            s.agreement_passed,
+            s.direction_match,
+            s.created_at,
+            b.spread_pct,
+            b.depth_imbalance,
+            b.bid_depth_5pct,
+            b.ask_depth_5pct
+        FROM prediction_shadow_models s
+        LEFT JOIN order_book_snapshots b
+          ON b.market_id = s.market_id
+         AND b.id = (
+             SELECT MAX(id)
+             FROM order_book_snapshots
+             WHERE market_id = s.market_id
+         )
+        ORDER BY s.created_at DESC
+        LIMIT 1
+        """
+    ).fetchone()
+    if row is None:
+        return None
+    prob_up = row["prob_up"]
+    spread = row["spread_pct"]
+    imbalance = row["depth_imbalance"]
+    return {
+        "status": row["status"],
+        "model_name": row["model_name"] or "unloaded",
+        "prob_up": prob_up,
+        "prob_up_label": f"{float(prob_up) * 100:.1f}%" if prob_up is not None else "n/a",
+        "primary_raw": row["primary_raw"],
+        "secondary_prob": row["secondary_prob"],
+        "agreement_passed": bool(row["agreement_passed"]) if row["agreement_passed"] is not None else None,
+        "direction_match": bool(row["direction_match"]) if row["direction_match"] is not None else None,
+        "created_at": row["created_at"],
+        "spread_pct": spread,
+        "spread_label": f"{float(spread) * 100:.1f}%" if spread is not None else "n/a",
+        "depth_imbalance": imbalance,
+        "imbalance_label": f"{float(imbalance):+.2f}" if imbalance is not None else "n/a",
+        "bid_depth_5pct": row["bid_depth_5pct"],
+        "ask_depth_5pct": row["ask_depth_5pct"],
+    }
+
+
 def _coach_type_label(coach_type: str) -> str:
     mapping = {
         "skip_coach": "漏单教练",
@@ -2885,8 +2955,8 @@ def _production_recent_summary(
     trade_count = int(trade_metrics.get("num_bets", 0))
 
     return {
-        "window_start": cutoff[5:16].replace("T", " "),
-        "window_end": datetime.now(timezone.utc).isoformat()[5:16].replace("T", " "),
+        "window_start": format_et_short(cutoff),
+        "window_end": format_et_short(datetime.now(timezone.utc)),
         "resolved_predictions": resolved_count,
         "called_markets": called,
         "traded_predictions": trade_count,
@@ -2895,7 +2965,7 @@ def _production_recent_summary(
         "trade_pnl": float(trade_metrics.get("total_pnl", 0.0)),
         "trade_roi": float(trade_metrics.get("roi", 0.0)),
         "skip_rate": 1 - (trade_count / resolved_count if resolved_count else 0.0),
-        "last_trade_at": last_trade_at[5:16].replace("T", " ") if last_trade_at else None,
+        "last_trade_at": format_et_short(last_trade_at) if last_trade_at else None,
         "trade_then_skip_markets": int(risk.get("trade_then_skip_markets", 0)),
         "direction_flip_markets": int(risk.get("direction_flip_markets", 0)),
         "avg_updates_per_market": float(risk.get("avg_updates_per_market", 0.0)),
@@ -2983,7 +3053,7 @@ def _recent_trade_blotter(
         regime_meta = _format_regime_cn(record.get("regime"))
         trades.append(
             {
-                "end_date_short": record["end_date"][5:16].replace("T", " "),
+                "end_date_short": format_et_short(record["end_date"]),
                 "direction": direction,
                 "regime": record.get("regime") or "UNKNOWN",
                 "regime_cn": regime_meta["display_cn"],

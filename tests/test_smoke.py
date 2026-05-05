@@ -11,7 +11,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 def test_predict_imports():
     """Can we import predict.py without errors?"""
-    from predict import contrarian_signal, compute_regime_from_candles, run_predictions
+    from predict import alpha_router_signal, contrarian_signal, compute_regime_from_candles, run_predictions
+    assert callable(alpha_router_signal)
     assert callable(contrarian_signal)
     assert callable(compute_regime_from_candles)
     assert callable(run_predictions)
@@ -135,3 +136,25 @@ def test_promotion_registers_router_v2_challenger():
 
     factories = contender_factories()
     assert "baseline_router_v2" in factories
+
+
+def test_promotion_registers_foundation_router_v2_challenger():
+    """Promotion contender registry should expose the v6 foundation contenders and aliases."""
+    from v3.arena import contender_factories
+
+    factories = contender_factories()
+    assert "v6_foundation" in factories
+    assert "v6_foundation_agreement" in factories
+    assert "foundation_router_v2" in factories
+    assert "foundation_router_v2_agreement" in factories
+
+
+def test_promotion_registers_paper_5m_models():
+    """Promotion contender registry should expose the paper-style full-coverage models."""
+    from v3.arena import contender_factories
+
+    factories = contender_factories()
+    assert "paper_xgb_5m" in factories
+    assert "paper_logreg_5m" in factories
+    assert "paper_xgb_5m_raw" in factories
+    assert "paper_logreg_5m_raw" in factories

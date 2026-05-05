@@ -71,7 +71,7 @@ def run_predict_phase(db):
         return
 
     cycle = get_next_cycle(db)
-    print(f"[2/3] Predictions — baseline momentum (cycle {cycle})...")
+    print(f"[2/3] Predictions — alpha router (cycle {cycle})...")
     btc_data = fetch_btc_candles(limit=20)
     _print_btc_summary(btc_data)
 

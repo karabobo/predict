@@ -138,6 +138,38 @@ def test_sync_settlements_creates_provisional_then_official_overrides():
     assert row["official_resolved_at"] is not None
 
 
+def test_closed_near_terminal_price_counts_as_official_resolution():
+    from fetch_markets import ensure_market_schema
+    from settlement import sync_settlements
+
+    db = _make_market_db()
+    ensure_market_schema(db)
+    db.execute(
+        """
+        INSERT INTO markets (id, question, category, end_date, volume, price_yes, price_no, fetched_at, resolved, outcome)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        ("m_fast", "BTC Up or Down", "crypto", "2026-04-03T08:00:00+00:00", 1000, 0.5, 0.5, "2026-04-03T07:59:00+00:00", 0, None),
+    )
+    db.commit()
+
+    def closed_high_yes(_market_id):
+        return {"market_id": "m_fast", "closed": True, "price_yes": 0.995, "price_no": 0.005}
+
+    counts = sync_settlements(
+        db,
+        include_provisional=True,
+        now_iso="2026-04-03T08:00:30+00:00",
+        fetch_state=closed_high_yes,
+    )
+
+    assert counts["official_resolved"] == 1
+    row = db.execute("SELECT resolved, outcome, official_resolved_at FROM markets WHERE id = 'm_fast'").fetchone()
+    assert row["resolved"] == 1
+    assert row["outcome"] == 1
+    assert row["official_resolved_at"] is not None
+
+
 def test_provisional_markets_do_not_enter_official_signal_metrics():
     from fetch_markets import ensure_market_schema
     from score import calculate_signal_metrics

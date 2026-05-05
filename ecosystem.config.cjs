@@ -9,11 +9,15 @@ module.exports = {
       autorestart: true,
       max_restarts: 20,
       restart_delay: 5000,
-      time: true,
+      time: false,
       env: {
+        TZ: "America/New_York",
         PYTHONUNBUFFERED: "1",
         PREDICT_SLEEP_SECONDS: process.env.PREDICT_SLEEP_SECONDS || "30",
         PREDICT_TIMEOUT_SECONDS: process.env.PREDICT_TIMEOUT_SECONDS || "120",
+        PREDICT_ALPHA_RULES:
+          process.env.PREDICT_ALPHA_RULES ||
+          "baseline_router_v2,baseline_router_v1_plus_sparse_combo,baseline_current",
       },
       out_file: "logs/pm2-predict-loop.out.log",
       error_file: "logs/pm2-predict-loop.err.log",
@@ -28,8 +32,9 @@ module.exports = {
       autorestart: true,
       max_restarts: 20,
       restart_delay: 5000,
-      time: true,
+      time: false,
       env: {
+        TZ: "America/New_York",
         PYTHONUNBUFFERED: "1",
         OPS_SLEEP_SECONDS: process.env.OPS_SLEEP_SECONDS || "300",
         OPS_TIMEOUT_SECONDS: process.env.OPS_TIMEOUT_SECONDS || "300",
@@ -47,8 +52,9 @@ module.exports = {
       autorestart: true,
       max_restarts: 20,
       restart_delay: 5000,
-      time: true,
+      time: false,
       env: {
+        TZ: "America/New_York",
         PYTHONUNBUFFERED: "1",
         SETTLEMENT_SLEEP_SECONDS: process.env.SETTLEMENT_SLEEP_SECONDS || "30",
         SETTLEMENT_TIMEOUT_SECONDS: process.env.SETTLEMENT_TIMEOUT_SECONDS || "120",
@@ -68,8 +74,9 @@ module.exports = {
       autorestart: true,
       max_restarts: 20,
       restart_delay: 5000,
-      time: true,
+      time: false,
       env: {
+        TZ: "America/New_York",
         PYTHONUNBUFFERED: "1",
       },
       out_file: "logs/pm2-dashboard.out.log",
@@ -85,8 +92,9 @@ module.exports = {
       autorestart: true,
       max_restarts: 20,
       restart_delay: 15000,
-      time: true,
+      time: false,
       env: {
+        TZ: "America/New_York",
         PYTHONUNBUFFERED: "1",
         RESEARCH_SLEEP_SECONDS: process.env.RESEARCH_SLEEP_SECONDS || "3600",
         RESEARCH_TIMEOUT_SECONDS: process.env.RESEARCH_TIMEOUT_SECONDS || "1800",
@@ -112,8 +120,9 @@ module.exports = {
       autorestart: true,
       max_restarts: 20,
       restart_delay: 10000,
-      time: true,
+      time: false,
       env: {
+        TZ: "America/New_York",
         PYTHONUNBUFFERED: "1",
         COACH_SLEEP_SECONDS: process.env.COACH_SLEEP_SECONDS || "300",
         COACH_TIMEOUT_SECONDS: process.env.COACH_TIMEOUT_SECONDS || "180",

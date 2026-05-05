@@ -1,6 +1,12 @@
 .env
 data/*.db
+data/*.db-shm
+data/*.db-wal
 data/*.json
+data/*.bak-*
+data/external/
+data/models/
+docs/research/run-*.md
 __pycache__/
 *.pyc
 .pytest_cache/

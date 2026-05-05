@@ -37,6 +37,7 @@ from src.v3.config import (
     ROUND_TRIP_FEE,
 )
 from src.v3.features import compute_features
+from src.v3.probability_foundation import Paper5MModelService, ProbabilityFoundationService
 from src.v3.regime import compute_regime as v3_regime
 from src.v3.rule_variants import available_rules as available_rule_variants
 
@@ -83,6 +84,9 @@ class BaseContender:
 
     def observe(self, context: ResearchContext) -> None:
         pass
+
+    def report_metadata(self) -> dict[str, Any]:
+        return {}
 
 
 class ProductionBaselineContender(BaseContender):
@@ -269,6 +273,164 @@ class BaselineRouterV2Contender(RuleVariantContender):
     rule_name = "baseline_router_v2"
 
 
+class V6FoundationContender(BaseContender):
+    name = "v6_foundation"
+    candidate_filter_name = "baseline_router_v2_candidate_filter"
+    require_agreement = False
+
+    def __init__(self) -> None:
+        rules = available_rule_variants()
+        if self.candidate_filter_name not in rules:
+            raise ValueError(f"Unknown rule variant contender: {self.candidate_filter_name}")
+        self._rule = rules[self.candidate_filter_name]
+        self._foundation = ProbabilityFoundationService()
+
+    def reset(self) -> None:
+        self._foundation = ProbabilityFoundationService()
+
+    def bootstrap(self, history: list[ResearchContext]) -> None:
+        self._foundation.fit(history, signal_provider=self._rule)
+
+    def predict(self, context: ResearchContext) -> ResearchDecision:
+        signal = self._rule(context.formatted_candles, context.production_regime)
+        if not signal.get("should_trade", False):
+            return ResearchDecision(
+                prob_up=0.5,
+                should_trade=False,
+                reason=str(signal.get("reason", self.candidate_filter_name)),
+                conviction_score=int(signal.get("conviction_score", 0)),
+                confidence=str(signal.get("confidence", "low")),
+            )
+
+        prediction = self._foundation.predict(
+            context,
+            candidate_signal=signal,
+            require_agreement=self.require_agreement,
+        )
+        signal_direction = str(signal.get("direction", "SKIP") or "SKIP")
+        predicted_direction = "UP" if prediction.prob_up > 0.5 else "DOWN" if prediction.prob_up < 0.5 else "SKIP"
+        direction_match = signal_direction == predicted_direction
+        should_trade = bool(signal.get("should_trade", False)) and direction_match
+        if self.require_agreement:
+            should_trade = should_trade and prediction.agreement_passed
+
+        reason_suffix = (
+            f"{self.name} | model={prediction.model_name}"
+            if direction_match else
+            f"{self.name} | direction_mismatch signal={signal_direction} model={predicted_direction}"
+        )
+        if self.require_agreement and not prediction.agreement_passed:
+            reason_suffix = f"{reason_suffix} | agreement_failed"
+
+        return ResearchDecision(
+            prob_up=float(prediction.prob_up),
+            should_trade=should_trade,
+            reason=f"{signal.get('reason', self.candidate_filter_name)} | {reason_suffix}",
+            conviction_score=int(signal.get("conviction_score", 0)),
+            confidence=str(signal.get("confidence", "low")),
+        )
+
+    def report_metadata(self) -> dict[str, Any]:
+        summary = self._foundation.summary
+        if summary is None:
+            return {"foundation_status": "not_bootstrapped"}
+        return {
+            "foundation_version": "v6",
+            "candidate_filter_name": self.candidate_filter_name,
+            "foundation_status": "trained" if self._foundation.is_trained else "untrained",
+            "train_samples": summary.train_samples,
+            "calibration_samples": summary.calibration_samples,
+            "primary_model_name": summary.primary_model_name,
+            "secondary_model_name": summary.secondary_model_name,
+            "calibrated": summary.calibrated,
+            "diagnostics": dict(summary.diagnostics),
+        }
+
+
+class V6FoundationAgreementContender(V6FoundationContender):
+    name = "v6_foundation_agreement"
+    candidate_filter_name = "baseline_router_v2_candidate_filter"
+    require_agreement = True
+
+
+class FoundationRouterV2Contender(V6FoundationContender):
+    name = "foundation_router_v2"
+    candidate_filter_name = "baseline_router_v2_candidate_filter"
+    require_agreement = False
+
+
+class FoundationRouterV2AgreementContender(V6FoundationAgreementContender):
+    name = "foundation_router_v2_agreement"
+    candidate_filter_name = "baseline_router_v2_candidate_filter"
+
+
+class Paper5MXGBoostContender(BaseContender):
+    name = "paper_xgb_5m"
+    model_kind = "xgboost"
+    feature_set = "derived"
+    use_calibration = True
+
+    def __init__(self) -> None:
+        self._model = Paper5MModelService(
+            model_kind=self.model_kind,
+            feature_set=self.feature_set,
+            use_calibration=self.use_calibration,
+        )
+
+    def reset(self) -> None:
+        self._model = Paper5MModelService(
+            model_kind=self.model_kind,
+            feature_set=self.feature_set,
+            use_calibration=self.use_calibration,
+        )
+
+    def bootstrap(self, history: list[ResearchContext]) -> None:
+        self._model.fit(history)
+
+    def predict(self, context: ResearchContext) -> ResearchDecision:
+        prediction = self._model.predict(context)
+        return ResearchDecision(
+            prob_up=float(prediction.prob_up),
+            should_trade=True,
+            reason=f"{self.name} | model={prediction.model_name}",
+            conviction_score=3 if abs(prediction.prob_up - 0.5) >= 0.03 else 2,
+            confidence="high" if abs(prediction.prob_up - 0.5) >= 0.08 else "medium",
+        )
+
+    def report_metadata(self) -> dict[str, Any]:
+        summary = self._model.summary
+        if summary is None:
+            return {"paper_5m_status": "not_bootstrapped", "paper_5m_model_kind": self.model_kind}
+        return {
+            "paper_5m_status": "trained" if self._model.is_trained else "untrained",
+            "paper_5m_model_kind": self.model_kind,
+            "train_samples": summary.train_samples,
+            "calibration_samples": summary.calibration_samples,
+            "primary_model_name": summary.primary_model_name,
+            "calibrated": summary.calibrated,
+            "diagnostics": dict(summary.diagnostics),
+        }
+
+
+class Paper5MLogRegContender(Paper5MXGBoostContender):
+    name = "paper_logreg_5m"
+    model_kind = "logreg"
+
+
+class Paper5MRawXGBoostContender(Paper5MXGBoostContender):
+    name = "paper_xgb_5m_raw"
+    model_kind = "xgboost"
+    feature_set = "raw"
+    use_calibration = False
+
+
+class Paper5MRawLogRegContender(Paper5MXGBoostContender):
+    name = "paper_logreg_5m_raw"
+    model_kind = "logreg"
+    feature_set = "raw"
+    use_calibration = False
+
+
 def contender_factories() -> dict[str, Callable[[], BaseContender]]:
     return {
         ProductionBaselineContender.name: ProductionBaselineContender,
@@ -281,6 +443,14 @@ def contender_factories() -> dict[str, Callable[[], BaseContender]]:
         BaselineV4WindowStateContender.name: BaselineV4WindowStateContender,
         BaselineRouterV1Contender.name: BaselineRouterV1Contender,
         BaselineRouterV2Contender.name: BaselineRouterV2Contender,
+        V6FoundationContender.name: V6FoundationContender,
+        V6FoundationAgreementContender.name: V6FoundationAgreementContender,
+        FoundationRouterV2Contender.name: FoundationRouterV2Contender,
+        FoundationRouterV2AgreementContender.name: FoundationRouterV2AgreementContender,
+        Paper5MXGBoostContender.name: Paper5MXGBoostContender,
+        Paper5MLogRegContender.name: Paper5MLogRegContender,
+        Paper5MRawXGBoostContender.name: Paper5MRawXGBoostContender,
+        Paper5MRawLogRegContender.name: Paper5MRawLogRegContender,
     }
 
 
@@ -597,6 +767,7 @@ def evaluate_fold(
         skipped_signals=skipped_signals,
         edge_filtered=edge_filtered,
         bet_size=bet_size,
+        contender_metadata=contender.report_metadata(),
     )
 
 
@@ -611,6 +782,7 @@ def summarize_fold_results(
     skipped_signals: int,
     edge_filtered: int,
     bet_size: float,
+    contender_metadata: dict[str, Any],
 ) -> dict[str, Any]:
     avg_brier = sum(row["brier"] for row in signal_rows) / len(signal_rows) if signal_rows else 0.0
     avg_vs_market = (
@@ -649,6 +821,7 @@ def summarize_fold_results(
         "max_drawdown": max_drawdown,
         "regime_breakdown": regime_breakdown,
         "trade_log": trade_log,
+        "contender_metadata": contender_metadata,
     }
 
 
@@ -674,6 +847,7 @@ def aggregate_fold_results(name: str, fold_results: list[dict[str, Any]]) -> dic
         "roi": 0.0,
         "max_drawdown": 0.0,
         "regime_breakdown": {},
+        "contender_metadata": {},
     }
 
     eval_markets = sum(result["eval_markets"] for result in fold_results)
@@ -704,7 +878,16 @@ def aggregate_fold_results(name: str, fold_results: list[dict[str, Any]]) -> dic
         "roi": pnl / wagered * 100.0 if wagered else 0.0,
         "max_drawdown": max((result["max_drawdown"] for result in fold_results), default=0.0),
         "regime_breakdown": _aggregate_regime_breakdowns(fold_results),
+        "contender_metadata": _aggregate_contender_metadata(fold_results),
     }
+
+
+def _aggregate_contender_metadata(fold_results: list[dict[str, Any]]) -> dict[str, Any]:
+    for result in fold_results:
+        metadata = result.get("contender_metadata", {})
+        if metadata:
+            return metadata
+    return {}
 
 
 def compare_fold_results(baseline: dict[str, Any], challenger: dict[str, Any]) -> dict[str, Any]:
@@ -966,6 +1149,12 @@ def print_head_to_head_report(results: dict[str, Any]) -> None:
     if gate["reasons"]:
         for reason in gate["reasons"]:
             print(f"    - {reason}")
+
+    challenger_meta = challenger.get("contender_metadata", {})
+    if challenger_meta:
+        print("\n  Challenger metadata:")
+        for key, value in challenger_meta.items():
+            print(f"    - {key}: {value}")
 
 
 def deterministic_slippage(seed: int, fold_index: int, market_index: int) -> float:
