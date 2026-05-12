@@ -1,6 +1,35 @@
 module.exports = {
   apps: [
     {
+      name: "realtime-loop",
+      cwd: __dirname,
+      script: "scripts/realtime_signal_loop.sh",
+      interpreter: "/bin/bash",
+      watch: false,
+      autorestart: true,
+      max_restarts: 20,
+      restart_delay: 5000,
+      time: false,
+      env: {
+        TZ: "America/New_York",
+        PYTHONUNBUFFERED: "1",
+        PREDICT_REALTIME_SLEEP_SECONDS:
+          process.env.PREDICT_REALTIME_SLEEP_SECONDS || "5",
+        PREDICT_REALTIME_BTC_REFRESH_SECONDS:
+          process.env.PREDICT_REALTIME_BTC_REFRESH_SECONDS || "20",
+        PREDICT_REALTIME_NEAR_TIE_PCT:
+          process.env.PREDICT_REALTIME_NEAR_TIE_PCT || "0.00005",
+        PREDICT_RULE_PROFILE:
+          process.env.PREDICT_RULE_PROFILE || "production_current",
+        PREDICT_SHADOW_RULE_PROFILE:
+          process.env.PREDICT_SHADOW_RULE_PROFILE || "absorption_candidates_live",
+        PREDICT_ALPHA_RULES: process.env.PREDICT_ALPHA_RULES || "",
+      },
+      out_file: "logs/pm2-realtime-loop.out.log",
+      error_file: "logs/pm2-realtime-loop.err.log",
+      merge_logs: true,
+    },
+    {
       name: "predict-loop",
       cwd: __dirname,
       script: "scripts/predict_loop.sh",
@@ -15,9 +44,9 @@ module.exports = {
         PYTHONUNBUFFERED: "1",
         PREDICT_SLEEP_SECONDS: process.env.PREDICT_SLEEP_SECONDS || "30",
         PREDICT_TIMEOUT_SECONDS: process.env.PREDICT_TIMEOUT_SECONDS || "120",
-        PREDICT_ALPHA_RULES:
-          process.env.PREDICT_ALPHA_RULES ||
-          "baseline_router_v2,baseline_router_v1_plus_sparse_combo,baseline_current",
+        PREDICT_RULE_PROFILE:
+          process.env.PREDICT_RULE_PROFILE || "production_current",
+        PREDICT_ALPHA_RULES: process.env.PREDICT_ALPHA_RULES || "",
       },
       out_file: "logs/pm2-predict-loop.out.log",
       error_file: "logs/pm2-predict-loop.err.log",
@@ -126,6 +155,7 @@ module.exports = {
         PYTHONUNBUFFERED: "1",
         COACH_SLEEP_SECONDS: process.env.COACH_SLEEP_SECONDS || "300",
         COACH_TIMEOUT_SECONDS: process.env.COACH_TIMEOUT_SECONDS || "180",
+        COACH_LOOP_ENABLED: process.env.COACH_LOOP_ENABLED || "false",
       },
       out_file: "logs/pm2-coach-loop.out.log",
       error_file: "logs/pm2-coach-loop.err.log",

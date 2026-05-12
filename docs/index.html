@@ -3,41 +3,47 @@
     <html>
     <head>
         <meta charset="utf-8">
-        <meta http-equiv="refresh" content="30">
+        <meta http-equiv="refresh" content="10">
         <title>Polymarket BTC 5分钟作战看板</title>
         <style>
             :root {
-                --bg: #0d1117;
-                --bg-accent-a: rgba(88,166,255,0.14);
-                --bg-accent-b: rgba(63,185,80,0.10);
-                --panel: #161b22;
-                --panel-soft: #11161d;
-                --border: #30363d;
-                --muted: #8b949e;
-                --text: #c9d1d9;
-                --green: #3fb950;
-                --red: #f85149;
-                --blue: #58a6ff;
-                --yellow: #f2cc60;
+                --bg: #0b0f14;
+                --bg-accent-a: rgba(0,181,141,0.18);
+                --bg-accent-b: rgba(255,184,77,0.10);
+                --bg-grid: rgba(255,255,255,0.025);
+                --panel: #151b20;
+                --panel-soft: #10161b;
+                --panel-strong: #1c241f;
+                --border: #2c3836;
+                --muted: #8ea09b;
+                --text: #e7eee9;
+                --green: #25d07d;
+                --red: #ff5e57;
+                --blue: #4db6ff;
+                --yellow: #ffb84d;
+                --amber: #ff8a3d;
                 --shadow: inset 0 1px 0 rgba(255,255,255,0.03);
                 --table-border: rgba(48,54,61,0.75);
                 --pill-trade-bg: rgba(63,185,80,0.14);
                 --pill-skip-bg: rgba(248,81,73,0.14);
             }
             body[data-theme="light"] {
-                --bg: #f6f8fb;
-                --bg-accent-a: rgba(47,109,246,0.10);
-                --bg-accent-b: rgba(12,166,120,0.08);
-                --panel: #ffffff;
-                --panel-soft: #f2f5fa;
-                --border: #d7dde8;
-                --muted: #627085;
-                --text: #132033;
-                --green: #127c43;
-                --red: #bb2d3b;
-                --blue: #245dff;
-                --yellow: #a56d00;
-                --shadow: 0 10px 30px rgba(17,24,39,0.06);
+                --bg: #f4f0e8;
+                --bg-accent-a: rgba(0,151,124,0.14);
+                --bg-accent-b: rgba(255,138,61,0.12);
+                --bg-grid: rgba(19,32,51,0.035);
+                --panel: #fffaf0;
+                --panel-soft: #f4ead9;
+                --panel-strong: #ecf6ed;
+                --border: #d8cdb7;
+                --muted: #716957;
+                --text: #1e261f;
+                --green: #0b7a45;
+                --red: #b6312b;
+                --blue: #176e9f;
+                --yellow: #a66600;
+                --amber: #c45118;
+                --shadow: 0 14px 36px rgba(48,38,22,0.08);
                 --table-border: rgba(215,221,232,0.95);
                 --pill-trade-bg: rgba(18,124,67,0.12);
                 --pill-skip-bg: rgba(187,45,59,0.10);
@@ -48,16 +54,19 @@
                 background:
                     radial-gradient(circle at top left, var(--bg-accent-a), transparent 34%),
                     radial-gradient(circle at top right, var(--bg-accent-b), transparent 30%),
+                    linear-gradient(var(--bg-grid) 1px, transparent 1px),
+                    linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px),
                     var(--bg);
+                background-size: auto, auto, 36px 36px, 36px 36px, auto;
                 color: var(--text);
                 font: 14px/1.55 "PingFang SC", "Noto Sans SC", "Segoe UI", sans-serif;
                 transition: background 0.2s ease, color 0.2s ease;
             }
-            .page { max-width: 1380px; margin: 0 auto; padding: 28px 20px 56px; }
+            .page { max-width: 1440px; margin: 0 auto; padding: 24px 20px 56px; }
             h1, h2, h3 { margin: 0; }
-            h1 { font-size: 34px; letter-spacing: -0.03em; }
+            h1 { font-size: clamp(30px, 4vw, 56px); letter-spacing: -0.06em; line-height: 0.95; }
             h2 { font-size: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; }
-            .hero { display: flex; justify-content: space-between; gap: 20px; align-items: end; margin-bottom: 22px; }
+            .hero { display: flex; justify-content: space-between; gap: 20px; align-items: end; margin-bottom: 18px; }
             .hero p { margin: 8px 0 0; color: var(--muted); max-width: 760px; }
             .stamp { color: var(--muted); font-size: 12px; }
             .hero-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
@@ -73,6 +82,48 @@
             }
             .theme-toggle:hover { border-color: var(--blue); }
             .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 18px; }
+            .command-grid { display: grid; grid-template-columns: minmax(280px, 1.25fr) minmax(280px, 0.75fr); gap: 16px; margin-bottom: 18px; }
+            .command-card {
+                position: relative;
+                border: 1px solid var(--border);
+                border-radius: 24px;
+                background:
+                    linear-gradient(135deg, rgba(37,208,125,0.14), transparent 34%),
+                    linear-gradient(180deg, var(--panel), var(--panel-soft));
+                box-shadow: var(--shadow);
+                padding: 20px;
+                overflow: hidden;
+            }
+            .command-card::before {
+                content: "";
+                position: absolute;
+                inset: 10px;
+                border: 1px dashed rgba(142,160,155,0.18);
+                border-radius: 18px;
+                pointer-events: none;
+            }
+            .command-card.alert {
+                background:
+                    linear-gradient(135deg, rgba(255,94,87,0.18), transparent 36%),
+                    linear-gradient(180deg, var(--panel), var(--panel-soft));
+            }
+            .command-top { position: relative; display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }
+            .status-mark { display: inline-flex; align-items: center; gap: 8px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; }
+            .status-dot { width: 12px; height: 12px; border-radius: 99px; background: var(--green); box-shadow: 0 0 0 6px rgba(37,208,125,0.14); }
+            .status-dot.off { background: var(--red); box-shadow: 0 0 0 6px rgba(255,94,87,0.14); }
+            .market-title { position: relative; margin-top: 18px; font-size: clamp(18px, 2vw, 28px); font-weight: 900; line-height: 1.15; max-width: 920px; }
+            .signal-strip { position: relative; display: grid; grid-template-columns: repeat(4, minmax(120px, 1fr)); gap: 10px; margin-top: 18px; }
+            .result-board { position: relative; display: grid; grid-template-columns: 1.1fr repeat(3, minmax(120px, 0.7fr)); gap: 10px; margin-top: 12px; }
+            .signal-cell { border: 1px solid var(--table-border); background: rgba(255,255,255,0.035); border-radius: 16px; padding: 12px; }
+            .signal-cell .k { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; }
+            .signal-cell .v { margin-top: 4px; font-size: 22px; font-weight: 900; }
+            .signal-cell.result .v { font-size: clamp(30px, 5vw, 54px); line-height: 0.95; letter-spacing: -0.06em; }
+            .signal-cell.hot .v { color: var(--green); }
+            .signal-cell.cold .v { color: var(--red); }
+            .side-stack { display: grid; gap: 12px; }
+            .side-card { border: 1px solid var(--border); border-radius: 20px; background: var(--panel); box-shadow: var(--shadow); padding: 16px; }
+            .side-card .big { font-size: 30px; font-weight: 900; letter-spacing: -0.04em; }
+            .source-pill { display: inline-flex; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); padding: 4px 10px; font-size: 12px; }
             .vol-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 18px; }
             .stat, .panel {
                 background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
@@ -160,6 +211,9 @@
             a { color: var(--blue); text-decoration: none; }
             a:hover { text-decoration: underline; }
             @media (max-width: 960px) {
+                .command-grid { grid-template-columns: 1fr; }
+                .signal-strip { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
+                .result-board { grid-template-columns: 1fr 1fr; }
                 .grid { grid-template-columns: 1fr; }
                 .subgrid { grid-template-columns: 1fr; }
                 .hero { display: block; }
@@ -172,33 +226,346 @@
         <div class="page">
             <div class="hero">
                 <div>
-                    <h1>Polymarket BTC 5分钟作战看板</h1>
-                    <p>主页面优先展示生产概览、VOL 分层、研究晋级和规则候选。完整明细请打开实时页。</p>
+                    <h1>BTC 5M<br>实时作战台</h1>
+                    <p>先看实时市场、VOL、信号来源和通知状态；历史研究、候选规则和旧预测降级为辅助信息。</p>
                     
                     <div class="muted" style="margin-top: 8px;"><a href="/live">打开完整实时页</a></div>
                     
                 </div>
                 <div class="hero-actions">
                     <button class="theme-toggle" id="theme-toggle" type="button">切换浅色</button>
-                <div class="stamp">生成时间 2026-05-05 02:56:35 PM ET</div>
+                <div class="stamp">生成时间 2026-05-12 02:41:33 PM ET</div>
                 </div>
+            </div>
+
+            <div class="command-grid">
+                <div class="command-card ">
+                    <div class="command-top">
+                        <div>
+                            <div class="status-mark">
+                                <span class="status-dot "></span>
+                                REALTIME ONLINE
+                            </div>
+                            <div class="muted" style="margin-top: 6px;">当前生产口径：production_current / 当前市场 2233310</div>
+                        </div>
+                        <span class="source-pill">kraken_ticker</span>
+                    </div>
+                    
+                    <div class="market-title">Bitcoin Up or Down - May 12, 2:40PM-2:45PM ET</div>
+                    <div class="result-board">
+                        <div class="signal-cell result hot">
+                            <div class="k">实时市场结果</div>
+                            <div class="v">UP</div>
+                        </div>
+                        <div class="signal-cell">
+                            <div class="k">参考价</div>
+                            <div class="v">$80,589.90</div>
+                        </div>
+                        <div class="signal-cell">
+                            <div class="k">当前价</div>
+                            <div class="v">$80,602.80</div>
+                        </div>
+                        <div class="signal-cell hot">
+                            <div class="k">距参考价</div>
+                            <div class="v">+0.016%</div>
+                        </div>
+                    </div>
+                    <div class="signal-strip">
+                        <div class="signal-cell ">
+                            <div class="k">Signal</div>
+                            <div class="v">SKIP</div>
+                        </div>
+                        <div class="signal-cell hot">
+                            <div class="k">Live Direction</div>
+                            <div class="v">UP</div>
+                        </div>
+                        <div class="signal-cell">
+                            <div class="k">TTE</div>
+                            <div class="v">208s</div>
+                        </div>
+                        <div class="signal-cell">
+                            <div class="k">VOL / Regime</div>
+                            <div class="v"><span class="vol-badge medium">MEDIUM</span></div>
+                        </div>
+                    </div>
+                    <div class="logic" style="position: relative; margin-top: 12px;">streak_3 | direction_up | compression | regime_filter | alpha_router_no_trade | production_current_no_trade</div>
+                    <div class="section-note">状态说明：ONLINE=当前市场状态15秒内更新；STALE=当前市场状态滞后；MISSING=当前市场还没有realtime-loop状态。</div>
+                    
+                </div>
+                <div class="side-stack">
+                    <div class="side-card">
+                        <div class="muted">Telegram Trade Events</div>
+                        <div class="big">939</div>
+                        <div class="section-note">累计已通知 939 / 当前市场 0 / 最近 05-12 02:33 PM ET</div>
+                        <div class="section-note">说明：这是生产信号通知事件，不是交易结果，也不是候选规则表现。</div>
+                    </div>
+                    <div class="side-card">
+                        <div class="muted">Shadow Candidate Monitor</div>
+                        <div class="big">222887</div>
+                        <div class="section-note">当前市场触发 2 / profile absorption_candidates_live</div>
+                        <div class="section-note">说明：Shadow 只观察不通知、不下单；用于候选规则实盘观察。</div>
+                    </div>
+                </div>
+            </div>
+
+            
+            <div class="card">
+                <h2>候选规则实时表现</h2>
+                <div class="section-note">真实实时市场 shadow 观察：每个规则/市场只取第一次 would_trade 暴露，resolved 或 provisional 后计入结果。</div>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>规则</th>
+                            <th>已判</th>
+                            <th>待判</th>
+                            <th>胜率</th>
+                            <th>单位 P&amp;L</th>
+                            <th>单位 ROI</th>
+                            <th>样本状态</th>
+                            <th>最近触发</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                        <tr>
+                            <td><strong>coach_spec__skip_coach__loosen_streak_threshold__medium_vol_mean_reverting</strong><br><span class="muted">absorption_candidates_live</span></td>
+                            <td>516</td>
+                            <td>2</td>
+                            <td class="metric-pos">56.0%</td>
+                            <td class="metric-pos">131.17</td>
+                            <td class="metric-pos">25.42%</td>
+                            <td>可观察</td>
+                            <td>05-12 02:40 PM ET</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><strong>coach_spec__skip_coach__loosen_streak_threshold__medium_vol_neutral</strong><br><span class="muted">absorption_candidates_live</span></td>
+                            <td>477</td>
+                            <td>0</td>
+                            <td class="metric-pos">56.4%</td>
+                            <td class="metric-pos">63.64</td>
+                            <td class="metric-pos">13.34%</td>
+                            <td>可观察</td>
+                            <td>05-12 02:08 PM ET</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><strong>coach_spec__skip_coach__loosen_streak_threshold__low_vol_mean_reverting</strong><br><span class="muted">absorption_candidates_live</span></td>
+                            <td>451</td>
+                            <td>0</td>
+                            <td class="metric-pos">56.8%</td>
+                            <td class="metric-pos">68.29</td>
+                            <td class="metric-pos">15.14%</td>
+                            <td>可观察</td>
+                            <td>05-12 02:25 PM ET</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><strong>coach_spec__skip_coach__allow_trending_volume_spike__medium_vol_mean_reverting</strong><br><span class="muted">absorption_candidates_live</span></td>
+                            <td>440</td>
+                            <td>2</td>
+                            <td class="metric-pos">57.3%</td>
+                            <td class="metric-pos">136.7</td>
+                            <td class="metric-pos">31.07%</td>
+                            <td>可观察</td>
+                            <td>05-12 02:40 PM ET</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><strong>coach_spec__skip_coach__allow_low_vol_neutral__low_vol_mean_reverting</strong><br><span class="muted">absorption_candidates_live</span></td>
+                            <td>404</td>
+                            <td>0</td>
+                            <td class="metric-pos">57.4%</td>
+                            <td class="metric-pos">60.2</td>
+                            <td class="metric-pos">14.9%</td>
+                            <td>可观察</td>
+                            <td>05-12 02:08 PM ET</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><strong>coach_spec__skip_coach__loosen_streak_threshold__high_vol_mean_reverting</strong><br><span class="muted">absorption_candidates_live</span></td>
+                            <td>403</td>
+                            <td>0</td>
+                            <td class="metric-pos">57.6%</td>
+                            <td class="metric-pos">61.16</td>
+                            <td class="metric-pos">15.18%</td>
+                            <td>可观察</td>
+                            <td>05-12 02:08 PM ET</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><strong>coach_spec__skip_coach__loosen_streak_threshold__medium_vol_trending</strong><br><span class="muted">absorption_candidates_live</span></td>
+                            <td>402</td>
+                            <td>0</td>
+                            <td class="metric-pos">56.7%</td>
+                            <td class="metric-pos">53.43</td>
+                            <td class="metric-pos">13.29%</td>
+                            <td>可观察</td>
+                            <td>05-12 02:08 PM ET</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><strong>coach_spec__skip_coach__loosen_streak_threshold__low_vol_neutral</strong><br><span class="muted">absorption_candidates_live</span></td>
+                            <td>401</td>
+                            <td>0</td>
+                            <td class="metric-pos">57.1%</td>
+                            <td class="metric-pos">61.13</td>
+                            <td class="metric-pos">15.24%</td>
+                            <td>可观察</td>
+                            <td>05-12 02:08 PM ET</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><strong>coach_spec__skip_coach__loosen_streak_threshold__high_vol_neutral</strong><br><span class="muted">absorption_candidates_live</span></td>
+                            <td>400</td>
+                            <td>0</td>
+                            <td class="metric-pos">57.2%</td>
+                            <td class="metric-pos">61.23</td>
+                            <td class="metric-pos">15.31%</td>
+                            <td>可观察</td>
+                            <td>05-12 02:08 PM ET</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><strong>coach_spec__skip_coach__allow_trending_volume_spike__medium_vol_neutral</strong><br><span class="muted">absorption_candidates_live</span></td>
+                            <td>395</td>
+                            <td>0</td>
+                            <td class="metric-pos">58.5%</td>
+                            <td class="metric-pos">70.89</td>
+                            <td class="metric-pos">17.95%</td>
+                            <td>可观察</td>
+                            <td>05-12 02:08 PM ET</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><strong>coach_spec__skip_coach__loosen_streak_threshold__low_vol_trending</strong><br><span class="muted">absorption_candidates_live</span></td>
+                            <td>393</td>
+                            <td>0</td>
+                            <td class="metric-pos">56.2%</td>
+                            <td class="metric-pos">49.31</td>
+                            <td class="metric-pos">12.55%</td>
+                            <td>可观察</td>
+                            <td>05-12 02:08 PM ET</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><strong>loosen_streak_low_vol_trending</strong><br><span class="muted">absorption_candidates_live</span></td>
+                            <td>393</td>
+                            <td>0</td>
+                            <td class="metric-pos">56.2%</td>
+                            <td class="metric-pos">49.31</td>
+                            <td class="metric-pos">12.55%</td>
+                            <td>可观察</td>
+                            <td>05-12 02:08 PM ET</td>
+                        </tr>
+                        
+                    </tbody>
+                </table>
+                
+            </div>
+            
+
+            <div class="card">
+                <h2>当前市场候选触发</h2>
+                <div class="section-note">当前 BTC 5m 市场下，候选规则 shadow would_trade 明细；只观察，不通知、不下单。</div>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>规则</th>
+                            <th>方向</th>
+                            <th>概率</th>
+                            <th>信心</th>
+                            <th>触发时间</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                        <tr>
+                            <td><strong>coach_spec__skip_coach__loosen_streak_threshold__medium_vol_mean_reverting</strong><br><span class="muted">coach_spec__skip_coach__loosen_streak_threshold__medium_vol_mean_reverting | relaxed_streak_2 | direction_up | volume_spike</span></td>
+                            <td>UP</td>
+                            <td>57.0%</td>
+                            <td>medium / 3</td>
+                            <td>05-12 02:40 PM ET</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><strong>coach_spec__skip_coach__allow_trending_volume_spike__medium_vol_mean_reverting</strong><br><span class="muted">coach_spec__skip_coach__allow_trending_volume_spike__medium_vol_mean_reverting | streak_2 | direction_up | volume_spike</span></td>
+                            <td>UP</td>
+                            <td>57.0%</td>
+                            <td>medium / 3</td>
+                            <td>05-12 02:40 PM ET</td>
+                        </tr>
+                        
+                    </tbody>
+                </table>
+                
+            </div>
+
+            <div class="card">
+                <h2>生产待判市场</h2>
+                <div class="section-note">realtime_loop 已产生生产 trade event，但还没有 official/provisional 结果的具体市场。</div>
+                
+                <div class="empty">暂无生产待判市场。</div>
+                
+            </div>
+
+            <div class="card">
+                <h2>Shadow 待判市场</h2>
+                <div class="section-note">已触发候选规则但还没有 official/provisional 结果的具体市场。</div>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>市场</th>
+                            <th>结束时间</th>
+                            <th>状态</th>
+                            <th>规则数</th>
+                            <th>最近触发</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                        <tr>
+                            <td><strong>2233305</strong><br><span class="muted">Bitcoin Up or Down - May 12, 2:35PM-2:40PM ET</span></td>
+                            <td>05-12 02:40 PM ET</td>
+                            <td>已结束 93s</td>
+                            <td>2</td>
+                            <td>05-12 02:39 PM ET</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><strong>2233310</strong><br><span class="muted">Bitcoin Up or Down - May 12, 2:40PM-2:45PM ET</span></td>
+                            <td>05-12 02:45 PM ET</td>
+                            <td>剩余 206s</td>
+                            <td>2</td>
+                            <td>05-12 02:40 PM ET</td>
+                        </tr>
+                        
+                    </tbody>
+                </table>
+                
             </div>
 
             <div class="stats">
                 <div class="stat">
-                    <div class="label">待结算市场</div>
-                    <div class="value">15</div>
-                    <div class="meta">当前可交易 0</div>
+                    <div class="label">当前市场</div>
+                    <div class="value">2233310</div>
+                    <div class="meta">剩余 208s / 实时结果 UP / 生产 0</div>
+                    <div class="meta">Shadow待判 4 / 已结束未判 1</div>
+                    <div class="meta">说明：当前市场按时间窗口选择，不再用最新写入行替代。</div>
                 </div>
                 <div class="stat">
-                    <div class="label">已结算市场</div>
-                    <div class="value">3553</div>
-                    <div class="meta">累计预测 31358</div>
+                    <div class="label">市场与预测快照</div>
+                    <div class="value">5425</div>
+                    <div class="meta">预测快照 48717 / 覆盖市场 5393 / 平均 9.0 次/市场</div>
+                    <div class="meta">说明：预测快照是循环多次写入，不等于市场数量。</div>
                 </div>
                 <div class="stat">
                     <div class="label">24H 交易 ROI</div>
-                    <div class="value metric-neg">-10.24%</div>
-                    <div class="meta">交易 16 笔 / P&amp;L -148.53</div>
+                    <div class="value metric-pos">20.97%</div>
+                    <div class="meta">交易 81 笔 / P&amp;L 2034.17</div>
                 </div>
                 <div class="stat">
                     <div class="label">回测样本</div>
@@ -207,8 +574,10 @@
                 </div>
                 <div class="stat">
                     <div class="label">Foundation Shadow</div>
-                    <div class="value">49.2%</div>
-                    <div class="meta">ok / spread 2.7% / imb -0.00</div>
+                    <div class="value">48.0%</div>
+                    <div class="meta">ok / 市场 2233310 / 05-12 02:41 PM ET / age 6s</div>
+                    <div class="meta">24H 120/286 acc 42.0% / Brier 0.2540</div>
+                    <div class="meta">spread 1.7% / imb +0.54；这是最新快照，不是生产信号。</div>
                 </div>
             </div>
 
@@ -228,8 +597,8 @@
                         <div class="mini-grid" style="margin-top: 14px;">
                             <div class="mini-card"><div class="label">待判市场</div><div class="value">0</div></div>
                             <div class="mini-card"><div class="label">可交易</div><div class="value">0</div></div>
-                            <div class="mini-card"><div class="label">24H 成交</div><div class="value">3</div></div>
-                            <div class="mini-card"><div class="label">24H P&amp;L</div><div class="value metric-neg">-201.49</div></div>
+                            <div class="mini-card"><div class="label">24H 成交</div><div class="value">25</div></div>
+                            <div class="mini-card"><div class="label">24H P&amp;L</div><div class="value metric-pos">427.94</div></div>
                         </div>
                     </div>
                     
@@ -237,10 +606,10 @@
                         <div class="vol-label">MEDIUM</div>
                         <div class="vol-subtitle">中波动</div>
                         <div class="mini-grid" style="margin-top: 14px;">
-                            <div class="mini-card"><div class="label">待判市场</div><div class="value">1</div></div>
+                            <div class="mini-card"><div class="label">待判市场</div><div class="value">2</div></div>
                             <div class="mini-card"><div class="label">可交易</div><div class="value">0</div></div>
-                            <div class="mini-card"><div class="label">24H 成交</div><div class="value">10</div></div>
-                            <div class="mini-card"><div class="label">24H P&amp;L</div><div class="value metric-neg">-304.11</div></div>
+                            <div class="mini-card"><div class="label">24H 成交</div><div class="value">40</div></div>
+                            <div class="mini-card"><div class="label">24H P&amp;L</div><div class="value metric-pos">1270.74</div></div>
                         </div>
                     </div>
                     
@@ -250,8 +619,8 @@
                         <div class="mini-grid" style="margin-top: 14px;">
                             <div class="mini-card"><div class="label">待判市场</div><div class="value">0</div></div>
                             <div class="mini-card"><div class="label">可交易</div><div class="value">0</div></div>
-                            <div class="mini-card"><div class="label">24H 成交</div><div class="value">3</div></div>
-                            <div class="mini-card"><div class="label">24H P&amp;L</div><div class="value metric-pos">357.07</div></div>
+                            <div class="mini-card"><div class="label">24H 成交</div><div class="value">16</div></div>
+                            <div class="mini-card"><div class="label">24H P&amp;L</div><div class="value metric-pos">190.95</div></div>
                         </div>
                     </div>
                     

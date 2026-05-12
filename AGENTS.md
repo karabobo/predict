@@ -1,23 +1,71 @@
 # Repository Guidelines
 
-## Project Structure & Module Organization
-Core application code lives in `src/`. The main cycle is split across modules such as `fetch_markets.py`, `predict.py`, `score.py`, `run_cycle.py`, and `dashboard.py`; current research and promotion logic lives under `src/v3/`. Tests are in `tests/` and are organized by behavior (`test_pnl.py`, `test_regime.py`, `test_regression.py`). Static dashboard output and long-form project notes live in `docs/`. Operational scripts are in `scripts/`, while high-level bot rules and macro context are tracked in `program.md` and `config/`.
+## Project Structure
+Three concerns in one repo:
+- **Production**: `src/predict.py` (baseline signal + regime filter), `src/score.py` (resolve + P&L), `src/fetch_markets.py`, `src/dashboard.py`, `src/notifier.py`
+- **Research**: `src/v3/` — challenger evaluation (`promotion.py`), coach audits (`coaches.py`, `coach_cycle.py`), backtest harness (`backtest_rules.py`, `build_polymarket_dataset.py`)
+- **Reporting**: `docs/index.html` (generated dashboard), `docs/research/latest.md` (promotion reports)
 
-## Build, Test, and Development Commands
-Set up a local environment with `python -m venv venv && source venv/bin/activate && pip install -r requirements.txt`.
-Run the full test suite with `python -m pytest tests/ -v`.
-Run a single prediction cycle from `src/` with `python ci_run.py`.
-Start the local dashboard from `src/` with `python dashboard.py` and open `http://localhost:5050`.
-Run focused checks when touching trading math with `python -m pytest tests/test_pnl.py tests/test_regression.py -v`.
+Execution lives in a separate project: `/root/program/predict-nautilus` (NautilusTrader). This repo is for baseline research, promotion gating, reporting, and ops review.
 
-## Coding Style & Naming Conventions
-Use Python with 4-space indentation, snake_case for modules, functions, and variables, and descriptive file names that match the domain (`btc_data.py`, `live_trading.py`). Keep modules focused; add new strategy or data logic under `src/` instead of embedding it in scripts. Follow the existing test style: small functions, explicit assertions, minimal fixtures. No formatter config is checked in, so match the surrounding style and keep imports and control flow simple.
+## Git Workflow — Critical
+CI auto-commits to `data/` and `docs/` every ~5 minutes. Local state goes stale fast.
 
-## Testing Guidelines
-`pytest` is the test framework. Treat tests as a deploy gate: CI stops before prediction runs if tests fail. Add or update tests for every logic change, and add a regression test for every production bug. Name new files `tests/test_<feature>.py` and new cases `test_<expected_behavior>()`. Prioritize `test_regression.py` for incident prevention and `test_smoke.py` for import or wiring failures.
+1. **Always `git pull` before reading `data/predictions.db` or any data file.** The dashboard (GitHub Pages) is the canonical view — if local numbers differ, your data is stale.
+2. **Always push after making changes.** A change not on GitHub doesn't exist.
+3. **Use `git pull --rebase` before pushing.** Expect CI conflicts on push; your code changes win, CI will regenerate the DB.
+4. Commit prefix: `feat:` for manual work, `Auto:` for scheduled bot updates.
 
-## Commit & Pull Request Guidelines
-Recent history uses short prefixes such as `feat:` for feature work and `Auto:` for scheduled bot updates. Follow that pattern, keep subject lines imperative, and separate generated cycle commits from manual code changes. Before opening a PR, run `python -m pytest tests/ -v`, summarize behavior changes, note any operational impact, and include screenshots when `docs/index.html` or dashboard output changes.
+## Commands
+Python 3.12. Venv is `.venv` (dot-prefixed).
 
-## Operational Notes
-GitHub is the source of truth for generated data. If your change depends on current bot state, pull first, avoid relying on stale local artifacts, and document incidents in `docs/BREAK_FIX_LOG.md`.
+```bash
+# Setup
+python -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
+
+# Full test suite — gates CI, run before every commit
+python -m pytest tests/ -v
+
+# Focused: trading math
+python -m pytest tests/test_pnl.py tests/test_regression.py -v
+
+# Single prediction cycle (one-shot, CI uses this)
+cd src && python ci_run.py
+
+# Local dashboard on http://localhost:5050
+cd src && python dashboard.py
+```
+
+### Research & Backtest Commands (require `PYTHONPATH=.`)
+```bash
+PYTHONPATH=. python src/v3/promotion.py --challenger deepseek_v3 --days 3 --warm-up 80 --folds 2
+PYTHONPATH=. python src/v3/coach_cycle.py
+PYTHONPATH=. python src/v3/backtest_rules.py --db data/polymarket_backtest.db --btc-candles /root/Data/btc_5m.parquet --rule baseline_current
+PYTHONPATH=. python src/v3/build_polymarket_dataset.py --input /root/Data/hf_polymarket_btc_5m_markets.parquet --output data/polymarket_backtest.db
+PYTHONPATH=. python src/v3/sync_btc5m_history.py --source-file /root/Data/hf_markets.parquet
+```
+
+### PM2 Local Runner (requires `npm install pm2 --no-save`)
+```bash
+./scripts/pm2ctl.sh status
+./scripts/pm2ctl.sh logs predict-loop --lines 100
+```
+7 managed loops: `realtime-loop`, `predict-loop`, `ops-loop`, `settlement-loop`, `dashboard`, `research-loop`, `coach-loop`. Logs in `logs/`. Timezone: `America/New_York`.
+
+## Data Files
+- `data/predictions.db` — production markets, predictions, scores (auto-committed by CI)
+- `data/v3_research.db` — challenger promotion runs and coach audits
+- `data/polymarket_backtest.db` — local historical BTC 5m dataset for rule backtests
+- `docs/BREAK_FIX_LOG.md` — document production incidents here
+
+## Bot Design Rules
+- **No agent bias.** No built-in directional bias (UP or DOWN). All bias comes from human macro config.
+- **Paper trade first.** Every new signal needs 200+ resolved predictions in paper trading before real capital.
+- **Conviction gates real money.** Only `conviction >= 3` places bets. Conviction 0–2 = skip.
+- **AI is research-only.** AI does not sit in the production decision path. `deepseek_v3` is a research challenger only.
+
+## Coding Style
+Python, 4-space indent, `snake_case`. Match surrounding style. Add new strategy/data logic under `src/`, not in scripts. Tests: small functions, explicit assertions, minimal fixtures. No formatter config — match the code.
+
+## Testing
+`pytest` gates CI. Add tests for every logic change. Add a regression test for every production bug. Name: `tests/test_<feature>.py`, cases `test_<expected_behavior>()`. Prioritize `test_regression.py` for incident prevention and `test_smoke.py` for import/wiring failures.

@@ -1,6 +1,6 @@
 # Rule Candidate Report
 
-- Generated: `2026-05-05T18:56:56.287679+00:00`
+- Generated: `2026-05-12T18:41:49.897129+00:00`
 
 ## Sample Scope
 

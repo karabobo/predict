@@ -64,3 +64,40 @@ def test_alpha_router_no_trade_fallback_is_safe():
     assert result["strategy_name"] == "alpha_router_no_trade"
     assert "alpha_router_no_trade" in result["reason"]
     assert "missing_rule:missing" in result["reason"]
+
+
+def test_store_prediction_defaults_to_legacy_source():
+    import sqlite3
+
+    from predict import ensure_db_schema, store_prediction
+
+    db = sqlite3.connect(":memory:")
+    db.execute("CREATE TABLE markets (id TEXT PRIMARY KEY)")
+    db.execute(
+        """
+        CREATE TABLE predictions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            market_id TEXT,
+            agent TEXT,
+            estimate REAL,
+            edge REAL,
+            confidence TEXT,
+            reasoning TEXT,
+            predicted_at TEXT,
+            cycle INTEGER
+        )
+        """
+    )
+    ensure_db_schema(db)
+
+    store_prediction(
+        db,
+        "m1",
+        "contrarian_rule",
+        {"estimate": 0.62, "should_trade": True, "confidence": "medium", "conviction_score": 3},
+        "LOW_VOL / NEUTRAL",
+        1,
+    )
+
+    row = db.execute("SELECT prediction_source FROM predictions").fetchone()
+    assert row[0] == "legacy_predict_loop"

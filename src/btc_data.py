@@ -14,6 +14,8 @@ from datetime import datetime, timezone
 
 KRAKEN_OHLC = "https://api.kraken.com/0/public/OHLC"
 COINBASE_CANDLES = "https://api.exchange.coinbase.com/products/BTC-USD/candles"
+KRAKEN_TICKER = "https://api.kraken.com/0/public/Ticker"
+COINBASE_TICKER = "https://api.exchange.coinbase.com/products/BTC-USD/ticker"
 
 
 def _load_indicator_stack():
@@ -41,6 +43,35 @@ def fetch_btc_candles(interval="5m", limit=30):
         except Exception as e2:
             print(f"  Coinbase also failed ({e2}), returning empty data")
             return None
+
+
+def fetch_btc_spot_price():
+    """Fetch a lightweight BTC spot price for realtime loops."""
+    try:
+        resp = requests.get(KRAKEN_TICKER, params={"pair": "XBTUSD"}, timeout=5)
+        resp.raise_for_status()
+        data = resp.json()
+        if data.get("error"):
+            raise Exception(f"Kraken ticker error: {data['error']}")
+        result = data.get("result", {})
+        pair_key = next((key for key in result if key != "last"), None)
+        if not pair_key:
+            raise Exception("No ticker pair in Kraken response")
+        return {
+            "price": float(result[pair_key]["c"][0]),
+            "source": "kraken_ticker",
+            "observed_at": datetime.now(timezone.utc).isoformat(),
+        }
+    except Exception as e:
+        print(f"  Kraken ticker failed ({e}), trying Coinbase ticker...")
+        resp = requests.get(COINBASE_TICKER, timeout=5)
+        resp.raise_for_status()
+        data = resp.json()
+        return {
+            "price": float(data["price"]),
+            "source": "coinbase_ticker",
+            "observed_at": datetime.now(timezone.utc).isoformat(),
+        }
 
 
 def _fetch_kraken(limit):
@@ -96,6 +127,7 @@ def _fetch_kraken(limit):
 
         candles.append({
             "time": open_time.strftime("%H:%M"),
+            "open_time": open_time.isoformat(),
             "open": open_price,
             "high": high,
             "low": low,
@@ -155,6 +187,7 @@ def _fetch_coinbase(limit):
 
         candles.append({
             "time": open_time.strftime("%H:%M"),
+            "open_time": open_time.isoformat(),
             "open": open_price,
             "high": high,
             "low": low,

@@ -61,6 +61,7 @@ def ensure_db_schema(db: sqlite3.Connection) -> None:
         "should_trade INTEGER DEFAULT 1",
         "market_price_yes_snapshot REAL",
         "seconds_to_expiry INTEGER",
+        "prediction_source TEXT DEFAULT 'legacy_predict_loop'",
     ]:
         try:
             db.execute(f"ALTER TABLE predictions ADD COLUMN {column}")
@@ -70,9 +71,18 @@ def ensure_db_schema(db: sqlite3.Connection) -> None:
 
 
 def _configured_alpha_rules() -> list[str]:
-    raw = os.getenv("PREDICT_ALPHA_RULES", DEFAULT_ALPHA_RULES)
-    rules = [part.strip() for part in raw.split(",") if part.strip()]
-    return rules or ["baseline_current"]
+    raw = os.getenv("PREDICT_ALPHA_RULES")
+    if raw:
+        rules = [part.strip() for part in raw.split(",") if part.strip()]
+        return rules or ["baseline_current"]
+    profile = os.getenv("PREDICT_RULE_PROFILE", "production_current")
+    try:
+        from v3.rule_registry import resolve_profile_rules
+
+        return resolve_profile_rules(profile)
+    except Exception as exc:
+        print(f"Rule profile {profile!r} unavailable ({exc}); using default alpha rules")
+        return [part.strip() for part in DEFAULT_ALPHA_RULES.split(",") if part.strip()]
 
 
 def _normalize_signal(signal: dict[str, Any], strategy_name: str) -> dict[str, Any]:
@@ -100,10 +110,35 @@ def alpha_router_signal(
     This intentionally excludes ML foundation and order-book rules: they need
     separate model persistence / live microstructure plumbing before production.
     """
+    configured = rule_names or _configured_alpha_rules()
+    if rule_names is None and not os.getenv("PREDICT_ALPHA_RULES"):
+        profile = os.getenv("PREDICT_RULE_PROFILE", "production_current")
+        try:
+            from v3.rule_registry import run_rule_profile
+
+            result = run_rule_profile(candles, regime, profile)
+            if result.selected.get("should_trade"):
+                return result.selected
+            fallback = _normalize_signal(contrarian_signal(candles), "baseline_current_fallback")
+            fallback["should_trade"] = False
+            fallback["estimate"] = 0.5
+            fallback["direction"] = None
+            reason_parts = ["alpha_router_no_trade", result.selected.get("reason", f"{profile}_no_trade")]
+            if result.errors:
+                reason_parts.append(f"router_warnings={';'.join(result.errors)}")
+            fallback["reason"] = " | ".join(str(part) for part in reason_parts if part)
+            fallback["conviction_score"] = 0
+            fallback["confidence"] = "low"
+            fallback["strategy_name"] = "alpha_router_no_trade"
+            fallback["meta"]["strategy_name"] = "alpha_router_no_trade"
+            fallback["meta"]["rule_profile"] = profile
+            return fallback
+        except Exception as exc:
+            print(f"Rule profile {profile!r} failed ({exc}); falling back to explicit alpha rules")
+
     from v3.rule_variants import available_rules
 
     rules = available_rules()
-    configured = rule_names or _configured_alpha_rules()
     errors: list[str] = []
 
     for name in configured:
@@ -145,6 +180,7 @@ def store_prediction(
     cycle: int,
     market_price_yes_snapshot: float | None = None,
     seconds_to_expiry: int | None = None,
+    prediction_source: str = "legacy_predict_loop",
 ) -> int:
     predicted_at = datetime.now(timezone.utc).isoformat()
     estimate = float(signal.get("estimate", 0.5))
@@ -159,8 +195,8 @@ def store_prediction(
         INSERT INTO predictions
         (market_id, agent, estimate, edge, confidence, reasoning, predicted_at, cycle,
          conviction_score, regime, should_trade, market_price_yes_snapshot, seconds_to_expiry,
-         model_version)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         model_version, prediction_source)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             market_id,
@@ -177,6 +213,7 @@ def store_prediction(
             market_price_yes_snapshot,
             seconds_to_expiry,
             model_version,
+            prediction_source,
         ),
     )
     db.commit()

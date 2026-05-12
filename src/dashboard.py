@@ -240,6 +240,7 @@ def get_db() -> sqlite3.Connection:
 def get_status() -> dict[str, object]:
     db = get_db()
     try:
+        now_utc = datetime.now(timezone.utc).isoformat()
         market_counts = db.execute(
             """
             SELECT
@@ -249,10 +250,21 @@ def get_status() -> dict[str, object]:
             FROM markets
             """
         ).fetchone()
+        unresolved_breakdown = db.execute(
+            """
+            SELECT
+                SUM(CASE WHEN resolved = 0 AND end_date > ? THEN 1 ELSE 0 END) AS open_future_markets,
+                SUM(CASE WHEN resolved = 0 AND end_date <= ? AND provisional_outcome IS NULL THEN 1 ELSE 0 END) AS ended_unresolved_markets,
+                SUM(CASE WHEN resolved = 0 AND end_date <= ? AND provisional_outcome IS NOT NULL THEN 1 ELSE 0 END) AS provisional_pending_markets
+            FROM markets
+            """,
+            (now_utc, now_utc, now_utc),
+        ).fetchone()
         prediction_counts = db.execute(
             """
             SELECT
                 COUNT(*) AS total_predictions,
+                COUNT(DISTINCT market_id) AS prediction_markets,
                 MAX(predicted_at) AS last_prediction_at
             FROM predictions
             """
@@ -267,12 +279,59 @@ def get_status() -> dict[str, object]:
               AND COALESCE(p.conviction_score, 0) >= 3
             """
         ).fetchone()
+        realtime_trade = 0
+        realtime_event_count = 0
+        shadow_pending_exposures = 0
+        if _table_exists(db, "realtime_signal_state"):
+            row = db.execute(
+                """
+                SELECT COALESCE(should_trade, 0) AS should_trade
+                FROM realtime_signal_state
+                ORDER BY updated_at DESC
+                LIMIT 1
+                """
+            ).fetchone()
+            realtime_trade = int(row["should_trade"] or 0) if row else 0
+        if _table_exists(db, "realtime_signal_events"):
+            row = db.execute("SELECT COUNT(*) AS n FROM realtime_signal_events").fetchone()
+            realtime_event_count = int(row["n"] or 0)
+        if _table_exists(db, "realtime_shadow_rule_events"):
+            row = db.execute(
+                """
+                WITH first_trade AS (
+                    SELECT MIN(id) AS id
+                    FROM realtime_shadow_rule_events
+                    WHERE profile_name = 'absorption_candidates_live'
+                      AND would_trade = 1
+                      AND current_price IS NOT NULL
+                    GROUP BY market_id, profile_name, rule_name
+                )
+                SELECT COUNT(*) AS n
+                FROM realtime_shadow_rule_events e
+                JOIN first_trade ft ON ft.id = e.id
+                LEFT JOIN markets m ON m.id = e.market_id
+                WHERE COALESCE(m.resolved, 0) = 0
+                  AND m.provisional_outcome IS NULL
+                """
+            ).fetchone()
+            shadow_pending_exposures = int(row["n"] or 0)
         return {
             "total_markets": market_counts["total_markets"] or 0,
             "pending_markets": market_counts["pending_markets"] or 0,
+            "open_future_markets": unresolved_breakdown["open_future_markets"] or 0,
+            "ended_unresolved_markets": unresolved_breakdown["ended_unresolved_markets"] or 0,
+            "provisional_pending_markets": unresolved_breakdown["provisional_pending_markets"] or 0,
             "resolved_markets": market_counts["resolved_markets"] or 0,
             "total_predictions": prediction_counts["total_predictions"] or 0,
+            "prediction_markets": prediction_counts["prediction_markets"] or 0,
+            "avg_snapshots_per_market": (
+                float(prediction_counts["total_predictions"] or 0)
+                / float(prediction_counts["prediction_markets"] or 1)
+            ),
             "trade_candidates": live_candidates["trade_candidates"] or 0,
+            "realtime_trade": realtime_trade,
+            "realtime_event_count": realtime_event_count,
+            "shadow_pending_exposures": shadow_pending_exposures,
             "last_prediction_at": prediction_counts["last_prediction_at"],
             "generated_at": now_et_label(),
         }
@@ -304,6 +363,7 @@ def build_html(*, lite_homepage: bool = False) -> str:
         rule_candidates = _rule_absorption_candidates()
         production_24h = _production_recent_summary(db, hours=24, agent="contrarian_rule")
         shadow_summary = _shadow_model_summary(db)
+        realtime_summary = _realtime_dashboard_summary(db)
         context = {
             "status": get_status(),
             "agents": agents,
@@ -326,6 +386,7 @@ def build_html(*, lite_homepage: bool = False) -> str:
             "coach_rollup": _coach_rollup(days=7),
             "production_24h": production_24h,
             "shadow_summary": shadow_summary,
+            "realtime_summary": realtime_summary,
             "regime_breakdown_24h": regime_breakdown_24h,
             "recent_trades": _recent_trade_blotter(db, agent="contrarian_rule", limit=12),
             "pending_breakdown": pending_breakdown,
@@ -341,41 +402,47 @@ def build_html(*, lite_homepage: bool = False) -> str:
     <html>
     <head>
         <meta charset="utf-8">
-        <meta http-equiv="refresh" content="30">
+        <meta http-equiv="refresh" content="10">
         <title>Polymarket BTC 5分钟作战看板</title>
         <style>
             :root {
-                --bg: #0d1117;
-                --bg-accent-a: rgba(88,166,255,0.14);
-                --bg-accent-b: rgba(63,185,80,0.10);
-                --panel: #161b22;
-                --panel-soft: #11161d;
-                --border: #30363d;
-                --muted: #8b949e;
-                --text: #c9d1d9;
-                --green: #3fb950;
-                --red: #f85149;
-                --blue: #58a6ff;
-                --yellow: #f2cc60;
+                --bg: #0b0f14;
+                --bg-accent-a: rgba(0,181,141,0.18);
+                --bg-accent-b: rgba(255,184,77,0.10);
+                --bg-grid: rgba(255,255,255,0.025);
+                --panel: #151b20;
+                --panel-soft: #10161b;
+                --panel-strong: #1c241f;
+                --border: #2c3836;
+                --muted: #8ea09b;
+                --text: #e7eee9;
+                --green: #25d07d;
+                --red: #ff5e57;
+                --blue: #4db6ff;
+                --yellow: #ffb84d;
+                --amber: #ff8a3d;
                 --shadow: inset 0 1px 0 rgba(255,255,255,0.03);
                 --table-border: rgba(48,54,61,0.75);
                 --pill-trade-bg: rgba(63,185,80,0.14);
                 --pill-skip-bg: rgba(248,81,73,0.14);
             }
             body[data-theme="light"] {
-                --bg: #f6f8fb;
-                --bg-accent-a: rgba(47,109,246,0.10);
-                --bg-accent-b: rgba(12,166,120,0.08);
-                --panel: #ffffff;
-                --panel-soft: #f2f5fa;
-                --border: #d7dde8;
-                --muted: #627085;
-                --text: #132033;
-                --green: #127c43;
-                --red: #bb2d3b;
-                --blue: #245dff;
-                --yellow: #a56d00;
-                --shadow: 0 10px 30px rgba(17,24,39,0.06);
+                --bg: #f4f0e8;
+                --bg-accent-a: rgba(0,151,124,0.14);
+                --bg-accent-b: rgba(255,138,61,0.12);
+                --bg-grid: rgba(19,32,51,0.035);
+                --panel: #fffaf0;
+                --panel-soft: #f4ead9;
+                --panel-strong: #ecf6ed;
+                --border: #d8cdb7;
+                --muted: #716957;
+                --text: #1e261f;
+                --green: #0b7a45;
+                --red: #b6312b;
+                --blue: #176e9f;
+                --yellow: #a66600;
+                --amber: #c45118;
+                --shadow: 0 14px 36px rgba(48,38,22,0.08);
                 --table-border: rgba(215,221,232,0.95);
                 --pill-trade-bg: rgba(18,124,67,0.12);
                 --pill-skip-bg: rgba(187,45,59,0.10);
@@ -386,16 +453,19 @@ def build_html(*, lite_homepage: bool = False) -> str:
                 background:
                     radial-gradient(circle at top left, var(--bg-accent-a), transparent 34%),
                     radial-gradient(circle at top right, var(--bg-accent-b), transparent 30%),
+                    linear-gradient(var(--bg-grid) 1px, transparent 1px),
+                    linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px),
                     var(--bg);
+                background-size: auto, auto, 36px 36px, 36px 36px, auto;
                 color: var(--text);
                 font: 14px/1.55 "PingFang SC", "Noto Sans SC", "Segoe UI", sans-serif;
                 transition: background 0.2s ease, color 0.2s ease;
             }
-            .page { max-width: 1380px; margin: 0 auto; padding: 28px 20px 56px; }
+            .page { max-width: 1440px; margin: 0 auto; padding: 24px 20px 56px; }
             h1, h2, h3 { margin: 0; }
-            h1 { font-size: 34px; letter-spacing: -0.03em; }
+            h1 { font-size: clamp(30px, 4vw, 56px); letter-spacing: -0.06em; line-height: 0.95; }
             h2 { font-size: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; }
-            .hero { display: flex; justify-content: space-between; gap: 20px; align-items: end; margin-bottom: 22px; }
+            .hero { display: flex; justify-content: space-between; gap: 20px; align-items: end; margin-bottom: 18px; }
             .hero p { margin: 8px 0 0; color: var(--muted); max-width: 760px; }
             .stamp { color: var(--muted); font-size: 12px; }
             .hero-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
@@ -411,6 +481,48 @@ def build_html(*, lite_homepage: bool = False) -> str:
             }
             .theme-toggle:hover { border-color: var(--blue); }
             .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 18px; }
+            .command-grid { display: grid; grid-template-columns: minmax(280px, 1.25fr) minmax(280px, 0.75fr); gap: 16px; margin-bottom: 18px; }
+            .command-card {
+                position: relative;
+                border: 1px solid var(--border);
+                border-radius: 24px;
+                background:
+                    linear-gradient(135deg, rgba(37,208,125,0.14), transparent 34%),
+                    linear-gradient(180deg, var(--panel), var(--panel-soft));
+                box-shadow: var(--shadow);
+                padding: 20px;
+                overflow: hidden;
+            }
+            .command-card::before {
+                content: "";
+                position: absolute;
+                inset: 10px;
+                border: 1px dashed rgba(142,160,155,0.18);
+                border-radius: 18px;
+                pointer-events: none;
+            }
+            .command-card.alert {
+                background:
+                    linear-gradient(135deg, rgba(255,94,87,0.18), transparent 36%),
+                    linear-gradient(180deg, var(--panel), var(--panel-soft));
+            }
+            .command-top { position: relative; display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }
+            .status-mark { display: inline-flex; align-items: center; gap: 8px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; }
+            .status-dot { width: 12px; height: 12px; border-radius: 99px; background: var(--green); box-shadow: 0 0 0 6px rgba(37,208,125,0.14); }
+            .status-dot.off { background: var(--red); box-shadow: 0 0 0 6px rgba(255,94,87,0.14); }
+            .market-title { position: relative; margin-top: 18px; font-size: clamp(18px, 2vw, 28px); font-weight: 900; line-height: 1.15; max-width: 920px; }
+            .signal-strip { position: relative; display: grid; grid-template-columns: repeat(4, minmax(120px, 1fr)); gap: 10px; margin-top: 18px; }
+            .result-board { position: relative; display: grid; grid-template-columns: 1.1fr repeat(3, minmax(120px, 0.7fr)); gap: 10px; margin-top: 12px; }
+            .signal-cell { border: 1px solid var(--table-border); background: rgba(255,255,255,0.035); border-radius: 16px; padding: 12px; }
+            .signal-cell .k { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; }
+            .signal-cell .v { margin-top: 4px; font-size: 22px; font-weight: 900; }
+            .signal-cell.result .v { font-size: clamp(30px, 5vw, 54px); line-height: 0.95; letter-spacing: -0.06em; }
+            .signal-cell.hot .v { color: var(--green); }
+            .signal-cell.cold .v { color: var(--red); }
+            .side-stack { display: grid; gap: 12px; }
+            .side-card { border: 1px solid var(--border); border-radius: 20px; background: var(--panel); box-shadow: var(--shadow); padding: 16px; }
+            .side-card .big { font-size: 30px; font-weight: 900; letter-spacing: -0.04em; }
+            .source-pill { display: inline-flex; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); padding: 4px 10px; font-size: 12px; }
             .vol-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 18px; }
             .stat, .panel {
                 background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
@@ -498,6 +610,9 @@ def build_html(*, lite_homepage: bool = False) -> str:
             a { color: var(--blue); text-decoration: none; }
             a:hover { text-decoration: underline; }
             @media (max-width: 960px) {
+                .command-grid { grid-template-columns: 1fr; }
+                .signal-strip { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
+                .result-board { grid-template-columns: 1fr 1fr; }
                 .grid { grid-template-columns: 1fr; }
                 .subgrid { grid-template-columns: 1fr; }
                 .hero { display: block; }
@@ -510,8 +625,8 @@ def build_html(*, lite_homepage: bool = False) -> str:
         <div class="page">
             <div class="hero">
                 <div>
-                    <h1>Polymarket BTC 5分钟作战看板</h1>
-                    <p>主页面优先展示生产概览、VOL 分层、研究晋级和规则候选。完整明细请打开实时页。</p>
+                    <h1>BTC 5M<br>实时作战台</h1>
+                    <p>先看实时市场、VOL、信号来源和通知状态；历史研究、候选规则和旧预测降级为辅助信息。</p>
                     {% if lite_homepage %}
                     <div class="muted" style="margin-top: 8px;"><a href="/live">打开完整实时页</a></div>
                     {% endif %}
@@ -522,16 +637,226 @@ def build_html(*, lite_homepage: bool = False) -> str:
                 </div>
             </div>
 
+            <div class="command-grid">
+                <div class="command-card {{ 'alert' if realtime_summary and realtime_summary.current and realtime_summary.current.should_trade else '' }}">
+                    <div class="command-top">
+                        <div>
+                            <div class="status-mark">
+                                <span class="status-dot {{ '' if realtime_summary and realtime_summary.current and realtime_summary.current.realtime_status == 'ONLINE' else 'off' }}"></span>
+                                REALTIME {{ realtime_summary.current.realtime_status if realtime_summary and realtime_summary.current else 'MISSING' }}
+                            </div>
+                            <div class="muted" style="margin-top: 6px;">当前生产口径：{{ realtime_summary.production_profile if realtime_summary else 'production_current' }} / 当前市场 {{ realtime_summary.current_market_id if realtime_summary else 'n/a' }}</div>
+                        </div>
+                        <span class="source-pill">{{ realtime_summary.current.price_source if realtime_summary and realtime_summary.current else 'n/a' }}</span>
+                    </div>
+                    {% if realtime_summary and realtime_summary.current %}
+                    <div class="market-title">{{ realtime_summary.current.question }}</div>
+                    <div class="result-board">
+                        <div class="signal-cell result {{ 'hot' if realtime_summary.current.live_direction == 'UP' else 'cold' if realtime_summary.current.live_direction == 'DOWN' else '' }}">
+                            <div class="k">实时市场结果</div>
+                            <div class="v">{{ realtime_summary.current.live_direction }}</div>
+                        </div>
+                        <div class="signal-cell">
+                            <div class="k">参考价</div>
+                            <div class="v">{{ realtime_summary.current.reference_price_label }}</div>
+                        </div>
+                        <div class="signal-cell">
+                            <div class="k">当前价</div>
+                            <div class="v">{{ realtime_summary.current.current_price_label }}</div>
+                        </div>
+                        <div class="signal-cell {{ 'hot' if realtime_summary.current.distance_from_reference_pct and realtime_summary.current.distance_from_reference_pct > 0 else 'cold' if realtime_summary.current.distance_from_reference_pct and realtime_summary.current.distance_from_reference_pct < 0 else '' }}">
+                            <div class="k">距参考价</div>
+                            <div class="v">{{ realtime_summary.current.distance_label }}</div>
+                        </div>
+                    </div>
+                    <div class="signal-strip">
+                        <div class="signal-cell {{ 'hot' if realtime_summary.current.should_trade else '' }}">
+                            <div class="k">Signal</div>
+                            <div class="v">{{ 'TRADE' if realtime_summary.current.should_trade else 'SKIP' }}</div>
+                        </div>
+                        <div class="signal-cell {{ 'hot' if realtime_summary.current.live_direction == 'UP' else 'cold' if realtime_summary.current.live_direction == 'DOWN' else '' }}">
+                            <div class="k">Live Direction</div>
+                            <div class="v">{{ realtime_summary.current.live_direction }}</div>
+                        </div>
+                        <div class="signal-cell">
+                            <div class="k">TTE</div>
+                            <div class="v">{{ realtime_summary.current.seconds_to_expiry if realtime_summary.current.seconds_to_expiry is not none else 'n/a' }}s</div>
+                        </div>
+                        <div class="signal-cell">
+                            <div class="k">VOL / Regime</div>
+                            <div class="v"><span class="vol-badge {{ realtime_summary.current.vol_badge_class }}">{{ realtime_summary.current.vol_label }}</span></div>
+                        </div>
+                    </div>
+                    <div class="logic" style="position: relative; margin-top: 12px;">{{ realtime_summary.current.reason or 'no active trade reason' }}</div>
+                    <div class="section-note">状态说明：ONLINE=当前市场状态15秒内更新；STALE=当前市场状态滞后；MISSING=当前市场还没有realtime-loop状态。</div>
+                    {% else %}
+                    <div class="market-title">等待实时市场状态</div>
+                    <div class="logic" style="position: relative; margin-top: 12px;">realtime-loop 尚未写入状态，检查 PM2 或数据源。</div>
+                    {% endif %}
+                </div>
+                <div class="side-stack">
+                    <div class="side-card">
+                        <div class="muted">Telegram Trade Events</div>
+                        <div class="big">{{ realtime_summary.event_count if realtime_summary else 0 }}</div>
+                        <div class="section-note">累计已通知 {{ realtime_summary.notified_count if realtime_summary else 0 }} / 当前市场 {{ realtime_summary.current_event_count if realtime_summary else 0 }} / 最近 {{ realtime_summary.latest_event.created_at_short if realtime_summary and realtime_summary.latest_event else 'n/a' }}</div>
+                        <div class="section-note">说明：这是生产信号通知事件，不是交易结果，也不是候选规则表现。</div>
+                    </div>
+                    <div class="side-card">
+                        <div class="muted">Shadow Candidate Monitor</div>
+                        <div class="big">{{ realtime_summary.shadow_event_count if realtime_summary else 0 }}</div>
+                        <div class="section-note">当前市场触发 {{ realtime_summary.shadow_current_trigger_count if realtime_summary else 0 }} / profile {{ realtime_summary.shadow_profile if realtime_summary else 'absorption_candidates_live' }}</div>
+                        <div class="section-note">说明：Shadow 只观察不通知、不下单；用于候选规则实盘观察。</div>
+                    </div>
+                </div>
+            </div>
+
+            {% if realtime_summary and realtime_summary.shadow_event_count %}
+            <div class="card">
+                <h2>候选规则实时表现</h2>
+                <div class="section-note">真实实时市场 shadow 观察：每个规则/市场只取第一次 would_trade 暴露，resolved 或 provisional 后计入结果。</div>
+                {% if realtime_summary.shadow_performance %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>规则</th>
+                            <th>已判</th>
+                            <th>待判</th>
+                            <th>胜率</th>
+                            <th>单位 P&amp;L</th>
+                            <th>单位 ROI</th>
+                            <th>样本状态</th>
+                            <th>最近触发</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in realtime_summary.shadow_performance %}
+                        <tr>
+                            <td><strong>{{ row.rule_name }}</strong><br><span class="muted">{{ row.profile_name }}</span></td>
+                            <td>{{ row.resolved_trades }}</td>
+                            <td>{{ row.pending_trades }}</td>
+                            <td class="{{ 'metric-pos' if row.win_rate >= 50 else 'metric-neg' if row.resolved_trades else '' }}">{{ row.win_rate|round(1) }}%</td>
+                            <td class="{{ 'metric-pos' if row.pnl >= 0 else 'metric-neg' }}">{{ row.pnl|round(2) }}</td>
+                            <td class="{{ 'metric-pos' if row.roi >= 0 else 'metric-neg' }}">{{ row.roi|round(2) }}%</td>
+                            <td>{{ row.sample_note }}</td>
+                            <td>{{ row.latest_at_short }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty">当前 live profile 已接入实时数据，但还没有可计分的 would_trade 暴露；等候选规则在实盘流里触发并结算后会自动出现表现。</div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <div class="card">
+                <h2>当前市场候选触发</h2>
+                <div class="section-note">当前 BTC 5m 市场下，候选规则 shadow would_trade 明细；只观察，不通知、不下单。</div>
+                {% if realtime_summary and realtime_summary.shadow_current_triggers %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>规则</th>
+                            <th>方向</th>
+                            <th>概率</th>
+                            <th>信心</th>
+                            <th>触发时间</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in realtime_summary.shadow_current_triggers %}
+                        <tr>
+                            <td><strong>{{ row.rule_name }}</strong><br><span class="muted">{{ row.reason }}</span></td>
+                            <td>{{ row.direction }}</td>
+                            <td>{{ (row.estimate * 100)|round(1) }}%</td>
+                            <td>{{ row.confidence }} / {{ row.conviction_score }}</td>
+                            <td>{{ row.created_at_short }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty">当前市场暂无候选规则 would_trade 触发。</div>
+                {% endif %}
+            </div>
+
+            <div class="card">
+                <h2>生产待判市场</h2>
+                <div class="section-note">realtime_loop 已产生生产 trade event，但还没有 official/provisional 结果的具体市场。</div>
+                {% if realtime_summary and realtime_summary.production_pending_markets %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>市场</th>
+                            <th>结束时间</th>
+                            <th>状态</th>
+                            <th>事件数</th>
+                            <th>方向</th>
+                            <th>最近触发</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in realtime_summary.production_pending_markets %}
+                        <tr>
+                            <td><strong>{{ row.market_id }}</strong><br><span class="muted">{{ row.question }}</span></td>
+                            <td>{{ row.end_date_short }}</td>
+                            <td>{{ row.time_state }}</td>
+                            <td>{{ row.event_count }}</td>
+                            <td>{{ row.directions }}</td>
+                            <td>{{ row.latest_at_short }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty">暂无生产待判市场。</div>
+                {% endif %}
+            </div>
+
+            <div class="card">
+                <h2>Shadow 待判市场</h2>
+                <div class="section-note">已触发候选规则但还没有 official/provisional 结果的具体市场。</div>
+                {% if realtime_summary and realtime_summary.shadow_pending_markets %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>市场</th>
+                            <th>结束时间</th>
+                            <th>状态</th>
+                            <th>规则数</th>
+                            <th>最近触发</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in realtime_summary.shadow_pending_markets %}
+                        <tr>
+                            <td><strong>{{ row.market_id }}</strong><br><span class="muted">{{ row.question }}</span></td>
+                            <td>{{ row.end_date_short }}</td>
+                            <td>{{ row.time_state }}</td>
+                            <td>{{ row.rule_count }}</td>
+                            <td>{{ row.latest_at_short }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty">暂无 Shadow 候选待判市场。</div>
+                {% endif %}
+            </div>
+
             <div class="stats">
                 <div class="stat">
-                    <div class="label">待结算市场</div>
-                    <div class="value">{{ status.pending_markets }}</div>
-                    <div class="meta">当前可交易 {{ status.trade_candidates }}</div>
+                    <div class="label">当前市场</div>
+                    <div class="value">{{ realtime_summary.current.market_id if realtime_summary and realtime_summary.current else 'n/a' }}</div>
+                    <div class="meta">{% if realtime_summary and realtime_summary.current %}剩余 {{ realtime_summary.current.seconds_to_expiry }}s / 实时结果 {{ realtime_summary.current.live_direction or 'n/a' }} / 生产 {{ 1 if realtime_summary.current.should_trade else 0 }}{% else %}等待 realtime-loop 写入当前市场{% endif %}</div>
+                    <div class="meta">Shadow待判 {{ status.shadow_pending_exposures }} / 已结束未判 {{ status.ended_unresolved_markets }}</div>
+                    <div class="meta">说明：当前市场按时间窗口选择，不再用最新写入行替代。</div>
                 </div>
                 <div class="stat">
-                    <div class="label">已结算市场</div>
+                    <div class="label">市场与预测快照</div>
                     <div class="value">{{ status.resolved_markets }}</div>
-                    <div class="meta">累计预测 {{ status.total_predictions }}</div>
+                    <div class="meta">预测快照 {{ status.total_predictions }} / 覆盖市场 {{ status.prediction_markets }} / 平均 {{ status.avg_snapshots_per_market|round(1) }} 次/市场</div>
+                    <div class="meta">说明：预测快照是循环多次写入，不等于市场数量。</div>
                 </div>
                 <div class="stat">
                     <div class="label">24H 交易 ROI</div>
@@ -546,7 +871,9 @@ def build_html(*, lite_homepage: bool = False) -> str:
                 <div class="stat">
                     <div class="label">Foundation Shadow</div>
                     <div class="value">{{ shadow_summary.prob_up_label if shadow_summary else 'n/a' }}</div>
-                    <div class="meta">{% if shadow_summary %}{{ shadow_summary.status }} / spread {{ shadow_summary.spread_label }} / imb {{ shadow_summary.imbalance_label }}{% else %}暂无 shadow 记录{% endif %}</div>
+                    <div class="meta">{% if shadow_summary %}{{ shadow_summary.status }} / 市场 {{ shadow_summary.market_id }} / {{ shadow_summary.created_at_short }} / age {{ shadow_summary.age_seconds }}s{% else %}暂无 shadow 记录{% endif %}</div>
+                    <div class="meta">{% if shadow_summary %}24H {{ shadow_summary.perf_24h.correct }}/{{ shadow_summary.perf_24h.resolved }} acc {{ shadow_summary.perf_24h.accuracy|round(1) }}% / Brier {{ shadow_summary.perf_24h.avg_brier_label }}{% endif %}</div>
+                    <div class="meta">{% if shadow_summary %}spread {{ shadow_summary.spread_label }} / imb {{ shadow_summary.imbalance_label }}；这是最新快照，不是生产信号。{% endif %}</div>
                 </div>
             </div>
 
@@ -2478,12 +2805,451 @@ def _table_exists(db: sqlite3.Connection, table_name: str) -> bool:
     return row is not None
 
 
+def _fmt_price(value: object) -> str:
+    try:
+        return f"${float(value):,.2f}"
+    except (TypeError, ValueError):
+        return "n/a"
+
+
+def _fmt_signed_pct(value: object) -> str:
+    try:
+        return f"{float(value) * 100:+.3f}%"
+    except (TypeError, ValueError):
+        return "n/a"
+
+
+def _parse_dt(value: object) -> datetime | None:
+    if value is None:
+        return None
+    if isinstance(value, datetime):
+        dt = value
+    else:
+        text = str(value)
+        if not text:
+            return None
+        try:
+            dt = datetime.fromisoformat(text.replace("Z", "+00:00"))
+        except ValueError:
+            return None
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
+
+
+def _age_seconds(value: object, *, now: datetime | None = None) -> int | None:
+    dt = _parse_dt(value)
+    if dt is None:
+        return None
+    now = now or datetime.now(timezone.utc)
+    return max(int((now - dt).total_seconds()), 0)
+
+
+def _current_market_row(db: sqlite3.Connection, *, now: datetime | None = None) -> sqlite3.Row | None:
+    now = now or datetime.now(timezone.utc)
+    # For 5m markets, the current window is the earliest unresolved market whose
+    # end is still in the future. This avoids showing a just-expired latest state.
+    return db.execute(
+        """
+        SELECT id, question, end_date, price_yes, price_no
+        FROM markets
+        WHERE resolved = 0
+          AND end_date > ?
+        ORDER BY end_date ASC
+        LIMIT 1
+        """,
+        (now.isoformat(),),
+    ).fetchone()
+
+
+def _realtime_dashboard_summary(db: sqlite3.Connection) -> dict[str, object]:
+    now = datetime.now(timezone.utc)
+    current_market = _current_market_row(db, now=now)
+    current = None
+    if _table_exists(db, "realtime_signal_state"):
+        row = None
+        if current_market is not None:
+            row = db.execute(
+                """
+                SELECT *
+                FROM realtime_signal_state
+                WHERE market_id = ?
+                ORDER BY updated_at DESC
+                LIMIT 1
+                """,
+                (current_market["id"],),
+            ).fetchone()
+        if row is None and current_market is None:
+            row = db.execute(
+                """
+                SELECT *
+                FROM realtime_signal_state
+                ORDER BY updated_at DESC
+                LIMIT 1
+                """
+            ).fetchone()
+        if row is not None:
+            record = dict(row)
+            regime = _format_regime_cn(record.get("regime"))
+            distance = record.get("distance_from_reference_pct")
+            age = _age_seconds(record.get("updated_at"), now=now)
+            is_current_market = current_market is not None and str(record.get("market_id")) == str(current_market["id"])
+            realtime_status = "ONLINE" if is_current_market and age is not None and age <= 15 else "STALE" if is_current_market else "MISMATCH"
+            current = {
+                **record,
+                "should_trade": bool(record.get("should_trade")),
+                "is_current_market": is_current_market,
+                "realtime_status": realtime_status,
+                "age_seconds": age,
+                "vol_label": regime["vol_label"],
+                "vol_badge_class": regime["badge_class"],
+                "regime_cn": regime["display_cn"],
+                "reference_price_label": _fmt_price(record.get("reference_price")),
+                "current_price_label": _fmt_price(record.get("current_price")),
+                "distance_label": _fmt_signed_pct(distance),
+                "updated_at_short": format_et_short(record.get("updated_at")),
+            }
+    if current is None and current_market is not None:
+        end_dt = _parse_dt(current_market["end_date"])
+        current = {
+            "market_id": current_market["id"],
+            "question": current_market["question"],
+            "seconds_to_expiry": max(int((end_dt - now).total_seconds()), 0) if end_dt else None,
+            "live_direction": None,
+            "should_trade": False,
+            "reason": "current market selected, waiting for realtime-loop state",
+            "price_source": "n/a",
+            "realtime_status": "MISSING",
+            "is_current_market": True,
+            "age_seconds": None,
+            "vol_label": "UNKNOWN",
+            "vol_badge_class": "unknown",
+            "regime_cn": "未知",
+            "reference_price_label": "n/a",
+            "current_price_label": "n/a",
+            "distance_label": "n/a",
+            "updated_at_short": "n/a",
+        }
+
+    event_count = 0
+    notified_count = 0
+    current_event_count = 0
+    latest_event = None
+    production_pending_markets = []
+    if _table_exists(db, "realtime_signal_events"):
+        row = db.execute(
+            """
+            SELECT COUNT(*) AS event_count,
+                   SUM(CASE WHEN notified = 1 THEN 1 ELSE 0 END) AS notified_count
+            FROM realtime_signal_events
+            """
+        ).fetchone()
+        event_count = int(row["event_count"] or 0)
+        notified_count = int(row["notified_count"] or 0)
+        if current_market is not None:
+            row = db.execute(
+                """
+                SELECT COUNT(*) AS n
+                FROM realtime_signal_events
+                WHERE market_id = ?
+                """,
+                (current_market["id"],),
+            ).fetchone()
+            current_event_count = int(row["n"] or 0)
+        event = db.execute(
+            """
+            SELECT *
+            FROM realtime_signal_events
+            ORDER BY id DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        if event is not None:
+            latest_event = dict(event)
+            latest_event["created_at_short"] = format_et_short(latest_event.get("created_at"))
+        production_pending_markets = _realtime_production_pending_markets(db)
+
+    shadow_event_count = 0
+    shadow_profile = "absorption_candidates_live"
+    shadow_performance = []
+    shadow_current_triggers = []
+    shadow_pending_markets = []
+    if _table_exists(db, "realtime_shadow_rule_events"):
+        row = db.execute(
+            """
+            SELECT profile_name
+            FROM realtime_shadow_rule_events
+            ORDER BY id DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        if row is not None:
+            shadow_profile = str(row["profile_name"] or shadow_profile)
+        count_row = db.execute(
+            """
+            SELECT COUNT(*) AS event_count
+            FROM realtime_shadow_rule_events
+            WHERE profile_name = ?
+              AND current_price IS NOT NULL
+            """,
+            (shadow_profile,),
+        ).fetchone()
+        shadow_event_count = int(count_row["event_count"] or 0)
+        shadow_performance = _realtime_shadow_rule_performance(db, profile_name=shadow_profile)
+        if current_market is not None:
+            shadow_current_triggers = _realtime_shadow_current_triggers(
+                db,
+                profile_name=shadow_profile,
+                market_id=str(current_market["id"]),
+            )
+        shadow_pending_markets = _realtime_shadow_pending_markets(db, profile_name=shadow_profile)
+
+    return {
+        "current": current,
+        "current_market_id": str(current_market["id"]) if current_market is not None else None,
+        "event_count": event_count,
+        "notified_count": notified_count,
+        "current_event_count": current_event_count,
+        "latest_event": latest_event,
+        "production_pending_markets": production_pending_markets,
+        "shadow_event_count": shadow_event_count,
+        "shadow_profile": shadow_profile,
+        "shadow_current_trigger_count": len(shadow_current_triggers),
+        "shadow_current_triggers": shadow_current_triggers,
+        "shadow_pending_markets": shadow_pending_markets,
+        "shadow_performance": shadow_performance,
+        "production_profile": "production_current",
+    }
+
+
+def _realtime_shadow_rule_performance(
+    db: sqlite3.Connection,
+    *,
+    profile_name: str,
+    limit: int = 12,
+) -> list[dict[str, object]]:
+    if not _table_exists(db, "realtime_shadow_rule_events") or not _table_exists(db, "markets"):
+        return []
+    rows = db.execute(
+        """
+        WITH first_trade AS (
+            SELECT MIN(id) AS id
+            FROM realtime_shadow_rule_events
+            WHERE would_trade = 1
+              AND profile_name = ?
+              AND current_price IS NOT NULL
+            GROUP BY market_id, profile_name, rule_name
+        ),
+        exposures AS (
+            SELECT e.*,
+                   COALESCE(m.outcome, m.provisional_outcome) AS effective_outcome,
+                   CASE WHEN m.resolved = 1 OR m.provisional_outcome IS NOT NULL THEN 1 ELSE 0 END AS is_resolved
+            FROM realtime_shadow_rule_events e
+            JOIN first_trade ft ON ft.id = e.id
+            LEFT JOIN markets m ON m.id = e.market_id
+        ),
+        scored AS (
+            SELECT *,
+                   CASE
+                       WHEN is_resolved = 1
+                            AND ((direction = 'UP' AND effective_outcome = 1)
+                              OR (direction = 'DOWN' AND effective_outcome = 0))
+                       THEN 1 ELSE 0
+                   END AS won,
+                   CASE
+                       WHEN direction = 'UP' THEN market_price_yes
+                       WHEN direction = 'DOWN' THEN 1.0 - market_price_yes
+                       ELSE NULL
+                   END AS entry_price
+            FROM exposures
+        )
+        SELECT
+            profile_name,
+            rule_name,
+            COUNT(*) AS exposures,
+            SUM(CASE WHEN is_resolved = 1 THEN 1 ELSE 0 END) AS resolved_trades,
+            SUM(CASE WHEN is_resolved = 0 THEN 1 ELSE 0 END) AS pending_trades,
+            SUM(CASE WHEN is_resolved = 1 THEN won ELSE 0 END) AS wins,
+            SUM(
+                CASE
+                    WHEN is_resolved = 0 OR entry_price IS NULL OR entry_price <= 0 OR entry_price >= 1 THEN 0.0
+                    WHEN won = 1 THEN (1.0 / entry_price - 1.0)
+                    ELSE -1.0
+                END
+            ) AS pnl,
+            MAX(created_at) AS latest_at
+        FROM scored
+        GROUP BY profile_name, rule_name
+        HAVING exposures > 0
+        ORDER BY resolved_trades DESC, pnl DESC, latest_at DESC
+        LIMIT ?
+        """,
+        (profile_name, limit),
+    ).fetchall()
+
+    performance = []
+    for row in rows:
+        resolved = int(row["resolved_trades"] or 0)
+        wins = int(row["wins"] or 0)
+        pnl = float(row["pnl"] or 0.0)
+        performance.append(
+            {
+                "profile_name": str(row["profile_name"] or ""),
+                "rule_name": str(row["rule_name"] or ""),
+                "exposures": int(row["exposures"] or 0),
+                "resolved_trades": resolved,
+                "pending_trades": int(row["pending_trades"] or 0),
+                "wins": wins,
+                "win_rate": (wins / resolved * 100.0) if resolved else 0.0,
+                "pnl": pnl,
+                "roi": (pnl / resolved * 100.0) if resolved else 0.0,
+                "sample_note": "样本很少" if resolved < 30 else "可观察",
+                "latest_at_short": format_et_short(row["latest_at"]),
+            }
+        )
+    return performance
+
+
+def _realtime_production_pending_markets(
+    db: sqlite3.Connection,
+    *,
+    limit: int = 10,
+) -> list[dict[str, object]]:
+    rows = db.execute(
+        """
+        SELECT
+            e.market_id,
+            m.question,
+            m.end_date,
+            COUNT(*) AS event_count,
+            GROUP_CONCAT(DISTINCT e.direction) AS directions,
+            MAX(e.created_at) AS latest_at
+        FROM realtime_signal_events e
+        LEFT JOIN markets m ON m.id = e.market_id
+        WHERE COALESCE(m.resolved, 0) = 0
+          AND m.provisional_outcome IS NULL
+        GROUP BY e.market_id, m.question, m.end_date
+        ORDER BY m.end_date ASC
+        LIMIT ?
+        """,
+        (limit,),
+    ).fetchall()
+    now = datetime.now(timezone.utc)
+    pending = []
+    for row in rows:
+        end_dt = _parse_dt(row["end_date"])
+        seconds = int((end_dt - now).total_seconds()) if end_dt else None
+        pending.append(
+            {
+                "market_id": row["market_id"],
+                "question": row["question"] or "",
+                "end_date_short": format_et_short(row["end_date"]),
+                "time_state": f"剩余 {seconds}s" if seconds is not None and seconds >= 0 else f"已结束 {abs(seconds)}s" if seconds is not None else "n/a",
+                "event_count": int(row["event_count"] or 0),
+                "directions": row["directions"] or "n/a",
+                "latest_at_short": format_et_short(row["latest_at"]),
+            }
+        )
+    return pending
+
+
+def _realtime_shadow_current_triggers(
+    db: sqlite3.Connection,
+    *,
+    profile_name: str,
+    market_id: str,
+    limit: int = 8,
+) -> list[dict[str, object]]:
+    rows = db.execute(
+        """
+        SELECT rule_name, direction, estimate, confidence, conviction_score, reason, created_at
+        FROM realtime_shadow_rule_events
+        WHERE profile_name = ?
+          AND market_id = ?
+          AND would_trade = 1
+          AND current_price IS NOT NULL
+        ORDER BY id DESC
+        LIMIT ?
+        """,
+        (profile_name, market_id, limit),
+    ).fetchall()
+    return [
+        {
+            "rule_name": row["rule_name"],
+            "direction": row["direction"] or "n/a",
+            "estimate": float(row["estimate"] or 0.5),
+            "confidence": row["confidence"] or "low",
+            "conviction_score": int(row["conviction_score"] or 0),
+            "reason": row["reason"] or "",
+            "created_at_short": format_et_short(row["created_at"]),
+        }
+        for row in rows
+    ]
+
+
+def _realtime_shadow_pending_markets(
+    db: sqlite3.Connection,
+    *,
+    profile_name: str,
+    limit: int = 10,
+) -> list[dict[str, object]]:
+    rows = db.execute(
+        """
+        WITH first_trade AS (
+            SELECT MIN(id) AS id
+            FROM realtime_shadow_rule_events
+            WHERE profile_name = ?
+              AND would_trade = 1
+              AND current_price IS NOT NULL
+            GROUP BY market_id, profile_name, rule_name
+        )
+        SELECT
+            e.market_id,
+            m.question,
+            m.end_date,
+            COUNT(*) AS rule_count,
+            GROUP_CONCAT(e.rule_name, ', ') AS rule_names,
+            MIN(e.created_at) AS first_at,
+            MAX(e.created_at) AS latest_at
+        FROM realtime_shadow_rule_events e
+        JOIN first_trade ft ON ft.id = e.id
+        LEFT JOIN markets m ON m.id = e.market_id
+        WHERE COALESCE(m.resolved, 0) = 0
+          AND m.provisional_outcome IS NULL
+        GROUP BY e.market_id, m.question, m.end_date
+        ORDER BY m.end_date ASC
+        LIMIT ?
+        """,
+        (profile_name, limit),
+    ).fetchall()
+    now = datetime.now(timezone.utc)
+    pending = []
+    for row in rows:
+        end_dt = _parse_dt(row["end_date"])
+        seconds = int((end_dt - now).total_seconds()) if end_dt else None
+        pending.append(
+            {
+                "market_id": row["market_id"],
+                "question": row["question"] or "",
+                "end_date_short": format_et_short(row["end_date"]),
+                "seconds_to_end": seconds,
+                "time_state": f"剩余 {seconds}s" if seconds is not None and seconds >= 0 else f"已结束 {abs(seconds)}s" if seconds is not None else "n/a",
+                "rule_count": int(row["rule_count"] or 0),
+                "rule_names": row["rule_names"] or "",
+                "first_at_short": format_et_short(row["first_at"]),
+                "latest_at_short": format_et_short(row["latest_at"]),
+            }
+        )
+    return pending
+
+
 def _shadow_model_summary(db: sqlite3.Connection) -> dict[str, object] | None:
     if not _table_exists(db, "prediction_shadow_models"):
         return None
     row = db.execute(
         """
         SELECT
+            s.market_id,
             s.status,
             s.model_name,
             s.prob_up,
@@ -2513,7 +3279,11 @@ def _shadow_model_summary(db: sqlite3.Connection) -> dict[str, object] | None:
     prob_up = row["prob_up"]
     spread = row["spread_pct"]
     imbalance = row["depth_imbalance"]
+    created_age = _age_seconds(row["created_at"])
+    perf_all = _foundation_shadow_performance(db, hours=None)
+    perf_24h = _foundation_shadow_performance(db, hours=24)
     return {
+        "market_id": row["market_id"],
         "status": row["status"],
         "model_name": row["model_name"] or "unloaded",
         "prob_up": prob_up,
@@ -2523,12 +3293,71 @@ def _shadow_model_summary(db: sqlite3.Connection) -> dict[str, object] | None:
         "agreement_passed": bool(row["agreement_passed"]) if row["agreement_passed"] is not None else None,
         "direction_match": bool(row["direction_match"]) if row["direction_match"] is not None else None,
         "created_at": row["created_at"],
+        "created_at_short": format_et_short(row["created_at"]),
+        "age_seconds": created_age,
         "spread_pct": spread,
         "spread_label": f"{float(spread) * 100:.1f}%" if spread is not None else "n/a",
         "depth_imbalance": imbalance,
         "imbalance_label": f"{float(imbalance):+.2f}" if imbalance is not None else "n/a",
         "bid_depth_5pct": row["bid_depth_5pct"],
         "ask_depth_5pct": row["ask_depth_5pct"],
+        "perf_all": perf_all,
+        "perf_24h": perf_24h,
+    }
+
+
+def _foundation_shadow_performance(db: sqlite3.Connection, *, hours: int | None) -> dict[str, object]:
+    if not _table_exists(db, "prediction_shadow_models"):
+        return {"markets": 0, "resolved": 0, "correct": 0, "accuracy": 0.0, "avg_brier": None}
+    time_filter = ""
+    params: tuple[object, ...] = ()
+    if hours is not None:
+        cutoff = (datetime.now(timezone.utc) - timedelta(hours=hours)).isoformat()
+        time_filter = "AND created_at >= ?"
+        params = (cutoff,)
+    row = db.execute(
+        f"""
+        WITH latest AS (
+            SELECT s.*
+            FROM prediction_shadow_models s
+            JOIN (
+                SELECT market_id, MAX(created_at) AS created_at
+                FROM prediction_shadow_models
+                WHERE status = 'ok'
+                  {time_filter}
+                GROUP BY market_id
+            ) x ON x.market_id = s.market_id AND x.created_at = s.created_at
+        )
+        SELECT
+            COUNT(*) AS markets,
+            SUM(CASE WHEN m.resolved = 1 OR m.provisional_outcome IS NOT NULL THEN 1 ELSE 0 END) AS resolved,
+            SUM(
+                CASE WHEN (m.resolved = 1 OR m.provisional_outcome IS NOT NULL)
+                      AND ((l.prob_up >= 0.5 AND COALESCE(m.outcome, m.provisional_outcome) = 1)
+                        OR (l.prob_up < 0.5 AND COALESCE(m.outcome, m.provisional_outcome) = 0))
+                     THEN 1 ELSE 0 END
+            ) AS correct,
+            AVG(
+                CASE WHEN m.resolved = 1 OR m.provisional_outcome IS NOT NULL
+                     THEN (l.prob_up - COALESCE(m.outcome, m.provisional_outcome))
+                        * (l.prob_up - COALESCE(m.outcome, m.provisional_outcome))
+                END
+            ) AS avg_brier
+        FROM latest l
+        LEFT JOIN markets m ON m.id = l.market_id
+        """,
+        params,
+    ).fetchone()
+    resolved = int(row["resolved"] or 0) if row else 0
+    correct = int(row["correct"] or 0) if row else 0
+    avg_brier = row["avg_brier"] if row else None
+    return {
+        "markets": int(row["markets"] or 0) if row else 0,
+        "resolved": resolved,
+        "correct": correct,
+        "accuracy": (correct / resolved * 100.0) if resolved else 0.0,
+        "avg_brier": float(avg_brier) if avg_brier is not None else None,
+        "avg_brier_label": f"{float(avg_brier):.4f}" if avg_brier is not None else "n/a",
     }
 
 
@@ -2907,23 +3736,33 @@ def _latest_predictions_subquery() -> str:
     """
 
 
+def _ensure_prediction_source_schema(db: sqlite3.Connection) -> None:
+    try:
+        db.execute("ALTER TABLE predictions ADD COLUMN prediction_source TEXT DEFAULT 'legacy_predict_loop'")
+        db.commit()
+    except sqlite3.OperationalError:
+        pass
+
+
 def _production_recent_summary(
     db: sqlite3.Connection,
     *,
     hours: int,
     agent: str,
 ) -> dict[str, object] | None:
+    _ensure_prediction_source_schema(db)
     cutoff = (datetime.now(timezone.utc) - timedelta(hours=hours)).isoformat()
     rows = db.execute(
         """
         SELECT p.market_id, p.agent, p.estimate, p.regime, p.conviction_score, p.should_trade,
                p.predicted_at, COALESCE(p.market_price_yes_snapshot, m.price_yes) AS market_price_yes_snapshot,
-               m.price_yes, m.outcome, m.end_date
+               p.prediction_source, m.price_yes, m.outcome, m.end_date
         FROM predictions p
         JOIN markets m ON m.id = p.market_id
         WHERE p.agent = ?
           AND m.resolved = 1
           AND m.end_date >= ?
+          AND p.prediction_source = 'realtime_loop'
         ORDER BY m.end_date DESC
         """,
         (agent, cutoff),
@@ -2966,6 +3805,7 @@ def _production_recent_summary(
         "trade_roi": float(trade_metrics.get("roi", 0.0)),
         "skip_rate": 1 - (trade_count / resolved_count if resolved_count else 0.0),
         "last_trade_at": format_et_short(last_trade_at) if last_trade_at else None,
+        "prediction_source": "realtime_loop",
         "trade_then_skip_markets": int(risk.get("trade_then_skip_markets", 0)),
         "direction_flip_markets": int(risk.get("direction_flip_markets", 0)),
         "avg_updates_per_market": float(risk.get("avg_updates_per_market", 0.0)),
