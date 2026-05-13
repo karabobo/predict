@@ -43,7 +43,10 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/ docs/
+          # Runtime SQLite files such as data/predictions.db are local state and
+          # can exceed GitHub's 100 MB file limit. Keep CI commits scoped to
+          # publishable reports and small tracked artifacts.
+          git add docs/ data/v3_regime_backtest.db
           git diff --cached --quiet || git commit -m "Auto: cycle update $(date -u +%Y-%m-%dT%H:%M:%SZ)"
           git pull --rebase
           git push

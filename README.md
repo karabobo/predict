@@ -4,6 +4,9 @@ This repository runs a deterministic production strategy for Polymarket BTC 5-mi
 
 Execution development is now being split out into a separate NautilusTrader project at `/root/program/predict-nautilus`. This repository remains the source for baseline research, promotion gating, reporting, and operational review.
 
+For the current local process map, repository boundaries, and data policy, use
+[docs/PROJECT_MAP.md](docs/PROJECT_MAP.md).
+
 ## Current Architecture
 
 ```text
@@ -70,6 +73,9 @@ Earlier Claude multi-agent and prompt-evolution work is kept for reference, not 
 - `data/external/hf_polymarket_btc_5m_markets.parquet`: merged BTC 5-minute subset used to rebuild the local backtest DB
 - `docs/index.html`: generated dashboard
 - `docs/research/`: latest and historical promotion reports
+
+Large SQLite runtime files are local state. `data/predictions.db` has exceeded
+GitHub's 100 MB single-file limit and must not be force-added to Git.
 
 ## Historical BTC 5m Sync
 
