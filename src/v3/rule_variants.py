@@ -84,6 +84,11 @@ def available_rules() -> dict[str, RuleFn]:
         "baseline_router_v1_plus_lvn_alpha3": baseline_router_v1_plus_lvn_alpha3,
         "baseline_router_v1_plus_v4": baseline_router_v1_plus_v4,
         "baseline_router_v1_plus_sparse_combo": baseline_router_v1_plus_sparse_combo,
+        "router_core": router_core,
+        "router_overlay_ensemble": router_overlay_ensemble,
+        "momentum_shape_ensemble": momentum_shape_ensemble,
+        "reversal_shape_ensemble": reversal_shape_ensemble,
+        "lvn_volume_scout": lvn_volume_scout,
         "only_low_vol_trending": only_low_vol_trending,
         "only_low_vol_neutral": only_low_vol_neutral,
         "only_lvn_up": only_lvn_up,
@@ -989,6 +994,61 @@ def baseline_router_v1_plus_sparse_combo(candles: list[dict[str, Any]], regime: 
     return _skip_record(_no_trade_stub(regime["label"]), "baseline_router_v1_plus_sparse_combo")
 
 
+def router_core(candles: list[dict[str, Any]], regime: dict[str, Any]) -> dict[str, Any]:
+    signal = baseline_router_v2(candles, regime)
+    if signal["should_trade"]:
+        return _overlay_record(signal, "router_core")
+    return _skip_record(_no_trade_stub(regime["label"]), "router_core")
+
+
+def router_overlay_ensemble(candles: list[dict[str, Any]], regime: dict[str, Any]) -> dict[str, Any]:
+    candidates = [
+        baseline_router_v1_plus_v4(candles, regime),
+        baseline_router_v1_plus_sparse_combo(candles, regime),
+        baseline_router_v1_plus_lvn_alpha3(candles, regime),
+        baseline_router_v1(candles, regime),
+    ]
+    return _select_best_trade(candidates, "router_overlay_ensemble", regime["label"])
+
+
+def momentum_shape_ensemble(candles: list[dict[str, Any]], regime: dict[str, Any]) -> dict[str, Any]:
+    candidates = [
+        baseline_v3_momentum_shape(candles, regime),
+        medium_neutral_down_continuation_balanced(candles, regime),
+        medium_neutral_down_continuation(candles, regime),
+        medium_neutral_down_continuation_core(candles, regime),
+        baseline_v5_clean_continuation(candles, regime),
+        clean_continuation_up(candles, regime),
+        clean_continuation_down(candles, regime),
+    ]
+    return _select_best_trade(candidates, "momentum_shape_ensemble", regime["label"])
+
+
+def reversal_shape_ensemble(candles: list[dict[str, Any]], regime: dict[str, Any]) -> dict[str, Any]:
+    candidates = [
+        baseline_v3_spike_reversal(candles, regime),
+        baseline_v3_reversal_core(candles, regime),
+        baseline_v4_window_state(candles, regime),
+        baseline_v4_window_state_w6(candles, regime),
+        spike_reversal_down(candles, regime),
+        spike_reversal_down_no_hvt(candles, regime),
+        flush_bounce_up(candles, regime),
+    ]
+    return _select_best_trade(candidates, "reversal_shape_ensemble", regime["label"])
+
+
+def lvn_volume_scout(candles: list[dict[str, Any]], regime: dict[str, Any]) -> dict[str, Any]:
+    candidates = [
+        baseline_router_v1_plus_lvn_alpha3(candles, regime),
+        baseline_v2_lvn_alpha3(candles, regime),
+        baseline_v2_lvn_alpha2(candles, regime),
+        only_lvn_up_volume_spike(candles, regime),
+        only_lvn_volume_spike(candles, regime),
+        only_lvn_up(candles, regime),
+    ]
+    return _select_best_trade(candidates, "lvn_volume_scout", regime["label"])
+
+
 def only_low_vol_trending(candles: list[dict[str, Any]], regime: dict[str, Any]) -> dict[str, Any]:
     baseline = baseline_current(candles, regime)
     if regime["label"] != "LOW_VOL / TRENDING":
@@ -1447,6 +1507,27 @@ def _overlay_record(signal: dict[str, Any], overlay_name: str) -> dict[str, Any]
     joined = f"{reason} | {overlay_name}" if reason else overlay_name
     enriched = dict(signal)
     enriched["reason"] = joined
+    return enriched
+
+
+def _select_best_trade(signals: list[dict[str, Any]], wrapper_name: str, regime_label: str) -> dict[str, Any]:
+    candidates = [signal for signal in signals if signal.get("should_trade")]
+    if not candidates:
+        return _skip_record(_no_trade_stub(regime_label), wrapper_name)
+
+    def score(signal: dict[str, Any]) -> tuple[int, float, float]:
+        estimate = float(signal.get("estimate", 0.5))
+        conviction = int(signal.get("conviction_score", 0) or 0)
+        edge = abs(estimate - 0.5)
+        # Prefer stronger conviction, then more decisive estimates, then non-flat estimates.
+        return conviction, edge, estimate
+
+    selected = max(candidates, key=score)
+    enriched = _overlay_record(selected, wrapper_name)
+    meta = dict(enriched.get("meta", {})) if isinstance(enriched.get("meta"), dict) else {}
+    meta["wrapper_name"] = wrapper_name
+    meta["wrapper_candidates"] = len(candidates)
+    enriched["meta"] = meta
     return enriched
 
 

@@ -250,6 +250,12 @@ def sync_settlements(
 
 def run_settlement_phase(db: sqlite3.Connection) -> dict[str, int]:
     counts = sync_settlements(db, include_provisional=True)
+    try:
+        from paper_trading import settle_paper_orders
+
+        paper_counts = settle_paper_orders(db, include_provisional=True)
+    except Exception:
+        paper_counts = {"settled": 0, "wins": 0, "pnl_usd": 0.0}
     print("[settlement] Checked ended markets:", counts["checked"])
     if counts["official_resolved"]:
         print(f"[settlement] Officially resolved: {counts['official_resolved']}")
@@ -259,6 +265,12 @@ def run_settlement_phase(db: sqlite3.Connection) -> dict[str, int]:
         print(f"[settlement] Provisional outcomes cleared: {counts['provisional_cleared']}")
     if counts["errors"]:
         print(f"[settlement] API/state errors: {counts['errors']}")
+    if paper_counts["settled"]:
+        print(
+            "[settlement] Paper orders settled: "
+            f"{paper_counts['settled']} | wins {paper_counts['wins']} | "
+            f"PnL {paper_counts['pnl_usd']:+.2f}"
+        )
     return counts
 
 

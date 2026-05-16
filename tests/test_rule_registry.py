@@ -48,6 +48,46 @@ def test_absorption_live_profile_includes_static_and_coach_candidates():
     assert all(specs[name].shadow_allowed for name in rules)
 
 
+def test_v8_integrated_candidate_profile_uses_l2_promoted_rules():
+    from v3.rule_registry import resolve_profile_rules
+
+    assert resolve_profile_rules("v8_integrated_candidate") == [
+        "router_overlay_ensemble",
+        "lvn_volume_scout",
+        "momentum_shape_ensemble",
+        "router_core",
+        "reversal_shape_ensemble",
+    ]
+
+
+def test_v6_integrated_candidate_profile_is_compatibility_alias():
+    from v3.rule_registry import resolve_profile_rules
+
+    assert resolve_profile_rules("v6_integrated_candidate") == resolve_profile_rules("v8_integrated_candidate")
+
+
+def test_v8_broad_paper_candidate_absorbs_baseline_and_volume_scouts():
+    from v3.rule_registry import resolve_profile_rules
+
+    rules = resolve_profile_rules("v8_broad_paper_candidate")
+
+    assert rules[:5] == resolve_profile_rules("v8_integrated_candidate")
+    assert "baseline_current" in rules
+    assert "baseline_v2_lvn_alpha2" in rules
+    assert "baseline_v6_broad_shape" in rules
+    assert "baseline_router_v2_candidate_filter" in rules
+
+
+def test_predict_rule_profile_env_accepts_v8(monkeypatch):
+    from predict import _configured_alpha_rules
+    from v3.rule_registry import resolve_profile_rules
+
+    monkeypatch.delenv("PREDICT_ALPHA_RULES", raising=False)
+    monkeypatch.setenv("PREDICT_RULE_PROFILE", "v8_integrated_candidate")
+
+    assert _configured_alpha_rules() == resolve_profile_rules("v8_integrated_candidate")
+
+
 def test_predict_alpha_rules_env_overrides_profile(monkeypatch):
     from predict import _configured_alpha_rules
 

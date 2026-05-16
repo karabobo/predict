@@ -1,14 +1,22 @@
 """
-notifier.py — Lightweight Telegram notifications for production and research.
+notifier.py - durable local notifications with optional webhook/Telegram fanout.
+
+SQLite notification events are the default channel. Telegram is kept only as an
+explicit opt-in compatibility path because network delivery has been unstable.
 """
 
 from __future__ import annotations
 
+import json
 import os
+import sqlite3
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 import requests
+
+from fetch_markets import DB_PATH
 
 try:
     from dotenv import load_dotenv
@@ -19,6 +27,7 @@ except ImportError:  # pragma: no cover
 
 ENV_PATH = Path(__file__).parent.parent / ".env"
 TELEGRAM_TIMEOUT_SECONDS = 10
+WEBHOOK_TIMEOUT_SECONDS = 10
 
 
 def _load_env() -> None:
@@ -41,7 +50,7 @@ def telegram_configured() -> bool:
     _load_env()
     token = _env("TELEGRAM_BOT_TOKEN")
     chat_id = _env("TELEGRAM_CHAT_ID")
-    enabled = _env_bool("TELEGRAM_NOTIFICATIONS_ENABLED", True)
+    enabled = _env_bool("TELEGRAM_NOTIFICATIONS_ENABLED", False)
     return bool(enabled and token and chat_id)
 
 
@@ -68,6 +77,154 @@ def send_telegram_message(text: str) -> bool:
     except requests.RequestException as exc:
         print(f"Telegram notify failed: {exc}")
         return False
+
+
+def ensure_notification_schema(db: sqlite3.Connection) -> None:
+    db.execute(
+        """
+        CREATE TABLE IF NOT EXISTS notification_events (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            event_type TEXT NOT NULL,
+            title TEXT NOT NULL,
+            message TEXT NOT NULL,
+            payload_json TEXT,
+            channels TEXT,
+            delivered INTEGER DEFAULT 0,
+            error_text TEXT,
+            created_at TEXT NOT NULL
+        )
+        """
+    )
+    db.execute(
+        """
+        CREATE INDEX IF NOT EXISTS idx_notification_events_type_time
+        ON notification_events(event_type, created_at DESC)
+        """
+    )
+    db.commit()
+
+
+def log_notification_event(
+    *,
+    event_type: str,
+    title: str,
+    message: str,
+    payload: dict[str, Any] | None = None,
+    channels: list[str] | None = None,
+    delivered: bool = False,
+    error_text: str | None = None,
+    db: sqlite3.Connection | None = None,
+) -> int | None:
+    close_db = False
+    if db is None:
+        DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+        db = sqlite3.connect(DB_PATH)
+        close_db = True
+    try:
+        ensure_notification_schema(db)
+        cursor = db.execute(
+            """
+            INSERT INTO notification_events (
+                event_type, title, message, payload_json, channels,
+                delivered, error_text, created_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                event_type,
+                title,
+                message,
+                json.dumps(payload or {}, sort_keys=True),
+                ",".join(channels or ["sqlite"]),
+                1 if delivered else 0,
+                error_text,
+                datetime.now(timezone.utc).isoformat(),
+            ),
+        )
+        db.commit()
+        return int(cursor.lastrowid)
+    finally:
+        if close_db:
+            db.close()
+
+
+def webhook_configured() -> bool:
+    _load_env()
+    return bool(_env_bool("WEBHOOK_NOTIFICATIONS_ENABLED", True) and _env("NOTIFICATION_WEBHOOK_URL"))
+
+
+def send_webhook_message(
+    *,
+    event_type: str,
+    title: str,
+    message: str,
+    payload: dict[str, Any] | None = None,
+) -> bool:
+    _load_env()
+    url = _env("NOTIFICATION_WEBHOOK_URL")
+    if not webhook_configured() or not url:
+        return False
+    body = {
+        "event_type": event_type,
+        "title": title,
+        "message": message,
+        "payload": payload or {},
+        "source": _env("NOTIFICATION_SOURCE") or "predict",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    try:
+        response = requests.post(url, json=body, timeout=WEBHOOK_TIMEOUT_SECONDS)
+        response.raise_for_status()
+        return True
+    except requests.RequestException as exc:
+        print(f"Webhook notify failed: {exc}")
+        return False
+
+
+def send_notification(
+    *,
+    event_type: str,
+    title: str,
+    message: str,
+    payload: dict[str, Any] | None = None,
+    db: sqlite3.Connection | None = None,
+) -> bool:
+    _load_env()
+    channels: list[str] = []
+    delivered = False
+    errors: list[str] = []
+
+    if _env_bool("NOTIFICATION_SQLITE_ENABLED", True):
+        channels.append("sqlite")
+
+    if webhook_configured():
+        channels.append("webhook")
+        if send_webhook_message(event_type=event_type, title=title, message=message, payload=payload):
+            delivered = True
+        else:
+            errors.append("webhook_failed")
+
+    if telegram_configured():
+        channels.append("telegram")
+        if send_telegram_message(f"{title}\n{message}"):
+            delivered = True
+        else:
+            errors.append("telegram_failed")
+
+    if "sqlite" in channels:
+        log_notification_event(
+            event_type=event_type,
+            title=title,
+            message=message,
+            payload=payload,
+            channels=channels,
+            delivered=delivered,
+            error_text=",".join(errors) if errors else None,
+            db=db,
+        )
+        delivered = True
+
+    return delivered
 
 
 def notify_baseline_trade(
@@ -105,7 +262,21 @@ def notify_baseline_trade(
             f"reason: {reason or 'n/a'}",
         ]
     )
-    return send_telegram_message(message)
+    return send_notification(
+        event_type="trade_signal",
+        title="Baseline trade signal",
+        message=message,
+        payload={
+            "market_id": market_id,
+            "cycle": cycle,
+            "direction": direction,
+            "estimate": estimate,
+            "market_price_yes": market_price_yes,
+            "confidence": confidence,
+            "conviction_score": conviction,
+            "regime_label": regime_label,
+        },
+    )
 
 
 def notify_deepseek_promotion(
@@ -145,4 +316,15 @@ def notify_deepseek_promotion(
             f"report: {report_path}",
         ]
     )
-    return send_telegram_message(message)
+    return send_notification(
+        event_type="promotion_passed",
+        title="DeepSeek promotion PASSED",
+        message=message,
+        payload={
+            "run_id": run_id,
+            "baseline": baseline,
+            "challenger": challenger,
+            "report_path": str(report_path),
+            "gate": gate,
+        },
+    )

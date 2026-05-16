@@ -77,6 +77,32 @@ PAPER_5M_RAW_FEATURE_NAMES = [
     "price",
     "volume",
 ]
+PAPER_5M_WINDOW_FEATURE_NAMES = [
+    "last_return",
+    "last_range",
+    "last_body_to_range",
+    "last_close_pos",
+    "last_upper_wick_ratio",
+    "last_lower_wick_ratio",
+    "ret_1",
+    "ret_2",
+    "ret_3",
+    "ret_5",
+    "ret_10",
+    "range_pos_5",
+    "range_pos_10",
+    "range_norm_5",
+    "range_norm_10",
+    "up_ratio_5",
+    "up_ratio_10",
+    "streak_signed",
+    "streak_abs",
+    "realized_vol_5",
+    "realized_vol_10",
+    "volume_ratio_3",
+    "volume_ratio_5",
+    "volume_z_10",
+]
 
 
 @dataclass(frozen=True)
@@ -123,6 +149,10 @@ def paper_5m_feature_names() -> list[str]:
 
 def paper_5m_raw_feature_names() -> list[str]:
     return list(PAPER_5M_RAW_FEATURE_NAMES)
+
+
+def paper_5m_window_feature_names() -> list[str]:
+    return list(PAPER_5M_WINDOW_FEATURE_NAMES)
 
 
 def extract_low_dim_features(
@@ -206,6 +236,57 @@ def extract_paper_5m_raw_features(candles: list[dict[str, Any]]) -> dict[str, fl
     }
 
 
+def extract_paper_5m_window_features(candles: list[dict[str, Any]]) -> dict[str, float]:
+    if not candles:
+        return {name: 0.0 for name in PAPER_5M_WINDOW_FEATURE_NAMES}
+    last = candles[-1]
+    open_px = float(last.get("open", 0.0) or 0.0)
+    close_px = float(last.get("close", 0.0) or 0.0)
+    high_px = float(last.get("high", close_px) or close_px)
+    low_px = float(last.get("low", close_px) or close_px)
+    base = open_px if open_px > 0 else close_px if close_px > 0 else 1.0
+    candle_range = max(high_px - low_px, 0.0)
+    body = abs(close_px - open_px)
+    closes = [float(c.get("close", 0.0) or 0.0) for c in candles]
+    highs = [float(c.get("high", c.get("close", 0.0)) or c.get("close", 0.0) or 0.0) for c in candles]
+    lows = [float(c.get("low", c.get("close", 0.0)) or c.get("close", 0.0) or 0.0) for c in candles]
+    volumes = [float(c.get("volume", 0.0) or 0.0) for c in candles]
+    window5 = candles[-5:]
+    window10 = candles[-10:]
+    closes5 = [float(c.get("close", 0.0) or 0.0) for c in window5]
+    closes10 = [float(c.get("close", 0.0) or 0.0) for c in window10]
+    highs5 = [float(c.get("high", c.get("close", 0.0)) or c.get("close", 0.0) or 0.0) for c in window5]
+    lows5 = [float(c.get("low", c.get("close", 0.0)) or c.get("close", 0.0) or 0.0) for c in window5]
+    highs10 = [float(c.get("high", c.get("close", 0.0)) or c.get("close", 0.0) or 0.0) for c in window10]
+    lows10 = [float(c.get("low", c.get("close", 0.0)) or c.get("close", 0.0) or 0.0) for c in window10]
+    return {
+        "last_return": (close_px - open_px) / base,
+        "last_range": candle_range / base,
+        "last_body_to_range": body / candle_range if candle_range > 0 else 0.0,
+        "last_close_pos": (close_px - low_px) / candle_range if candle_range > 0 else 0.5,
+        "last_upper_wick_ratio": _upper_wick_ratio(last),
+        "last_lower_wick_ratio": _lower_wick_ratio(last),
+        "ret_1": _safe_return(closes, 1),
+        "ret_2": _safe_return(closes, 2),
+        "ret_3": _safe_return(closes, 3),
+        "ret_5": _safe_return(closes, 5),
+        "ret_10": _safe_return(closes, min(10, len(closes) - 1)),
+        "range_pos_5": _range_position(closes5[-1], highs5, lows5) if closes5 else 0.5,
+        "range_pos_10": _range_position(closes10[-1], highs10, lows10) if closes10 else 0.5,
+        "range_norm_5": _normalized_range(highs5, lows5, closes5[-1]) if closes5 else 0.0,
+        "range_norm_10": _normalized_range(highs10, lows10, closes10[-1]) if closes10 else 0.0,
+        "up_ratio_5": sum(1 for candle in window5 if _direction(candle) == "UP") / len(window5),
+        "up_ratio_10": sum(1 for candle in window10 if _direction(candle) == "UP") / len(window10),
+        "streak_signed": float(_signed_streak(candles)),
+        "streak_abs": float(abs(_signed_streak(candles))),
+        "realized_vol_5": _realized_vol(closes5),
+        "realized_vol_10": _realized_vol(closes10),
+        "volume_ratio_3": _volume_ratio(volumes[-3:]),
+        "volume_ratio_5": _volume_ratio(volumes[-5:]),
+        "volume_z_10": _volume_zscore(volumes[-10:]),
+    }
+
+
 def extract_rule_shape_features(signal: dict[str, Any] | None) -> dict[str, float]:
     features = {name: 0.0 for name in RULE_SHAPE_FEATURE_NAMES}
     if not signal:
@@ -272,6 +353,10 @@ def paper_5m_features_to_row(features: dict[str, float]) -> list[float]:
 
 def paper_5m_raw_features_to_row(features: dict[str, float]) -> list[float]:
     return [float(features.get(name, 0.0)) for name in PAPER_5M_RAW_FEATURE_NAMES]
+
+
+def paper_5m_window_features_to_row(features: dict[str, float]) -> list[float]:
+    return [float(features.get(name, 0.0)) for name in PAPER_5M_WINDOW_FEATURE_NAMES]
 
 
 class ProbabilityFoundationService:
@@ -518,6 +603,9 @@ class Paper5MModelService:
         if self.feature_set == "raw":
             features = extract_paper_5m_raw_features(context.formatted_candles)
             row = np.array([paper_5m_raw_features_to_row(features)], dtype=float)
+        elif self.feature_set == "window":
+            features = extract_paper_5m_window_features(context.formatted_candles)
+            row = np.array([paper_5m_window_features_to_row(features)], dtype=float)
         else:
             features = extract_paper_5m_features(context.formatted_candles)
             row = np.array([paper_5m_features_to_row(features)], dtype=float)
@@ -571,11 +659,18 @@ def build_paper_5m_dataset(
     for context in contexts:
         if feature_set == "raw":
             rows.append(paper_5m_raw_features_to_row(extract_paper_5m_raw_features(context.formatted_candles)))
+        elif feature_set == "window":
+            rows.append(paper_5m_window_features_to_row(extract_paper_5m_window_features(context.formatted_candles)))
         else:
             rows.append(paper_5m_features_to_row(extract_paper_5m_features(context.formatted_candles)))
         labels.append(int(context.market["outcome"]))
     if not rows:
-        width = len(PAPER_5M_RAW_FEATURE_NAMES) if feature_set == "raw" else len(PAPER_5M_FEATURE_NAMES)
+        if feature_set == "raw":
+            width = len(PAPER_5M_RAW_FEATURE_NAMES)
+        elif feature_set == "window":
+            width = len(PAPER_5M_WINDOW_FEATURE_NAMES)
+        else:
+            width = len(PAPER_5M_FEATURE_NAMES)
         return np.empty((0, width)), np.empty((0,))
     return np.asarray(rows, dtype=float), np.asarray(labels, dtype=float)
 
@@ -748,6 +843,20 @@ def _volume_ratio(volumes: list[float]) -> float:
     if baseline <= 0:
         return 1.0
     return volumes[-1] / baseline
+
+
+def _volume_zscore(volumes: list[float]) -> float:
+    if len(volumes) < 3:
+        return 0.0
+    baseline = volumes[:-1]
+    mean = sum(baseline) / len(baseline)
+    try:
+        std = statistics.stdev(baseline)
+    except statistics.StatisticsError:
+        std = 0.0
+    if std <= 1e-9:
+        return 0.0
+    return (volumes[-1] - mean) / std
 
 
 def _realized_vol(closes: list[float]) -> float:

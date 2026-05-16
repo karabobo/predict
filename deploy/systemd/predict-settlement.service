@@ -1,0 +1,12 @@
+[Unit]
+Description=Predict settlement and paper PnL scoring
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/ubuntu/migration/predict
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONPATH=.:src
+Environment=TELEGRAM_NOTIFICATIONS_ENABLED=0
+ExecStart=/home/ubuntu/migration/predict/.venv/bin/python src/settlement_cycle.py

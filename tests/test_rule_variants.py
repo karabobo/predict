@@ -25,6 +25,30 @@ def _candles(pattern: list[tuple[float, float, float]]) -> list[dict]:
     return candles
 
 
+def test_integrated_wrapper_rules_are_registered():
+    rules = available_rules()
+
+    for name in (
+        "router_core",
+        "router_overlay_ensemble",
+        "momentum_shape_ensemble",
+        "reversal_shape_ensemble",
+        "lvn_volume_scout",
+    ):
+        assert name in rules
+
+
+def test_integrated_wrapper_rules_return_normalized_skip_when_no_branch_fires():
+    candles = _candles([(0.0, 0.05, 10)] * 20)
+    regime = {"label": "MEDIUM_VOL / NEUTRAL", "is_mean_reverting": False}
+
+    result = available_rules()["reversal_shape_ensemble"](candles, regime)
+
+    assert result["should_trade"] is False
+    assert result["estimate"] == 0.5
+    assert "reversal_shape_ensemble" in result["reason"]
+
+
 def test_loosen_streak_low_vol_trending_can_open_trade():
     candles = _candles(
         [

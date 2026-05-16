@@ -13,10 +13,12 @@ from v3.probability_foundation import (
     extract_low_dim_features,
     extract_paper_5m_features,
     extract_paper_5m_raw_features,
+    extract_paper_5m_window_features,
     low_dim_feature_names,
     foundation_feature_names,
     paper_5m_feature_names,
     paper_5m_raw_feature_names,
+    paper_5m_window_feature_names,
 )
 
 
@@ -158,6 +160,21 @@ def test_build_paper_5m_raw_dataset_shapes_match_contexts():
     assert y.shape == (12,)
 
 
+def test_paper_5m_window_feature_extraction_returns_normalized_keys():
+    features = extract_paper_5m_window_features(_candles("UP"))
+
+    assert set(paper_5m_window_feature_names()).issubset(features.keys())
+    assert features["ret_1"] > 0
+    assert 0.0 <= features["last_close_pos"] <= 1.0
+
+
+def test_build_paper_5m_window_dataset_shapes_match_contexts():
+    X, y = build_paper_5m_dataset(_contexts(12), feature_set="window")
+
+    assert X.shape == (12, len(paper_5m_window_feature_names()))
+    assert y.shape == (12,)
+
+
 def test_paper_5m_model_service_trains_and_predicts():
     service = Paper5MModelService(model_kind="xgboost")
     summary = service.fit(_contexts(120))
@@ -181,3 +198,15 @@ def test_paper_5m_raw_model_service_trains_and_predicts():
     prediction = service.predict(_contexts(1)[0])
     assert 0.0 <= prediction.prob_up <= 1.0
     assert prediction.diagnostics["feature_set"] == "raw"
+
+
+def test_paper_5m_window_model_service_trains_and_predicts():
+    service = Paper5MModelService(model_kind="logreg", feature_set="window", use_calibration=False)
+    summary = service.fit(_contexts(120))
+
+    assert summary.train_samples > 0
+    assert service.is_trained is True
+
+    prediction = service.predict(_contexts(1)[0])
+    assert 0.0 <= prediction.prob_up <= 1.0
+    assert prediction.diagnostics["feature_set"] == "window"

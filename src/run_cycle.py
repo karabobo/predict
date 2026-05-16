@@ -11,6 +11,7 @@ import argparse
 from fetch_markets import init_db, fetch_active_markets, store_markets, DB_PATH
 from predict import run_predictions
 from score import calculate_brier_scores, calculate_trade_metrics, print_scorecard, auto_resolve
+from paper_trading import execute_paper_orders
 import sqlite3
 
 
@@ -49,12 +50,13 @@ def main():
     print("\n[2/3] Running predictions...")
     run_predictions(cycle=args.cycle, market_limit=args.markets)
 
-    # Auto-resolve and score
-    print("\n[3/3] Checking for resolved markets & scoring...")
+    # Auto-resolve, paper orders, and score
+    print("\n[3/3] Checking for resolved markets, paper orders & scoring...")
     db = sqlite3.connect(DB_PATH)
     resolved = auto_resolve(db)
     if resolved:
         print(f"  Auto-resolved {resolved} market(s)")
+    execute_paper_orders(db)
     signal_metrics = calculate_brier_scores(db)
     trade_metrics = calculate_trade_metrics(db)
     print_scorecard(signal_metrics, trade_metrics)

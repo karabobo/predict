@@ -21,6 +21,7 @@ from score import (
 )
 from btc_data import fetch_btc_candles
 from live_trading import execute_live_orders
+from paper_trading import execute_paper_orders
 
 
 def get_next_cycle(db):
@@ -88,19 +89,25 @@ def run_predict_phase(db):
 
 
 def run_ops_phase(db):
-    """Resolve markets, score performance, refresh dashboard, and handle live trading."""
-    print("[1/4] Auto-resolving...")
+    """Resolve markets, score performance, refresh dashboard, and handle order ledgers."""
+    print("[1/5] Auto-resolving...")
     resolved = auto_resolve(db)
     if resolved:
         print(f"  Resolved {resolved} market(s)")
 
-    print("[2/4] Live trading...")
+    print("[2/5] Paper trading...")
+    try:
+        execute_paper_orders(db)
+    except Exception as e:
+        print(f"  Paper trading error: {e}")
+
+    print("[3/5] Live trading...")
     try:
         execute_live_orders(db)
     except Exception as e:
         print(f"  Live trading error: {e}")
 
-    print("[3/4] Scoring...")
+    print("[4/5] Scoring...")
     signal_metrics = calculate_brier_scores(db)
     trade_metrics = calculate_trade_metrics(db)
     path_risk_metrics = calculate_path_risk_metrics(db)
@@ -109,7 +116,7 @@ def run_ops_phase(db):
     else:
         print("  No resolved markets to score yet")
 
-    print("[4/4] Generating dashboard...")
+    print("[5/5] Generating dashboard...")
     _generate_dashboard()
 
 

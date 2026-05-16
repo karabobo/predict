@@ -1,0 +1,19 @@
+[Unit]
+Description=Predict v8 realtime WSS paper daemon
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/ubuntu/migration/predict
+Environment=PYTHONUNBUFFERED=1
+Environment=PREDICT_RULE_PROFILE=v8_broad_paper_candidate
+Environment=POLYMARKET_PAPER_TRADING=1
+Environment=POLYMARKET_PAPER_MIN_EDGE=0.01
+Environment=TELEGRAM_NOTIFICATIONS_ENABLED=0
+ExecStart=/home/ubuntu/migration/predict/scripts/v8_realtime_paper_loop.sh
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=default.target

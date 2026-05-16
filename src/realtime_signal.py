@@ -171,7 +171,7 @@ def select_realtime_market(
     max_end = (now + timedelta(seconds=lookahead_seconds)).isoformat()
     rows = db.execute(
         """
-        SELECT id, question, price_yes, price_no, end_date, token_yes
+        SELECT id, question, price_yes, price_no, end_date, token_yes, token_no
         FROM markets
         WHERE resolved = 0
           AND end_date > ?
@@ -203,6 +203,7 @@ def select_realtime_market(
                 "end_date": end_dt,
                 "start_date": start_dt,
                 "token_yes": row["token_yes"],
+                "token_no": row["token_no"] if "token_no" in row.keys() else None,
                 "status": status,
             }
         )

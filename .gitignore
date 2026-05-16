@@ -20,6 +20,7 @@ package-lock.json
 .codex/
 .*-loop.lock
 scripts/*.log
+tmp/
 archive/*.log*
 archive/*.db*
 .idea/

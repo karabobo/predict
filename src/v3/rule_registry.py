@@ -1,5 +1,5 @@
 """
-Rule registry and profile definitions for deterministic v6 strategies.
+Rule registry and profile definitions for deterministic v8 strategies.
 
 This module is metadata-first: production routing can resolve named profiles
 without changing the legacy `available_rules()` API used by backtests.
@@ -21,6 +21,25 @@ PRODUCTION_CURRENT_RULES = [
     "baseline_current",
 ]
 
+V8_INTEGRATED_CANDIDATE_RULES = [
+    "router_overlay_ensemble",
+    "lvn_volume_scout",
+    "momentum_shape_ensemble",
+    "router_core",
+    "reversal_shape_ensemble",
+]
+
+V8_BROAD_PAPER_CANDIDATE_RULES = [
+    *V8_INTEGRATED_CANDIDATE_RULES,
+    "baseline_current",
+    "baseline_v2_lvn_alpha2",
+    "baseline_v6_broad_shape",
+    "baseline_router_v2_candidate_filter",
+]
+
+# Compatibility alias for reports/scripts created before the v8 target rename.
+V6_INTEGRATED_CANDIDATE_RULES = V8_INTEGRATED_CANDIDATE_RULES
+
 BASELINE_RULES = {
     "baseline_current",
     "baseline_v2_lvn_alpha2",
@@ -34,6 +53,9 @@ BASELINE_RULES = {
     "baseline_v6_broad_shape",
     "baseline_router_v1",
     "baseline_router_v2",
+    "router_core",
+    "momentum_shape_ensemble",
+    "reversal_shape_ensemble",
 }
 
 BRANCH_RULES = {
@@ -48,6 +70,8 @@ OVERLAY_RULES = {
     "baseline_router_v1_plus_lvn_alpha3",
     "baseline_router_v1_plus_v4",
     "baseline_router_v1_plus_sparse_combo",
+    "router_overlay_ensemble",
+    "lvn_volume_scout",
     "candidate_lvn_up_volume_spike",
     "candidate_lvn_up_volume_spike_streak4p",
     "only_low_vol_trending",
@@ -181,11 +205,23 @@ def get_profiles() -> dict[str, RuleProfile]:
             mode="all_rules",
             description="All rule absorption candidates observed against live realtime markets.",
         ),
+        "v8_integrated_candidate": RuleProfile(
+            name="v8_integrated_candidate",
+            rule_names=tuple(V8_INTEGRATED_CANDIDATE_RULES),
+            mode="first_trade",
+            description="v8 L2-promoted integrated 5m candidate profile; keep in paper/shadow before production.",
+        ),
+        "v8_broad_paper_candidate": RuleProfile(
+            name="v8_broad_paper_candidate",
+            rule_names=tuple(V8_BROAD_PAPER_CANDIDATE_RULES),
+            mode="first_trade",
+            description="Wider v8 paper profile that absorbs v6/baseline/volume scouts before prior and book-edge gates.",
+        ),
         "v6_integrated_candidate": RuleProfile(
             name="v6_integrated_candidate",
-            rule_names=tuple(PRODUCTION_CURRENT_RULES),
+            rule_names=tuple(V6_INTEGRATED_CANDIDATE_RULES),
             mode="first_trade",
-            description="Reserved integrated v6 candidate profile; starts pinned to current production.",
+            description="Compatibility alias for v8_integrated_candidate.",
         ),
     }
 
@@ -289,6 +325,14 @@ def _static_category(name: str) -> RuleCategory:
 def _static_family(name: str, category: RuleCategory) -> str:
     if name.startswith("baseline_router"):
         return "router"
+    if name.startswith("router_"):
+        return "router"
+    if name == "momentum_shape_ensemble":
+        return "momentum"
+    if name == "reversal_shape_ensemble":
+        return "reversal"
+    if name == "lvn_volume_scout":
+        return "lvn_volume"
     if name.startswith("baseline_v"):
         return name.rsplit("_", 1)[0]
     if "reversal" in name or "bounce" in name:

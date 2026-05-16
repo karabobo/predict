@@ -27,6 +27,7 @@ def _db():
             price_no REAL,
             end_date TEXT,
             token_yes TEXT,
+            token_no TEXT,
             resolved INTEGER DEFAULT 0
         )
         """

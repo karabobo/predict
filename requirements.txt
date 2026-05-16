@@ -8,3 +8,4 @@ scikit-learn>=1.5.0
 flask
 pytest>=8.0.0
 py-clob-client>=0.34.6
+websocket-client>=1.8.0
